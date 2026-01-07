@@ -491,7 +491,7 @@ CREATE TABLE ledger_entries (
     id SERIAL PRIMARY KEY,
     document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     action ledger_action NOT NULL,
-    actor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     metadata JSONB,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
