@@ -1,8 +1,7 @@
-```markdown
+
 # Trade Finance Blockchain Explorer
 ## Phase 1 – System Design (Agile-Aligned)
 
----
 
 ## 1. Project Overview
 
@@ -415,7 +414,6 @@ Phase 1 (System Design) is complete when:
 - [ ] Product Owner approval (PDF spec met)
 - [ ] Intern team confirms understanding
 
----
 
+---
 **Next Phase:** Phase 2 – Database Design (PostgreSQL schema, indexes, constraints)
-```
