@@ -609,39 +609,5 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 ---
 
-## 10. Success Criteria for Phase 2
-
-Phase 2 (Database Design) is complete when:
-
-1. **Schema matches PDF exactly**
-   - All 6 tables defined
-   - All columns match specification
-   - Enums match PDF values
-
-2. **Foreign keys enforce relationships**
-   - No orphaned records possible
-   - Cascade behavior defined
-
-3. **Indexes support MVP queries**
-   - User lookup by email (login)
-   - Document list by owner
-   - Ledger timeline by document
-
-4. **Initialization script ready**
-   - `init.sql` creates all tables
-   - Idempotent (can re-run safely)
-   - No manual steps required
-
-5. **Team understands trade-offs**
-   - Why we're NOT adding extra tables yet
-   - What indexes we're deferring
-   - What features require schema changes later
-
-**Sign-off Required:**
-- [ ] Database schema reviewed by backend lead
-- [ ] SQL script tested on PostgreSQL 14+
-- [ ] Agile scope confirmed (MVP tables vs deferred)
-
----
 
 **Next Phase:** Phase 3 – Backend Implementation (FastAPI project structure, models, authentication)

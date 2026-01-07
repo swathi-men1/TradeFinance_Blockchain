@@ -383,37 +383,6 @@ The backend:
 - **Integrity Checks**: Manual API trigger in Week 4, automate with Celery in Week 6
 - **External Data**: Use static JSON mock data instead of live API calls
 
----
-
-## 10. Success Criteria for Phase 1
-
-Phase 1 (System Design) is complete when:
-
-1. **Architecture is documented**
-   - All stakeholders understand backend-first approach
-   - Module boundaries are clear
-   - Role-based access control is defined
-
-2. **Agile scope is agreed upon**
-   - MVP features (Weeks 1–4) are explicitly listed
-   - Deferred features are explicitly documented
-   - No scope creep in early sprints
-
-3. **Team is aligned**
-   - Interns understand what to build first
-   - Mentors have reviewed and approved design
-   - No ambiguity about "blockchain" (it's a ledger system)
-
-4. **Next steps are clear**
-   - Phase 2 (Database Design) ready to start
-   - PostgreSQL schema matches PDF exactly
-   - No architectural debates mid-sprint
-
-**Sign-off Required:**
-- [ ] Technical Lead approval
-- [ ] Product Owner approval (PDF spec met)
-- [ ] Intern team confirms understanding
-
 
 ---
 **Next Phase:** Phase 2 – Database Design (PostgreSQL schema, indexes, constraints)
