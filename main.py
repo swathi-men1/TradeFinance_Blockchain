@@ -8,6 +8,15 @@ from fastapi.security import OAuth2PasswordBearer
 from database import engine, SessionLocal, Base
 from models import User
 
+from fastapi import UploadFile, File
+import shutil
+import os
+
+from models import User, Document
+from database import engine, Base
+Base.metadata.create_all(bind=engine)
+
+
 # ---------------- APP ----------------
 app = FastAPI()
 
@@ -130,4 +139,49 @@ def profile(current_user: User = Depends(get_current_user)):
     return {
         "name": current_user.name,
         "email": current_user.email
+    }
+
+
+UPLOAD_DIR = "uploads"
+
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+
+from fastapi import FastAPI, UploadFile, File
+import os
+import hashlib
+
+from models import Document
+from database import SessionLocal
+
+@app.post("/upload-document")
+async def upload_document(file: UploadFile = File(...)):
+    os.makedirs("uploads", exist_ok=True)
+
+    file_path = f"uploads/{file.filename}"
+    contents = await file.read()
+
+    with open(file_path, "wb") as f:
+        f.write(contents)
+
+    file_hash = hashlib.sha256(contents).hexdigest()
+
+    # 🔽 THIS IS THE IMPORTANT PART 🔽
+    db = SessionLocal()
+
+    new_doc = Document(
+        filename=file.filename,
+        file_hash=file_hash,
+        owner_email="mvramya2003@gmail.com"  # later replace with JWT user
+    )
+
+    db.add(new_doc)
+    db.commit()
+    db.close()
+
+    return {
+        "filename": file.filename,
+        "hash": file_hash,
+        "message": "Document uploaded and saved in DB"
     }
