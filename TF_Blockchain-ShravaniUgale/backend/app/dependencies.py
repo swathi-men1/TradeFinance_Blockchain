@@ -39,3 +39,10 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+from fastapi import Request
+
+def debug_token(request: Request):
+    return {
+        "authorization_header": request.headers.get("authorization")
+    }
