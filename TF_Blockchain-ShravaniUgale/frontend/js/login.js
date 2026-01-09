@@ -1,41 +1,30 @@
-const loginForm = document.getElementById("loginForm");
-
-loginForm.addEventListener("submit", async (e) => {
+document.getElementById("loginForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  try {
-    const response = await fetch("http://127.0.0.1:8000/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("Invalid login credentials");
-    }
-
-    const data = await response.json();
-
-    // Store token
-    localStorage.setItem("access_token", data.access_token);
-
-    // Decode token payload (basic)
-    const payload = JSON.parse(atob(data.access_token.split(".")[1]));
-
-    // Redirect based on role (future-proof)
-    if (payload.sub) {
+  fetch("http://127.0.0.1:8000/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email: email,
+      password: password
+    })
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Invalid credentials");
+      }
+      return res.json();
+    })
+    .then(data => {
+      localStorage.setItem("access_token", data.access_token);
       window.location.href = "dashboard.html";
-    }
-
-  } catch (error) {
-    alert("Login failed. Please check your credentials.");
-  }
+    })
+    .catch(() => {
+      alert("Invalid email or password");
+    });
 });

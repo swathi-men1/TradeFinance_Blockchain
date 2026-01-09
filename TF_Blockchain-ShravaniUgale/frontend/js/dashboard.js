@@ -1,33 +1,73 @@
-// Get token
 const token = localStorage.getItem("access_token");
 
-// If no token, redirect to login
 if (!token) {
   window.location.href = "login.html";
 }
 
-// Fetch user details
+// Load user info
 fetch("http://127.0.0.1:8000/protected/me", {
   headers: {
     "Authorization": `Bearer ${token}`
   }
 })
-.then(response => {
-  if (!response.ok) {
-    throw new Error("Unauthorized");
-  }
-  return response.json();
-})
-.then(data => {
-  document.getElementById("userEmail").innerText = data.email;
-  document.getElementById("userRole").innerText = data.role;
-  document.getElementById("userOrg").innerText = data.org_name;
-})
-.catch(() => {
-  // Invalid token
-  localStorage.removeItem("access_token");
-  window.location.href = "login.html";
+.then(res => res.json())
+.then(user => {
+  document.getElementById("userEmail").innerText = user.email;
+  document.getElementById("userRole").innerText = user.role;
+  document.getElementById("userOrg").innerText = user.org_name;
 });
+
+// Upload document
+document.getElementById("docForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const title = document.getElementById("docTitle").value;
+  const type = document.getElementById("docType").value;
+
+  fetch("http://127.0.0.1:8000/documents", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      title: title,
+      doc_type: type
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    document.getElementById("docForm").reset();
+    loadDocuments();
+  });
+});
+
+// Load documents
+function loadDocuments() {
+  fetch("http://127.0.0.1:8000/documents", {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const table = document.getElementById("docTable");
+    table.innerHTML = "";
+
+    data.forEach(doc => {
+      table.innerHTML += `
+        <tr>
+          <td>${doc.title}</td>
+          <td>${doc.doc_type}</td>
+          <td>${doc.status}</td>
+          <td>${doc.org_name}</td>
+        </tr>
+      `;
+    });
+  });
+}
+
+loadDocuments();
 
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", () => {

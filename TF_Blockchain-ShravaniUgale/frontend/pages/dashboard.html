@@ -32,6 +32,51 @@
     </div>
   </div>
 
+<!-- Document Upload -->
+<div class="container mt-4">
+  <div class="card shadow-sm p-4">
+    <h5>Upload Trade Document</h5>
+
+    <form id="docForm">
+      <div class="mb-3">
+        <label class="form-label">Document Title</label>
+        <input type="text" class="form-control" id="docTitle" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Document Type</label>
+        <select class="form-control" id="docType" required>
+          <option value="">Select type</option>
+          <option>Invoice</option>
+          <option>Bill of Lading</option>
+          <option>Letter of Credit</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+  </div>
+</div>
+
+<!-- Document List -->
+<div class="container mt-4">
+  <div class="card shadow-sm p-4">
+    <h5>Trade Documents</h5>
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Organization</th>
+        </tr>
+      </thead>
+      <tbody id="docTable">
+      </tbody>
+    </table>
+  </div>
+</div>
+
   <!-- Scripts -->
   <script src="../js/dashboard.js"></script>
 </body>
