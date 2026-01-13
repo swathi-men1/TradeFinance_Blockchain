@@ -23,7 +23,9 @@ The **Trade Finance Blockchain Explorer** is a web-based platform for tracking t
 ## 2. Architecture Overview
 
 ### Backend-First Philosophy
-All business logic, security, and data validation reside in the **FastAPI backend**. The frontend (React) is a thin client that:
+All business logic, security, and data validation reside in the **FastAPI backend**. 
+
+The frontend (React) is a thin client that:
 - Displays data
 - Captures user input
 - Sends authenticated API requests
