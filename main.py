@@ -1,26 +1,29 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordBearer
-
-from database import engine, SessionLocal, Base
-from models import User
-
-from fastapi import UploadFile, File
-import shutil
+import hashlib
 import os
 
+from database import SessionLocal, engine, Base
 from models import User, Document
-from database import engine, Base
-Base.metadata.create_all(bind=engine)
-
 
 # ---------------- APP ----------------
 app = FastAPI()
 
-# Create DB tables
+# ---------------- CORS (MUST BE HERE) ----------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # allow frontend
+    allow_credentials=True,
+    allow_methods=["*"],   # allow OPTIONS, POST, GET
+    allow_headers=["*"],
+)
+
+# ---------------- DB ----------------
 Base.metadata.create_all(bind=engine)
 
 # ---------------- SECURITY ----------------
@@ -34,154 +37,113 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # ---------------- UTILS ----------------
 def hash_password(password: str):
-    return pwd_context.hash(password[:72])
+    return pwd_context.hash(password)
 
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
+def verify_password(plain, hashed):
+    return pwd_context.verify(plain, hashed)
 
 def create_access_token(data: dict):
-    to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
+    data.update({"exp": expire})
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401)
 
         db = SessionLocal()
         user = db.query(User).filter(User.email == email).first()
         db.close()
 
-        if user is None:
-            raise HTTPException(status_code=401, detail="User not found")
+        if not user:
+            raise HTTPException(status_code=401)
 
         return user
-
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401)
 
 # ---------------- SCHEMAS ----------------
-class UserSignup(BaseModel):
+class SignupSchema(BaseModel):
     name: str
     email: str
     password: str
 
-
-class LoginRequest(BaseModel):
+class LoginSchema(BaseModel):
     email: str
     password: str
 
 # ---------------- ROUTES ----------------
 @app.get("/")
 def home():
-    return {"message": "FastAPI backend is running successfully"}
-
+    return {"message": "Backend running"}
 
 @app.post("/signup")
-def signup(user: UserSignup):
+def signup(user: SignupSchema):
     db = SessionLocal()
 
-    existing_user = db.query(User).filter(User.email == user.email).first()
-    if existing_user:
+    if db.query(User).filter(User.email == user.email).first():
         db.close()
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    hashed_pwd = hash_password(user.password)
+        raise HTTPException(status_code=400, detail="Email already exists")
 
     new_user = User(
         name=user.name,
         email=user.email,
-        hashed_password=hashed_pwd
+        hashed_password=hash_password(user.password),
     )
 
     db.add(new_user)
     db.commit()
-    db.refresh(new_user)
     db.close()
 
-    return {
-        "message": "User registered successfully",
-        "email": user.email
-    }
-
+    return {"message": "Signup successful"}
 
 @app.post("/login")
-def login(user: LoginRequest):
+def login(user: LoginSchema):
     db = SessionLocal()
-
     db_user = db.query(User).filter(User.email == user.email).first()
-    if not db_user:
-        db.close()
-        raise HTTPException(status_code=401, detail="Invalid email")
-
-    if not verify_password(user.password, db_user.hashed_password):
-        db.close()
-        raise HTTPException(status_code=401, detail="Invalid password")
-
-    token = create_access_token({"sub": db_user.email})
     db.close()
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    if not db_user or not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-
-@app.get("/profile")
-def profile(current_user: User = Depends(get_current_user)):
-    return {
-        "name": current_user.name,
-        "email": current_user.email
-    }
-
-
-UPLOAD_DIR = "uploads"
-
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR)
-
-
-from fastapi import FastAPI, UploadFile, File
-import os
-import hashlib
-
-from models import Document
-from database import SessionLocal
+    token = create_access_token({"sub": db_user.email})
+    return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/upload-document")
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
     os.makedirs("uploads", exist_ok=True)
-
-    file_path = f"uploads/{file.filename}"
     contents = await file.read()
 
-    with open(file_path, "wb") as f:
+    path = f"uploads/{file.filename}"
+    with open(path, "wb") as f:
         f.write(contents)
 
     file_hash = hashlib.sha256(contents).hexdigest()
 
-    # 🔽 THIS IS THE IMPORTANT PART 🔽
     db = SessionLocal()
-
-    new_doc = Document(
+    doc = Document(
         filename=file.filename,
         file_hash=file_hash,
-        owner_email="mvramya2003@gmail.com"  # later replace with JWT user
+        owner_email=current_user.email
     )
-
-    db.add(new_doc)
+    db.add(doc)
     db.commit()
     db.close()
 
-    return {
-        "filename": file.filename,
-        "hash": file_hash,
-        "message": "Document uploaded and saved in DB"
-    }
+    return {"message": "Uploaded successfully"}
+
+@app.get("/my-documents")
+def my_documents(current_user: User = Depends(get_current_user)):
+    db = SessionLocal()
+    docs = db.query(Document).filter(
+        Document.owner_email == current_user.email
+    ).all()
+    db.close()
+
+    return docs
