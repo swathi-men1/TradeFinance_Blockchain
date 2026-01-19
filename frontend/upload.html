@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Upload Document</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(120deg, #43cea2, #185a9d);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        background: #185a9d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #144a82;
+      }
+
+      .msg {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .logout {
+        margin-top: 10px;
+        text-align: center;
+        cursor: pointer;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Upload Document</h2>
+
+      <input type="file" id="file" accept=".pdf" />
+
+      <button onclick="upload()">Upload</button>
+
+      <div class="msg" id="message"></div>
+
+      <div class="logout" onclick="logout()">Logout</div>
+    </div>
+
+    <script>
+      async function upload() {
+        const token = localStorage.getItem("token");
+        const fileInput = document.getElementById("file");
+        const message = document.getElementById("message");
+
+        if (!token) {
+          message.style.color = "red";
+          message.innerText = "Please login first";
+          return;
+        }
+
+        if (fileInput.files.length === 0) {
+          message.style.color = "red";
+          message.innerText = "Please select a file";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        try {
+          const response = await fetch(
+            "http://127.0.0.1:8000/upload-document",
+            {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+              body: formData,
+            }
+          );
+
+          const data = await response.json();
+
+          if (response.ok) {
+            message.style.color = "green";
+            message.innerText = "Upload successful!";
+          } else {
+            message.style.color = "red";
+            message.innerText = data.detail || "Upload failed";
+          }
+        } catch (error) {
+          message.style.color = "red";
+          message.innerText = "Server error";
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+      }
+    </script>
+  </body>
+</html>

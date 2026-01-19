@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login | Trade Finance</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(120deg, #667eea, #764ba2);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        width: 350px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #5a67d8;
+      }
+
+      .msg {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .forgot {
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h2>Login</h2>
+
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+
+      <button onclick="login()">Login</button>
+
+      <div class="forgot">
+        <a href="#">Forgot Password?</a>
+      </div>
+
+      <div class="msg" id="message"></div>
+    </div>
+
+    <script>
+      async function login() {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const message = document.getElementById("message");
+
+        message.innerText = "";
+        message.style.color = "red";
+
+        if (!email || !password) {
+          message.innerText = "Please enter email and password";
+          return;
+        }
+
+        try {
+          const response = await fetch("http://127.0.0.1:8000/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            // ✅ FIX HERE
+            if (Array.isArray(data.detail)) {
+              message.innerText = data.detail.map((err) => err.msg).join(", ");
+            } else {
+              message.innerText = data.detail;
+            }
+            return;
+          }
+
+          localStorage.setItem("token", data.access_token);
+
+          message.style.color = "green";
+          message.innerText = "Login successful!";
+
+          setTimeout(() => {
+            window.location.href = "upload.html";
+          }, 1000);
+        } catch (err) {
+          message.innerText = "Server not reachable";
+        }
+      }
+    </script>
+  </body>
+</html>
