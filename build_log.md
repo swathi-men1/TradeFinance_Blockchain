@@ -170,3 +170,39 @@ npm run dev
 ```
 
 Then open `http://localhost:5173` in browser.
+
+---
+
+## PHASE 2: Authentication & JWT
+**Date**: January 24, 2026
+
+### ✅ What Was Built
+[See PHASE_2_SUMMARY.md for full details]
+
+**Backend:**
+- JWT token generation (access + refresh)
+- Login endpoint (/api/auth/login)
+- Signup endpoint (/api/auth/signup)
+- Token refresh endpoint (/api/auth/refresh)
+- Email validation with Pydantic
+
+**Frontend:**
+- Corporate login page with animations
+- Login/signup tabs
+- Dashboard component (role-aware)
+- API client with auto-token injection
+- localStorage for tokens
+- Auto-logout on expired token
+
+**Features:**
+- 4 test users available
+- Password hashing with bcrypt
+- 15-min access token expiry
+- 7-day refresh token expiry
+- Console logs for debugging
+- Role-based dashboard rendering
+
+### 🎯 Next Steps: Phase 3
+- Sidebar navigation
+- Protected routes
+- User settings page
