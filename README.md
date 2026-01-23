@@ -1,30 +1,28 @@
-# Trade Finance Blockchain – Backend (FastAPI)
+# Trade Finance Document Verification System
 
-This repository contains the backend implementation for the Trade Finance Blockchain project developed as part of the Infosys Springboard Internship.
+This project demonstrates a simplified Trade Finance system using FastAPI and static HTML pages.
 
----
+## Core Features
 
-## 🚀 Features Implemented
+- Corporate uploads trade finance documents
+- Documents are hashed and stored
+- Bank and Auditor can view and verify documents
+- Ledger Explorer shows blockchain-style records
 
-- User Signup API
-- User Login API
-- Secure Password Hashing (bcrypt)
-- JWT-based Authentication
-- Protected Routes
-- SQLite Database Integration
-- FastAPI Swagger UI for testing APIs
+## Tech Stack
 
----
+- Backend: FastAPI (Python)
+- Frontend: HTML, CSS, JavaScript
+- Hashing: SHA-256
 
-## 🛠 Tech Stack
+## Modules
 
-- Python 3.12
-- FastAPI
-- SQLite
-- SQLAlchemy
-- Passlib (bcrypt)
-- JWT (python-jose)
+- Corporate Dashboard
+- Bank Dashboard
+- Auditor Dashboard
+- Admin Overview
+- Ledger Explorer
 
----
+## Note
 
-## 📂 Project Structure
+This is a demo project focused on domain understanding and data flow, not production security.

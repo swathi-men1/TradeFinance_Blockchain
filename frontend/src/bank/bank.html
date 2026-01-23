@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bank Dashboard | Trade Finance</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+      }
+
+      header {
+        background: #1a202c;
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header h2 {
+        margin: 0;
+      }
+
+      .container {
+        padding: 30px;
+        max-width: 1000px;
+        margin: auto;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .note {
+        font-size: 13px;
+        color: #555;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        font-size: 14px;
+      }
+
+      th {
+        background: #edf2f7;
+      }
+
+      .hash {
+        font-family: monospace;
+        font-size: 12px;
+        color: #444;
+      }
+
+      .status {
+        font-weight: bold;
+        color: #3182ce;
+      }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 13px;
+        color: #666;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h2>Bank Dashboard</h2>
+      <span>Trade Finance System</span>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h3>Uploaded Trade Finance Documents</h3>
+
+        <div class="note">
+          🏦 Bank users can view uploaded trade documents and verify their
+          integrity using hashes.
+        </div>
+
+        <table id="docsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>File Name</th>
+              <th>Document Hash</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>© 2026 Trade Finance Demo | Bank Portal</footer>
+
+    <script>
+      async function loadDocuments() {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/documents");
+          const documents = await response.json();
+
+          const tbody = document.querySelector("#docsTable tbody");
+          tbody.innerHTML = "";
+
+          documents.forEach((doc, index) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${doc.filename}</td>
+          <td class="hash">${doc.file_hash}</td>
+          <td class="status">Pending</td>
+        `;
+
+            tbody.appendChild(row);
+          });
+        } catch (error) {
+          alert("Failed to load documents ❌");
+        }
+      }
+
+      loadDocuments();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Corporate Dashboard | Trade Finance</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+      }
+
+      header {
+        background: #1a202c;
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header h2 {
+        margin: 0;
+      }
+
+      .container {
+        padding: 30px;
+        max-width: 900px;
+        margin: auto;
+      }
+
+      .card {
+        background: white;
+        padding: 25px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .card h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      /* 👇 cute small note */
+      .note {
+        font-size: 13px;
+        color: #555;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 18px;
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 18px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        background: #3182ce;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 15px;
+      }
+
+      button:hover {
+        background: #2b6cb0;
+      }
+
+      .status {
+        margin-top: 15px;
+        font-weight: bold;
+      }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 13px;
+        color: #666;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h2>Corporate Dashboard</h2>
+      <span>Trade Finance System</span>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h3>Upload Trade Finance Document</h3>
+
+        <!-- ✅ SHORT & CLEAR NOTE -->
+        <div class="note">
+          📌 Upload core trade finance documents (Invoice, LC, BoL, PO). Files
+          are stored using the document type for easy identification and
+          tracking.
+        </div>
+
+        <form id="uploadForm">
+          <label>Select Document (PDF)</label>
+          <input type="file" id="fileInput" accept=".pdf" required />
+
+          <button type="submit">Upload Document</button>
+        </form>
+
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <footer>© 2026 Trade Finance Demo | Corporate Portal</footer>
+
+    <script>
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const status = document.getElementById("status");
+          const fileInput = document.getElementById("fileInput");
+
+          if (fileInput.files.length === 0) {
+            status.style.color = "red";
+            status.innerText = "Please select a PDF ❌";
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+
+          status.style.color = "black";
+          status.innerText = "Uploading...";
+
+          try {
+            const response = await fetch(
+              "http://127.0.0.1:8000/upload-document",
+              {
+                method: "POST",
+                body: formData,
+              },
+            );
+
+            if (response.ok) {
+              status.style.color = "green";
+              status.innerText = "Uploaded successfully ✔";
+              fileInput.value = "";
+            } else {
+              status.style.color = "red";
+              status.innerText = "Upload failed ❌";
+            }
+          } catch (error) {
+            status.style.color = "red";
+            status.innerText = "Server error ❌";
+          }
+        });
+    </script>
+  </body>
+</html>
