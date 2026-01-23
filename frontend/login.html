@@ -104,7 +104,6 @@
           const data = await response.json();
 
           if (!response.ok) {
-            // ✅ FIX HERE
             if (Array.isArray(data.detail)) {
               message.innerText = data.detail.map((err) => err.msg).join(", ");
             } else {
@@ -113,13 +112,15 @@
             return;
           }
 
+          // ✅ Store token
           localStorage.setItem("token", data.access_token);
 
           message.style.color = "green";
-          message.innerText = "Login successful!";
+          message.innerText = "Login successful! Redirecting...";
 
+          // ✅ TEMPORARY REDIRECT (all users = corporate)
           setTimeout(() => {
-            window.location.href = "upload.html";
+            window.location.href = "src/corporate/corporate.html";
           }, 1000);
         } catch (err) {
           message.innerText = "Server not reachable";
