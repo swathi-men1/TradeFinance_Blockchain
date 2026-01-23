@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* Corporate theme */
+.corporate-header {
+  @apply bg-slate-900 text-white shadow-lg;
+}
+
+.corporate-card {
+  @apply bg-white rounded-lg shadow border border-slate-200;
+}
+
+.corporate-btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+}
+
+.corporate-btn-primary {
+  @apply corporate-btn bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.corporate-btn-secondary {
+  @apply corporate-btn bg-slate-200 text-slate-900 hover:bg-slate-300;
+}
