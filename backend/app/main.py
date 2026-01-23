@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.database import init_database, SessionLocal
 from app.database.init_db import init_dummy_data
+from app.routes import auth
 import logging
 
 # Setup logging
@@ -31,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include auth routes
+app.include_router(auth.router)
 
 
 @app.on_event("startup")
