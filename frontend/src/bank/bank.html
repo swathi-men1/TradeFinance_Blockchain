@@ -20,13 +20,18 @@
         align-items: center;
       }
 
-      header h2 {
-        margin: 0;
+      .logout {
+        background: #e53e3e;
+        border: none;
+        padding: 8px 14px;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
       }
 
       .container {
         padding: 30px;
-        max-width: 1000px;
+        max-width: 1100px;
         margin: auto;
       }
 
@@ -37,23 +42,10 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
       }
 
-      h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-      }
-
-      .note {
-        font-size: 13px;
-        color: #555;
-        background: #f1f5f9;
-        padding: 8px 12px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-      }
-
       table {
         width: 100%;
         border-collapse: collapse;
+        margin-top: 15px;
       }
 
       th,
@@ -68,83 +60,134 @@
         background: #edf2f7;
       }
 
-      .hash {
-        font-family: monospace;
-        font-size: 12px;
-        color: #444;
+      select,
+      button {
+        padding: 6px 10px;
+        border-radius: 4px;
       }
 
-      .status {
-        font-weight: bold;
-        color: #3182ce;
+      button {
+        background: #3182ce;
+        color: white;
+        border: none;
+        cursor: pointer;
       }
 
-      footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 13px;
-        color: #666;
+      button:hover {
+        background: #2b6cb0;
+      }
+
+      .open-btn {
+        background: #38a169;
+        margin-right: 6px;
+      }
+
+      .open-btn:hover {
+        background: #2f855a;
       }
     </style>
   </head>
 
   <body>
+    <!-- HEADER -->
     <header>
       <h2>Bank Dashboard</h2>
-      <span>Trade Finance System</span>
+      <button class="logout" onclick="logout()">Logout</button>
     </header>
 
     <div class="container">
       <div class="card">
-        <h3>Uploaded Trade Finance Documents</h3>
+        <h3>Trade Finance Documents</h3>
 
-        <div class="note">
-          🏦 Bank users can view uploaded trade documents and verify their
-          integrity using hashes.
-        </div>
-
-        <table id="docsTable">
+        <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>ID</th>
               <th>File Name</th>
-              <th>Document Hash</th>
+              <th>Hash</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Data will be loaded here -->
-          </tbody>
+          <tbody id="docsTable"></tbody>
         </table>
       </div>
     </div>
 
-    <footer>© 2026 Trade Finance Demo | Bank Portal</footer>
-
     <script>
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        window.location.href = "../../login.html";
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "../../login.html";
+      }
+
       async function loadDocuments() {
-        try {
-          const response = await fetch("http://127.0.0.1:8000/documents");
-          const documents = await response.json();
+        const res = await fetch("http://127.0.0.1:8000/documents", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
 
-          const tbody = document.querySelector("#docsTable tbody");
-          tbody.innerHTML = "";
+        const docs = await res.json();
+        const table = document.getElementById("docsTable");
+        table.innerHTML = "";
 
-          documents.forEach((doc, index) => {
-            const row = document.createElement("tr");
+        docs.forEach((doc) => {
+          const row = document.createElement("tr");
 
-            row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${doc.filename}</td>
-          <td class="hash">${doc.file_hash}</td>
-          <td class="status">Pending</td>
-        `;
+          row.innerHTML = `
+        <td>${doc.id}</td>
+        <td>${doc.filename}</td>
+        <td style="font-family:monospace;font-size:12px">${doc.file_hash}</td>
+        <td>
+          <select id="status-${doc.id}">
+            <option value="PENDING" ${doc.status === "PENDING" ? "selected" : ""}>PENDING</option>
+            <option value="ACCEPTED" ${doc.status === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
+            <option value="REJECTED" ${doc.status === "REJECTED" ? "selected" : ""}>REJECTED</option>
+          </select>
+        </td>
+        <td>
+          <button onclick="openDocument(${doc.id})">Open</button>
+          <button onclick="updateStatus(${doc.id})">Update</button>
+        </td>
+      `;
 
-            tbody.appendChild(row);
-          });
-        } catch (error) {
-          alert("Failed to load documents ❌");
+          table.appendChild(row);
+        });
+      }
+
+      // 👁️ OPEN DOCUMENT (PREVIEW)
+      function openDocument(docId) {
+        const url = `http://127.0.0.1:8000/documents/${docId}/download`;
+        window.open(url, "_blank");
+      }
+
+      // ✅ UPDATE STATUS
+      async function updateStatus(docId) {
+        const status = document.getElementById(`status-${docId}`).value;
+
+        const res = await fetch(
+          `http://127.0.0.1:8000/documents/${docId}/status?status=${status}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          },
+        );
+
+        if (!res.ok) {
+          alert("Status update failed ❌");
+          return;
         }
+
+        alert("Status updated successfully ✔");
+        loadDocuments();
       }
 
       loadDocuments();

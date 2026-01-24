@@ -20,68 +20,93 @@
         align-items: center;
       }
 
+      header .left {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
       header h2 {
         margin: 0;
       }
 
+      header a {
+        color: #cbd5e0;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      header a:hover {
+        color: white;
+      }
+
+      .logout {
+        background: #e53e3e;
+        border: none;
+        padding: 8px 14px;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
       .container {
         padding: 30px;
-        max-width: 900px;
+        max-width: 1000px;
         margin: auto;
       }
 
       .card {
         background: white;
-        padding: 25px 30px;
+        padding: 25px;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-      }
-
-      .card h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-      }
-
-      /* 👇 cute small note */
-      .note {
-        font-size: 13px;
-        color: #555;
-        background: #f1f5f9;
-        padding: 8px 12px;
-        border-radius: 4px;
-        margin-bottom: 18px;
-      }
-
-      label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 6px;
-      }
-
-      input[type="file"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 18px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        margin-bottom: 30px;
       }
 
       button {
         background: #3182ce;
         color: white;
         border: none;
-        padding: 12px 20px;
+        padding: 10px 16px;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 15px;
       }
 
       button:hover {
         background: #2b6cb0;
       }
 
-      .status {
+      table {
+        width: 100%;
+        border-collapse: collapse;
         margin-top: 15px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+
+      th {
+        background: #edf2f7;
+      }
+
+      /* ✅ STATUS COLORS */
+      .status-pending {
+        color: orange;
+        font-weight: bold;
+      }
+
+      .status-accepted {
+        color: green;
+        font-weight: bold;
+      }
+
+      .status-rejected {
+        color: red;
         font-weight: bold;
       }
 
@@ -95,78 +120,156 @@
   </head>
 
   <body>
+    <!-- HEADER -->
     <header>
-      <h2>Corporate Dashboard</h2>
-      <span>Trade Finance System</span>
+      <div class="left">
+        <h2>Corporate Dashboard</h2>
+        <a onclick="showUpload()">Upload Document</a>
+        <a onclick="showMyDocs()">My Documents</a>
+      </div>
+      <button class="logout" onclick="logout()">Logout</button>
     </header>
 
     <div class="container">
-      <div class="card">
+      <!-- UPLOAD SECTION -->
+      <div class="card" id="uploadSection">
         <h3>Upload Trade Finance Document</h3>
+        <p>
+          📌 Upload Invoice, Bill of Lading, Letter of Credit, or Purchase
+          Order.<br />
+          📎 <b>Note:</b> File is saved with the same name.
+        </p>
 
-        <!-- ✅ SHORT & CLEAR NOTE -->
-        <div class="note">
-          📌 Upload core trade finance documents (Invoice, LC, BoL, PO). Files
-          are stored using the document type for easy identification and
-          tracking.
-        </div>
+        <input type="file" id="fileInput" />
+        <br /><br />
+        <button onclick="uploadDocument()">Upload Document</button>
 
-        <form id="uploadForm">
-          <label>Select Document (PDF)</label>
-          <input type="file" id="fileInput" accept=".pdf" required />
+        <p id="uploadStatus"></p>
+      </div>
 
-          <button type="submit">Upload Document</button>
-        </form>
+      <!-- MY DOCUMENTS SECTION -->
+      <div class="card" id="myDocsSection" style="display: none">
+        <h3>My Uploaded Documents</h3>
 
-        <div class="status" id="status"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Document Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="docsTable"></tbody>
+        </table>
       </div>
     </div>
 
     <footer>© 2026 Trade Finance Demo | Corporate Portal</footer>
 
     <script>
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
+      // 🔐 Protect page
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "../../login.html";
+      }
 
-          const status = document.getElementById("status");
-          const fileInput = document.getElementById("fileInput");
+      function logout() {
+        localStorage.clear();
+        window.location.href = "../../login.html";
+      }
 
-          if (fileInput.files.length === 0) {
+      function showUpload() {
+        document.getElementById("uploadSection").style.display = "block";
+        document.getElementById("myDocsSection").style.display = "none";
+      }
+
+      function showMyDocs() {
+        document.getElementById("uploadSection").style.display = "none";
+        document.getElementById("myDocsSection").style.display = "block";
+        loadMyDocuments();
+      }
+
+      // 📤 Upload document
+      async function uploadDocument() {
+        const fileInput = document.getElementById("fileInput");
+        const status = document.getElementById("uploadStatus");
+
+        if (!fileInput.files.length) {
+          status.style.color = "red";
+          status.innerText = "Please select a file ❌";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        try {
+          const res = await fetch("http://127.0.0.1:8000/upload-document", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+            body: formData,
+          });
+
+          if (res.ok) {
+            status.style.color = "green";
+            status.innerText =
+              "Uploaded successfully ✔ Status: Pending (Waiting for bank verification)";
+            fileInput.value = "";
+
+            setTimeout(showMyDocs, 800);
+          } else {
             status.style.color = "red";
-            status.innerText = "Please select a PDF ❌";
+            status.innerText = "Upload failed ❌";
+          }
+        } catch (err) {
+          status.style.color = "red";
+          status.innerText = "Server error ❌";
+        }
+      }
+
+      // 📄 Load documents with LIVE STATUS
+      async function loadMyDocuments() {
+        try {
+          const res = await fetch("http://127.0.0.1:8000/my-documents", {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          });
+
+          if (!res.ok) {
+            alert("Session expired ❌");
+            logout();
             return;
           }
 
-          const formData = new FormData();
-          formData.append("file", fileInput.files[0]);
+          const docs = await res.json();
+          const table = document.getElementById("docsTable");
+          table.innerHTML = "";
 
-          status.style.color = "black";
-          status.innerText = "Uploading...";
-
-          try {
-            const response = await fetch(
-              "http://127.0.0.1:8000/upload-document",
-              {
-                method: "POST",
-                body: formData,
-              },
-            );
-
-            if (response.ok) {
-              status.style.color = "green";
-              status.innerText = "Uploaded successfully ✔";
-              fileInput.value = "";
-            } else {
-              status.style.color = "red";
-              status.innerText = "Upload failed ❌";
-            }
-          } catch (error) {
-            status.style.color = "red";
-            status.innerText = "Server error ❌";
+          if (docs.length === 0) {
+            table.innerHTML =
+              "<tr><td colspan='2'>No documents uploaded yet</td></tr>";
+            return;
           }
-        });
+
+          docs.forEach((doc) => {
+            let statusClass = "status-pending";
+
+            if (doc.status === "ACCEPTED") statusClass = "status-accepted";
+            if (doc.status === "REJECTED") statusClass = "status-rejected";
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${doc.filename}</td>
+              <td class="${statusClass}">${doc.status}</td>
+            `;
+            table.appendChild(row);
+          });
+        } catch (err) {
+          alert("Failed to load documents ❌");
+        }
+      }
     </script>
   </body>
 </html>

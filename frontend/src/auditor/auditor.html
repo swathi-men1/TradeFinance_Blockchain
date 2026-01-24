@@ -20,8 +20,13 @@
         align-items: center;
       }
 
-      header h2 {
-        margin: 0;
+      .logout {
+        background: #e53e3e;
+        border: none;
+        padding: 8px 14px;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
       }
 
       .container {
@@ -35,11 +40,6 @@
         padding: 25px;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-      }
-
-      h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
       }
 
       .note {
@@ -71,20 +71,20 @@
       .hash {
         font-family: monospace;
         font-size: 12px;
-        color: #444;
         word-break: break-all;
       }
 
-      .status {
+      .pending {
+        color: orange;
         font-weight: bold;
-        color: #2f855a;
       }
-
-      footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 13px;
-        color: #666;
+      .accepted {
+        color: green;
+        font-weight: bold;
+      }
+      .rejected {
+        color: red;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -92,7 +92,7 @@
   <body>
     <header>
       <h2>Auditor Dashboard</h2>
-      <span>Trade Finance System</span>
+      <button class="logout" onclick="logout()">Logout</button>
     </header>
 
     <div class="container">
@@ -100,50 +100,64 @@
         <h3>Audit View – Trade Documents</h3>
 
         <div class="note">
-          🧾 Auditor can review uploaded trade finance documents and validate
-          integrity using cryptographic hashes. This view is read-only.
+          🧾 This is a read-only audit view. Status updates are controlled by
+          the bank and reflected here automatically.
         </div>
 
-        <table id="auditTable">
+        <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>ID</th>
               <th>File Name</th>
-              <th>Document Hash</th>
-              <th>Ledger Status</th>
+              <th>Hash</th>
+              <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Data will load here -->
-          </tbody>
+          <tbody id="auditTable"></tbody>
         </table>
       </div>
     </div>
 
-    <footer>© 2026 Trade Finance Demo | Auditor Portal</footer>
-
     <script>
+      const token = localStorage.getItem("token");
+
+      // 🔐 Protect page
+      if (!token) {
+        window.location.href = "../../login.html";
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "../../login.html";
+      }
+
       async function loadAuditData() {
         try {
-          const response = await fetch("http://127.0.0.1:8000/documents");
-          const documents = await response.json();
-
-          const tbody = document.querySelector("#auditTable tbody");
-          tbody.innerHTML = "";
-
-          documents.forEach((doc, index) => {
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${doc.filename}</td>
-          <td class="hash">${doc.file_hash}</td>
-          <td class="status">ISSUED</td>
-        `;
-
-            tbody.appendChild(row);
+          const res = await fetch("http://127.0.0.1:8000/documents", {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
           });
-        } catch (error) {
+
+          const docs = await res.json();
+          const table = document.getElementById("auditTable");
+          table.innerHTML = "";
+
+          docs.forEach((doc) => {
+            let statusClass = "pending";
+            if (doc.status === "ACCEPTED") statusClass = "accepted";
+            if (doc.status === "REJECTED") statusClass = "rejected";
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td>${doc.id}</td>
+        <td>${doc.filename}</td>
+        <td class="hash">${doc.file_hash}</td>
+        <td class="${statusClass}">${doc.status}</td>
+      `;
+            table.appendChild(row);
+          });
+        } catch (err) {
           alert("Failed to load audit data ❌");
         }
       }

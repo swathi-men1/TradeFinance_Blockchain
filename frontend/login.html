@@ -6,20 +6,21 @@
 
     <style>
       body {
+        margin: 0;
         font-family: Arial, sans-serif;
-        background: linear-gradient(120deg, #667eea, #764ba2);
-        height: 100vh;
+        background: #f4f6f9;
         display: flex;
         justify-content: center;
         align-items: center;
+        height: 100vh;
       }
 
       .card {
         background: white;
         padding: 30px;
         width: 350px;
-        border-radius: 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
 
       h2 {
@@ -27,37 +28,38 @@
         margin-bottom: 20px;
       }
 
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+      }
+
       input {
         width: 100%;
         padding: 10px;
-        margin: 10px 0;
-        border-radius: 5px;
+        margin-bottom: 15px;
         border: 1px solid #ccc;
+        border-radius: 4px;
       }
 
       button {
         width: 100%;
-        padding: 10px;
-        background: #667eea;
+        background: #3182ce;
         color: white;
         border: none;
-        border-radius: 5px;
+        padding: 12px;
+        border-radius: 4px;
         cursor: pointer;
       }
 
       button:hover {
-        background: #5a67d8;
+        background: #2b6cb0;
       }
 
-      .msg {
-        margin-top: 15px;
-        text-align: center;
-        font-size: 14px;
-      }
-
-      .forgot {
+      .status {
         margin-top: 10px;
         text-align: center;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -66,34 +68,28 @@
     <div class="card">
       <h2>Login</h2>
 
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
+      <label>Email</label>
+      <input type="email" id="email" required />
+
+      <label>Password</label>
+      <input type="password" id="password" required />
 
       <button onclick="login()">Login</button>
 
-      <div class="forgot">
-        <a href="#">Forgot Password?</a>
-      </div>
-
-      <div class="msg" id="message"></div>
+      <div class="status" id="status"></div>
     </div>
 
     <script>
       async function login() {
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const message = document.getElementById("message");
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const status = document.getElementById("status");
 
-        message.innerText = "";
-        message.style.color = "red";
-
-        if (!email || !password) {
-          message.innerText = "Please enter email and password";
-          return;
-        }
+        status.innerText = "Logging in...";
+        status.style.color = "black";
 
         try {
-          const response = await fetch("http://127.0.0.1:8000/login", {
+          const res = await fetch("http://127.0.0.1:8000/login", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -101,29 +97,36 @@
             body: JSON.stringify({ email, password }),
           });
 
-          const data = await response.json();
-
-          if (!response.ok) {
-            if (Array.isArray(data.detail)) {
-              message.innerText = data.detail.map((err) => err.msg).join(", ");
-            } else {
-              message.innerText = data.detail;
-            }
+          if (!res.ok) {
+            status.style.color = "red";
+            status.innerText = "Invalid credentials ❌";
             return;
           }
 
-          // ✅ Store token
+          const data = await res.json();
+
+          // 🔐 SAVE TOKEN (MOST IMPORTANT)
           localStorage.setItem("token", data.access_token);
+          localStorage.setItem("role", data.role);
 
-          message.style.color = "green";
-          message.innerText = "Login successful! Redirecting...";
+          status.style.color = "green";
+          status.innerText = "Login successful ✔ Redirecting...";
 
-          // ✅ TEMPORARY REDIRECT (all users = corporate)
+          // 🔀 REDIRECT BASED ON ROLE
           setTimeout(() => {
-            window.location.href = "src/corporate/corporate.html";
-          }, 1000);
+            if (data.role === "corporate") {
+              window.location.href = "src/corporate/corporate.html";
+            } else if (data.role === "bank") {
+              window.location.href = "src/bank/bank.html";
+            } else if (data.role === "auditor") {
+              window.location.href = "src/auditor/auditor.html";
+            } else if (data.role === "admin") {
+              window.location.href = "src/admin/admin.html";
+            }
+          }, 800);
         } catch (err) {
-          message.innerText = "Server not reachable";
+          status.style.color = "red";
+          status.innerText = "Server error ❌";
         }
       }
     </script>
