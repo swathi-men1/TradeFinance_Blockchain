@@ -1,179 +1,101 @@
 # Trade Finance Blockchain Explorer - Backend
 
-FastAPI backend for the Trade Finance Blockchain Explorer.
+FastAPI backend for the Trade Finance Blockchain Explorer application.
 
-## Current Stage: Foundation Only
+## Features
 
-This is **Stage 1** implementation. Only the application bootstrap, configuration, and database infrastructure foundation are implemented.
+- **Authentication**: JWT-based authentication with role-based access control
+- **Document Management**: Upload and manage trade finance documents with SHA-256 hashing
+- **Immutable Ledger**: Append-only audit trail for all document actions
+- **Hash Verification**: Verify document integrity by re-computing hashes
+- **Role-Based Access**: 4 roles (bank, corporate, auditor, admin) with different permissions
 
-**What's included:**
-- FastAPI application with CORS
-- Configuration management (Pydantic)
-- Database session factory (SQLAlchemy)
-- Health check endpoint
+## Tech Stack
 
-**What's NOT included yet:**
-- Database models
-- API routes (except /health)
-- Authentication (JWT)
-- Business logic
-- Database migrations
+- FastAPI 0.109.0
+- PostgreSQL 14+
+- SQLAlchemy 2.0.25
+- Alembic (migrations)
+- MinIO/S3 (file storage)
+- JWT authentication
 
-## Setup Instructions
+## Setup
 
 ### Prerequisites
-- Python 3.10 or higher
-- PostgreSQL 14+ (running locally or via Docker)
+
+- Python 3.11+
+- PostgreSQL 14+
+- MinIO or AWS S3
 
 ### Installation
 
-1. Create and activate virtual environment:
+1. Create virtual environment:
 ```bash
-cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 2. Install dependencies:
 ```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-3. Create `.env` file:
+3. Configure environment:
 ```bash
 cp .env.example .env
+# Edit .env with your settings
 ```
 
-4. Edit `.env` with your settings:
+4. Run database migrations:
 ```bash
-# Minimal required configuration
-DATABASE_URL=postgresql://postgres:password@localhost:5432/trade_finance
-CORS_ORIGINS=http://localhost:5173
+alembic upgrade head
 ```
 
-### Running the Application
-
-Start the development server:
+5. Start the server:
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The application will be available at:
-- API: http://localhost:8000
-- Health check: http://localhost:8000/health
-- API docs (dev only): http://localhost:8000/docs
+## API Documentation
 
-### Verify Installation
+Once running, visit:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-Test the health check endpoint:
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - Register new user
+- `POST /api/v1/auth/login` - Login and get JWT token
+- `GET /api/v1/auth/me` - Get current user info
+
+### Documents
+- `POST /api/v1/documents/upload` - Upload document
+- `GET /api/v1/documents` - List documents (role-scoped)
+- `GET /api/v1/documents/{id}` - Get document details
+- `GET /api/v1/documents/{id}/verify` - Verify document hash
+
+### Ledger
+- `POST /api/v1/ledger/entries` - Create ledger entry
+- `GET /api/v1/ledger/documents/{doc_id}` - Get ledger timeline
+
+## Database Schema
+
+6 core tables:
+1. **users**: User accounts with roles
+2. **documents**: Document metadata + SHA-256 hash
+3. **ledger_entries**: Immutable audit trail
+4. **trade_transactions**: Trade lifecycle tracking
+5. **risk_scores**: Counterparty risk assessment
+6. **audit_logs**: Admin action tracking
+
+## Development
+
+Run tests:
 ```bash
-curl http://localhost:8000/health
+pytest tests/ -v
 ```
 
-Expected response:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2026-01-13T12:00:00.000000"
-}
-```
+## License
 
-## Project Structure
-```
-backend/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI app entry point
-│   ├── config.py            # Environment configuration
-│   └── db/
-│       ├── __init__.py
-│       ├── base.py          # SQLAlchemy Base class
-│       └── session.py       # Database session factory
-├── .env.example             # Environment template
-├── requirements.txt         # Python dependencies
-└── README.md               # This file
-```
-
-## Next Steps
-
-This is a foundation-only implementation. Future stages will add:
-- Database models (Users, Documents, LedgerEntries, etc.)
-- Authentication (JWT)
-- API routes for documents, ledger, etc.
-- Business logic services
-- Database migrations (Alembic)
-
-## Tech Stack
-
-- **FastAPI** 0.109.0 - Web framework
-- **SQLAlchemy** 2.0.25 - ORM
-- **Pydantic** 2.5.3 - Data validation
-- **PostgreSQL** 14+ - Database
-- **Uvicorn** 0.27.0 - ASGI server
-
-## Environment Variables
-
-All configuration is loaded from environment variables or `.env` file:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `APP_NAME` | Application name | "Trade Finance Blockchain Explorer" |
-| `DEBUG` | Debug mode (enables API docs) | False |
-| `API_V1_PREFIX` | API version prefix | "/api/v1" |
-| `DATABASE_URL` | PostgreSQL connection string | *required* |
-| `DATABASE_POOL_SIZE` | Connection pool size | 20 |
-| `DATABASE_MAX_OVERFLOW` | Max overflow connections | 10 |
-| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | "http://localhost:3000" |
-
-## Troubleshooting
-
-### Issue: ModuleNotFoundError
-**Solution:** Make sure you're in the virtual environment and dependencies are installed:
-```bash
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Issue: Cannot connect to database
-**Solution:** Verify PostgreSQL is running and DATABASE_URL is correct:
-```bash
-# Check PostgreSQL status
-sudo systemctl status postgresql
-
-# Or start Docker container
-docker run --name postgres-trade-finance \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=trade_finance \
-  -p 5432:5432 \
-  -d postgres:14
-```
-
-### Issue: CORS errors from frontend
-**Solution:** Add frontend URL to CORS_ORIGINS in `.env`:
-```bash
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000
-```
-
-## Development Commands
-```bash
-# Start server with auto-reload
-uvicorn app.main:app --reload
-
-# Start on specific host/port
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# Check configuration
-python -c "from app.config import settings; print(settings.model_dump())"
-```
-
-## Documentation
-
-For complete project documentation, see:
-- Phase 1: System Design
-- Phase 2: Database Design
-- Phase 3: Backend Implementation
-- Phase 4: Frontend Implementation
-- Phase 5: Implementation & Integration
-- Phase 6: Deployment & Production Readiness
-- Phase 7: Final Review & Presentation
+MIT

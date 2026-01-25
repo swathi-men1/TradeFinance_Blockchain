@@ -1,20 +1,17 @@
-# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
 from app.config import settings
+from app.api import auth, documents, ledger
 
-
-# Initialize FastAPI application
+# Create FastAPI application
 app = FastAPI(
     title=settings.APP_NAME,
     debug=settings.DEBUG,
-    docs_url="/docs" if settings.DEBUG else None,  # Disable docs in production
-    redoc_url="/redoc" if settings.DEBUG else None
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
 )
 
-
-# Configure CORS middleware
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -23,31 +20,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers with prefix
+app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(documents.router, prefix=settings.API_V1_PREFIX)
+app.include_router(ledger.router, prefix=settings.API_V1_PREFIX)
+
 
 @app.get("/")
 def root():
-    """
-    Root endpoint - API information.
-    """
-    return {
-        "message": "Trade Finance Blockchain Explorer API",
-        "docs": "/docs" if settings.DEBUG else "disabled",
-        "version": "1.0.0"
-    }
+    """Root endpoint"""
+    return {"message": "Trade Finance Blockchain Explorer API", "version": "1.0.0"}
 
 
 @app.get("/health")
 def health_check():
-    """
-    Health check endpoint.
-    Returns 200 if application is healthy.
-    
-    This endpoint is used by:
-    - Docker healthchecks
-    - Load balancers
-    - Monitoring systems
-    """
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    """Health check endpoint"""
+    return {"status": "healthy"}
