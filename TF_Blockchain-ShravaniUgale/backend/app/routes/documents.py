@@ -42,3 +42,22 @@ def list_documents(
         return db.query(TradeDocument).filter(
             TradeDocument.org_name == current_user.org_name
         ).all()
+from fastapi import HTTPException
+
+@router.put("/{doc_id}/status")
+def update_document_status(
+    doc_id: int,
+    status: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can update status")
+
+    document = db.query(TradeDocument).filter(TradeDocument.id == doc_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    document.status = status
+    db.commit()
+    return {"message": "Status updated successfully"}
