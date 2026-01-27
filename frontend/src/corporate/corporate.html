@@ -94,7 +94,6 @@
         background: #edf2f7;
       }
 
-      /* ✅ STATUS COLORS */
       .status-pending {
         color: orange;
         font-weight: bold;
@@ -136,8 +135,7 @@
         <h3>Upload Trade Finance Document</h3>
         <p>
           📌 Upload Invoice, Bill of Lading, Letter of Credit, or Purchase
-          Order.<br />
-          📎 <b>Note:</b> File is saved with the same name.
+          Order.
         </p>
 
         <input type="file" id="fileInput" />
@@ -147,7 +145,7 @@
         <p id="uploadStatus"></p>
       </div>
 
-      <!-- MY DOCUMENTS SECTION -->
+      <!-- MY DOCUMENTS -->
       <div class="card" id="myDocsSection" style="display: none">
         <h3>My Uploaded Documents</h3>
 
@@ -166,11 +164,8 @@
     <footer>© 2026 Trade Finance Demo | Corporate Portal</footer>
 
     <script>
-      // 🔐 Protect page
       const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "../../login.html";
-      }
+      if (!token) window.location.href = "../../login.html";
 
       function logout() {
         localStorage.clear();
@@ -188,88 +183,73 @@
         loadMyDocuments();
       }
 
-      // 📤 Upload document
       async function uploadDocument() {
         const fileInput = document.getElementById("fileInput");
         const status = document.getElementById("uploadStatus");
 
         if (!fileInput.files.length) {
-          status.style.color = "red";
           status.innerText = "Please select a file ❌";
+          status.style.color = "red";
           return;
         }
 
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
 
-        try {
-          const res = await fetch("http://127.0.0.1:8000/upload-document", {
-            method: "POST",
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-            body: formData,
-          });
+        const res = await fetch("http://127.0.0.1:8000/upload-document", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: formData,
+        });
 
-          if (res.ok) {
-            status.style.color = "green";
-            status.innerText =
-              "Uploaded successfully ✔ Status: Pending (Waiting for bank verification)";
-            fileInput.value = "";
-
-            setTimeout(showMyDocs, 800);
-          } else {
-            status.style.color = "red";
-            status.innerText = "Upload failed ❌";
-          }
-        } catch (err) {
+        if (res.ok) {
+          status.innerText = "Uploaded ✔ Waiting for bank verification";
+          status.style.color = "green";
+          fileInput.value = "";
+          setTimeout(showMyDocs, 800);
+        } else {
+          status.innerText = "Upload failed ❌";
           status.style.color = "red";
-          status.innerText = "Server error ❌";
         }
       }
 
-      // 📄 Load documents with LIVE STATUS
       async function loadMyDocuments() {
-        try {
-          const res = await fetch("http://127.0.0.1:8000/my-documents", {
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          });
+        const res = await fetch("http://127.0.0.1:8000/my-documents", {
+          headers: { Authorization: "Bearer " + token },
+        });
 
-          if (!res.ok) {
-            alert("Session expired ❌");
-            logout();
-            return;
-          }
+        const docs = await res.json();
+        const table = document.getElementById("docsTable");
+        table.innerHTML = "";
 
-          const docs = await res.json();
-          const table = document.getElementById("docsTable");
-          table.innerHTML = "";
-
-          if (docs.length === 0) {
-            table.innerHTML =
-              "<tr><td colspan='2'>No documents uploaded yet</td></tr>";
-            return;
-          }
-
-          docs.forEach((doc) => {
-            let statusClass = "status-pending";
-
-            if (doc.status === "ACCEPTED") statusClass = "status-accepted";
-            if (doc.status === "REJECTED") statusClass = "status-rejected";
-
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${doc.filename}</td>
-              <td class="${statusClass}">${doc.status}</td>
-            `;
-            table.appendChild(row);
-          });
-        } catch (err) {
-          alert("Failed to load documents ❌");
+        if (docs.length === 0) {
+          table.innerHTML =
+            "<tr><td colspan='2'>No documents uploaded yet</td></tr>";
+          return;
         }
+
+        docs.forEach((doc) => {
+          let cls = "status-pending";
+          if (doc.status === "ACCEPTED") cls = "status-accepted";
+          if (doc.status === "REJECTED") cls = "status-rejected";
+
+          table.innerHTML += `
+            <tr>
+              <td>${doc.filename}</td>
+              <td class="${cls}">${doc.status}</td>
+            </tr>
+          `;
+        });
       }
+
+      // 🔁 AUTO UPDATE EVERY 5 SECONDS (⭐ MAIN CHANGE)
+      setInterval(() => {
+        if (
+          document.getElementById("myDocsSection").style.display === "block"
+        ) {
+          loadMyDocuments();
+        }
+      }, 5000);
     </script>
   </body>
 </html>
