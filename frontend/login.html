@@ -18,7 +18,7 @@
       .card {
         background: white;
         padding: 30px;
-        width: 350px;
+        width: 360px;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
@@ -50,6 +50,7 @@
         padding: 12px;
         border-radius: 4px;
         cursor: pointer;
+        font-size: 15px;
       }
 
       button:hover {
@@ -69,10 +70,20 @@
       <h2>Login</h2>
 
       <label>Email</label>
-      <input type="email" id="email" required />
+      <input
+        type="email"
+        id="email"
+        placeholder="email@demo.com"
+        autocomplete="username"
+      />
 
       <label>Password</label>
-      <input type="password" id="password" required />
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter password"
+        autocomplete="current-password"
+      />
 
       <button onclick="login()">Login</button>
 
@@ -81,9 +92,16 @@
 
     <script>
       async function login() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
         const status = document.getElementById("status");
+
+        // 🛑 Empty check
+        if (!email || !password) {
+          status.style.color = "red";
+          status.innerText = "Please fill all fields ❗";
+          return;
+        }
 
         status.innerText = "Logging in...";
         status.style.color = "black";
@@ -105,14 +123,14 @@
 
           const data = await res.json();
 
-          // 🔐 SAVE TOKEN (MOST IMPORTANT)
-          localStorage.setItem("token", data.access_token);
+          // 🔐 Save session
+          localStorage.setItem("token", data.access_token || "");
           localStorage.setItem("role", data.role);
 
           status.style.color = "green";
           status.innerText = "Login successful ✔ Redirecting...";
 
-          // 🔀 REDIRECT BASED ON ROLE
+          // 🔀 Role-based redirect
           setTimeout(() => {
             if (data.role === "corporate") {
               window.location.href = "src/corporate/corporate.html";
@@ -122,11 +140,14 @@
               window.location.href = "src/auditor/auditor.html";
             } else if (data.role === "admin") {
               window.location.href = "src/admin/admin.html";
+            } else {
+              alert("Unknown role ❌");
             }
           }, 800);
         } catch (err) {
           status.style.color = "red";
           status.innerText = "Server error ❌";
+          console.error(err);
         }
       }
     </script>

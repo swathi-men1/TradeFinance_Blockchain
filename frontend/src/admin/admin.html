@@ -2,157 +2,140 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin Dashboard | Trade Finance</title>
+    <title>Admin Dashboard</title>
 
     <style>
       body {
-        margin: 0;
-        font-family: Arial, sans-serif;
+        font-family: Arial;
         background: #f4f6f9;
+        margin: 0;
       }
-
       header {
         background: #1a202c;
         color: white;
         padding: 15px 30px;
         display: flex;
         justify-content: space-between;
-        align-items: center;
       }
-
-      header h2 {
-        margin: 0;
+      .logout-btn {
+        background: #e53e3e;
+        border: none;
+        padding: 8px 14px;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
       }
-
       .container {
         padding: 30px;
-        max-width: 1100px;
+        max-width: 1200px;
         margin: auto;
       }
-
-      .card {
-        background: white;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        margin-bottom: 25px;
-      }
-
-      h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-      }
-
-      .note {
-        font-size: 13px;
-        color: #555;
-        background: #f1f5f9;
-        padding: 8px 12px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-      }
-
       table {
         width: 100%;
         border-collapse: collapse;
       }
-
       th,
       td {
         padding: 12px;
         border-bottom: 1px solid #ddd;
-        text-align: left;
-        font-size: 14px;
+        vertical-align: top;
       }
-
       th {
         background: #edf2f7;
       }
-
       .hash {
-        font-family: monospace;
         font-size: 12px;
-        color: #444;
+        font-family: monospace;
         word-break: break-all;
       }
-
-      footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 13px;
-        color: #666;
+      select,
+      button {
+        padding: 6px;
+      }
+      button {
+        background: #3182ce;
+        color: white;
+        border: none;
+        border-radius: 4px;
       }
     </style>
   </head>
 
   <body>
+    <script>
+      if (localStorage.getItem("role") !== "admin") {
+        window.location.href = "../../login.html";
+      }
+    </script>
+
     <header>
       <h2>Admin Dashboard</h2>
-      <span>Trade Finance System</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </header>
 
     <div class="container">
-      <!-- SYSTEM OVERVIEW -->
-      <div class="card">
-        <h3>System Overview</h3>
-        <div class="note">
-          🛠 Admin has a high-level overview of users and documents in the
-          system. This page is for monitoring purposes only.
-        </div>
-
-        <p><strong>Modules Enabled:</strong></p>
-        <ul>
-          <li>Corporate Document Upload</li>
-          <li>Bank Verification</li>
-          <li>Auditor Review</li>
-          <li>Ledger Explorer</li>
-        </ul>
-      </div>
-
-      <!-- DOCUMENT SUMMARY -->
-      <div class="card">
-        <h3>Uploaded Documents</h3>
-
-        <table id="docsTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>File Name</th>
-              <th>Document Hash</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Data loads here -->
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>📄 Document Details</th>
+            <th>📌 Current Status</th>
+            <th>🔐 Access Control</th>
+          </tr>
+        </thead>
+        <tbody id="docsTable"></tbody>
+      </table>
     </div>
-
-    <footer>© 2026 Trade Finance Demo | Admin Portal</footer>
 
     <script>
       async function loadDocuments() {
-        try {
-          const response = await fetch("http://127.0.0.1:8000/documents");
-          const documents = await response.json();
+        const res = await fetch("http://127.0.0.1:8000/documents");
+        const docs = await res.json();
+        const tbody = document.getElementById("docsTable");
+        tbody.innerHTML = "";
 
-          const tbody = document.querySelector("#docsTable tbody");
-          tbody.innerHTML = "";
+        docs.forEach((doc, i) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+      <td>${i + 1}</td>
 
-          documents.forEach((doc, index) => {
-            const row = document.createElement("tr");
+      <td>
+        <b>File:</b> ${doc.filename}<br><br>
+        <b>Uploaded By:</b> ${doc.owner_email}<br><br>
+        <b>Hash:</b>
+        <div class="hash">${doc.file_hash}</div>
+      </td>
 
-            row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${doc.filename}</td>
-          <td class="hash">${doc.file_hash}</td>
-        `;
+      <td><b>${doc.status}</b></td>
 
-            tbody.appendChild(row);
-          });
-        } catch (error) {
-          alert("Failed to load documents ❌");
-        }
+      <td>
+        <select id="role-${doc.id}">
+          <option value="corporate" ${doc.access_role === "corporate" ? "selected" : ""}>Corporate</option>
+          <option value="bank" ${doc.access_role === "bank" ? "selected" : ""}>Bank</option>
+          <option value="auditor" ${doc.access_role === "auditor" ? "selected" : ""}>Auditor</option>
+        </select>
+        <br><br>
+        <button onclick="updateRole(${doc.id})">Update</button>
+      </td>
+    `;
+          tbody.appendChild(row);
+        });
+      }
+
+      async function updateRole(docId) {
+        const role = document.getElementById(`role-${docId}`).value;
+
+        await fetch(
+          `http://127.0.0.1:8000/documents/${docId}/access-role?role=${role}`,
+          { method: "PUT" },
+        );
+
+        alert("Access updated successfully ✅");
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "../../login.html";
       }
 
       loadDocuments();
