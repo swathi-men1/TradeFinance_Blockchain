@@ -116,8 +116,10 @@
 
     <script>
       const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
 
-      if (!token) {
+      // 🔐 Protect page
+      if (!token || role !== "bank") {
         window.location.href = "../../login.html";
       }
 
@@ -126,12 +128,18 @@
         window.location.href = "../../login.html";
       }
 
+      // 📥 Load documents
       async function loadDocuments() {
         const res = await fetch("http://127.0.0.1:8000/documents", {
           headers: {
             Authorization: "Bearer " + token,
           },
         });
+
+        if (!res.ok) {
+          alert("Failed to load documents ❌");
+          return;
+        }
 
         const docs = await res.json();
         const table = document.getElementById("docsTable");
@@ -141,29 +149,29 @@
           const row = document.createElement("tr");
 
           row.innerHTML = `
-        <td>${doc.id}</td>
-        <td>${doc.filename}</td>
-        <td style="font-family:monospace;font-size:12px">${doc.file_hash}</td>
-        <td>
-          <select id="status-${doc.id}">
-            <option value="PENDING" ${doc.status === "PENDING" ? "selected" : ""}>PENDING</option>
-            <option value="ACCEPTED" ${doc.status === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
-            <option value="REJECTED" ${doc.status === "REJECTED" ? "selected" : ""}>REJECTED</option>
-          </select>
-        </td>
-        <td>
-          <button onclick="openDocument(${doc.id})">Open</button>
-          <button onclick="updateStatus(${doc.id})">Update</button>
-        </td>
-      `;
+            <td>${doc.id}</td>
+            <td>${doc.filename}</td>
+            <td style="font-family:monospace;font-size:12px">${doc.file_hash}</td>
+            <td>
+              <select id="status-${doc.id}">
+                <option value="PENDING" ${doc.status === "PENDING" ? "selected" : ""}>PENDING</option>
+                <option value="ACCEPTED" ${doc.status === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
+                <option value="REJECTED" ${doc.status === "REJECTED" ? "selected" : ""}>REJECTED</option>
+              </select>
+            </td>
+            <td>
+              <button class="open-btn" onclick="openDocument(${doc.id})">Open</button>
+              <button onclick="updateStatus(${doc.id})">Update</button>
+            </td>
+          `;
 
           table.appendChild(row);
         });
       }
 
-      // 👁️ OPEN DOCUMENT (PREVIEW)
+      // 👁️ PREVIEW DOCUMENT (INLINE – NO DOWNLOAD)
       function openDocument(docId) {
-        const url = `http://127.0.0.1:8000/documents/${docId}/download`;
+        const url = `http://127.0.0.1:8000/documents/${docId}/preview`;
         window.open(url, "_blank");
       }
 
@@ -186,7 +194,7 @@
           return;
         }
 
-        alert("Status updated successfully ✔");
+        alert("Status updated successfully ✅");
         loadDocuments();
       }
 

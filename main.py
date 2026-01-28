@@ -10,10 +10,11 @@ import hashlib, os, shutil
 from database import SessionLocal, engine, Base
 from models import User, Document, LedgerEntry
 
-# ---------------- APP ----------------
+
+# ================= APP =================
 app = FastAPI()
 
-# ---------------- CORS ----------------
+# ================= CORS =================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,10 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- DB ----------------
+# ================= DB =================
 Base.metadata.create_all(bind=engine)
 
-# ---------------- SECURITY ----------------
+# ================= SECURITY =================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = "mysecretkey"
@@ -34,7 +35,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# ---------------- UTILS ----------------
+# ================= UTILS =================
 def hash_password(password: str):
     return pwd_context.hash(password)
 
@@ -42,8 +43,7 @@ def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
 
 def create_access_token(data: dict):
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    data.update({"exp": expire})
+    data["exp"] = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -65,7 +65,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise HTTPException(status_code=401)
 
-# ---------------- SCHEMAS ----------------
+# ================= SCHEMAS =================
 class SignupSchema(BaseModel):
     name: str
     email: str
@@ -75,12 +75,12 @@ class LoginSchema(BaseModel):
     email: str
     password: str
 
-# ---------------- ROUTES ----------------
+# ================= ROUTES =================
 @app.get("/")
 def home():
-    return {"message": "Backend running"}
+    return {"message": "Backend running successfully ✅"}
 
-# ---------------- SIGNUP (Corporate only) ----------------
+# ================= SIGNUP (Corporate) =================
 @app.post("/signup")
 def signup(user: SignupSchema):
     db = SessionLocal()
@@ -103,7 +103,7 @@ def signup(user: SignupSchema):
 
     return {"message": "Signup successful"}
 
-# ---------------- LOGIN ----------------
+# ================= LOGIN =================
 @app.post("/login")
 def login(user: LoginSchema):
     db = SessionLocal()
@@ -113,12 +113,8 @@ def login(user: LoginSchema):
     if not db_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # 🔴 USER STATUS CHECK (IMPORTANT)
     if db_user.status != "ACTIVE":
-        raise HTTPException(
-            status_code=403,
-            detail="User blocked by admin"
-        )
+        raise HTTPException(status_code=403, detail="User blocked by admin")
 
     if not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -134,7 +130,7 @@ def login(user: LoginSchema):
         "role": db_user.role
     }
 
-# ---------------- UPLOAD DOCUMENT (CORPORATE) ----------------
+# ================= UPLOAD DOCUMENT =================
 @app.post("/upload-document")
 async def upload_document(
     file: UploadFile = File(...),
@@ -157,24 +153,24 @@ async def upload_document(
         filename=file.filename,
         file_hash=file_hash,
         owner_email=current_user.email,
-        status="PENDING"
+        status="PENDING",
+        access_role="corporate"
     )
     db.add(doc)
     db.commit()
     db.refresh(doc)
 
-    ledger = LedgerEntry(
+    db.add(LedgerEntry(
         document_id=doc.id,
         action="ISSUED",
         actor_email=current_user.email
-    )
-    db.add(ledger)
+    ))
     db.commit()
     db.close()
 
     return {"message": "Document uploaded", "status": "PENDING"}
 
-# ---------------- MY DOCUMENTS (CORPORATE) ----------------
+# ================= MY DOCUMENTS =================
 @app.get("/my-documents")
 def my_documents(current_user: User = Depends(get_current_user)):
     db = SessionLocal()
@@ -184,7 +180,7 @@ def my_documents(current_user: User = Depends(get_current_user)):
     db.close()
     return docs
 
-# ---------------- ALL DOCUMENTS (BANK / AUDITOR / ADMIN) ----------------
+# ================= ALL DOCUMENTS =================
 @app.get("/documents")
 def all_documents(current_user: User = Depends(get_current_user)):
     if current_user.role not in ["bank", "auditor", "admin"]:
@@ -195,7 +191,7 @@ def all_documents(current_user: User = Depends(get_current_user)):
     db.close()
     return docs
 
-# ---------------- UPDATE STATUS (BANK ONLY) ----------------
+# ================= BANK: UPDATE STATUS =================
 @app.put("/documents/{doc_id}/status")
 def update_status(
     doc_id: int,
@@ -217,52 +213,17 @@ def update_status(
 
     doc.status = status
 
-    ledger = LedgerEntry(
+    db.add(LedgerEntry(
         document_id=doc.id,
         action=f"STATUS_{status}",
         actor_email=current_user.email
-    )
-    db.add(ledger)
+    ))
     db.commit()
     db.close()
 
     return {"message": "Status updated", "status": status}
 
-# ---------------- ADMIN: USER MANAGEMENT ----------------
-@app.get("/admin/users")
-def get_users(current_user: User = Depends(get_current_user)):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403)
-
-    db = SessionLocal()
-    users = db.query(User).all()
-    db.close()
-    return users
-
-@app.put("/admin/users/{email}/status")
-def update_user_status(
-    email: str,
-    status: str,
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403)
-
-    if status not in ["ACTIVE", "BLOCKED"]:
-        raise HTTPException(status_code=400)
-
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        db.close()
-        raise HTTPException(status_code=404)
-
-    user.status = status
-    db.commit()
-    db.close()
-
-    return {"message": "User status updated"}
+# ================= ADMIN: UPDATE ACCESS ROLE =================
 @app.put("/documents/{doc_id}/access-role")
 def update_access_role(
     doc_id: int,
@@ -272,8 +233,8 @@ def update_access_role(
     if current_user.role != "admin":
         raise HTTPException(status_code=403)
 
-    if role not in ["bank", "auditor", "corporate"]:
-        raise HTTPException(status_code=400, detail="Invalid role")
+    if role not in ["corporate", "bank", "auditor"]:
+        raise HTTPException(status_code=400)
 
     db = SessionLocal()
     doc = db.query(Document).filter(Document.id == doc_id).first()
@@ -287,3 +248,39 @@ def update_access_role(
     db.close()
 
     return {"message": "Access role updated", "role": role}
+
+# ---------------- DELETE DOCUMENT (CORPORATE - ONLY PENDING) ----------------
+@app.delete("/documents/{doc_id}/delete")
+def delete_document(
+    doc_id: int,
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "corporate":
+        raise HTTPException(status_code=403, detail="Only corporate can delete")
+
+    db = SessionLocal()
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.owner_email == current_user.email
+    ).first()
+
+    if not doc:
+        db.close()
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    if doc.status != "PENDING":
+        db.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete processed document"
+        )
+
+    file_path = f"uploads/{doc.filename}"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    db.delete(doc)
+    db.commit()
+    db.close()
+
+    return {"message": "Document deleted successfully"}
