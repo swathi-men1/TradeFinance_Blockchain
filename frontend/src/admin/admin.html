@@ -16,6 +16,7 @@
         padding: 15px 30px;
         display: flex;
         justify-content: space-between;
+        align-items: center;
       }
       .logout-btn {
         background: #e53e3e;
@@ -33,6 +34,7 @@
       table {
         width: 100%;
         border-collapse: collapse;
+        background: white;
       }
       th,
       td {
@@ -57,13 +59,19 @@
         color: white;
         border: none;
         border-radius: 4px;
+        cursor: pointer;
       }
     </style>
   </head>
 
   <body>
+    <!-- 🔐 ROLE CHECK -->
     <script>
-      if (localStorage.getItem("role") !== "admin") {
+      const role = localStorage.getItem("role");
+      const token = localStorage.getItem("token");
+
+      if (role !== "admin" || !token) {
+        alert("Unauthorized. Please login again.");
         window.location.href = "../../login.html";
       }
     </script>
@@ -88,47 +96,80 @@
     </div>
 
     <script>
+      const API_BASE = "http://127.0.0.1:8000";
+
+      // 📥 LOAD ALL DOCUMENTS (ADMIN)
       async function loadDocuments() {
-        const res = await fetch("http://127.0.0.1:8000/documents");
-        const docs = await res.json();
-        const tbody = document.getElementById("docsTable");
-        tbody.innerHTML = "";
+        try {
+          const res = await fetch(`${API_BASE}/documents`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
 
-        docs.forEach((doc, i) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-      <td>${i + 1}</td>
+          if (!res.ok) {
+            throw new Error("Failed to fetch documents");
+          }
 
-      <td>
-        <b>File:</b> ${doc.filename}<br><br>
-        <b>Uploaded By:</b> ${doc.owner_email}<br><br>
-        <b>Hash:</b>
-        <div class="hash">${doc.file_hash}</div>
-      </td>
+          const docs = await res.json();
+          const tbody = document.getElementById("docsTable");
+          tbody.innerHTML = "";
 
-      <td><b>${doc.status}</b></td>
+          if (docs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4">No documents found</td></tr>`;
+            return;
+          }
 
-      <td>
-        <select id="role-${doc.id}">
-          <option value="corporate" ${doc.access_role === "corporate" ? "selected" : ""}>Corporate</option>
-          <option value="bank" ${doc.access_role === "bank" ? "selected" : ""}>Bank</option>
-          <option value="auditor" ${doc.access_role === "auditor" ? "selected" : ""}>Auditor</option>
-        </select>
-        <br><br>
-        <button onclick="updateRole(${doc.id})">Update</button>
-      </td>
-    `;
-          tbody.appendChild(row);
-        });
+          docs.forEach((doc, i) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${i + 1}</td>
+
+              <td>
+                <b>File:</b> ${doc.filename}<br><br>
+                <b>Uploaded By:</b> ${doc.owner_email}<br><br>
+                <b>Hash:</b>
+                <div class="hash">${doc.file_hash}</div>
+              </td>
+
+              <td><b>${doc.status}</b></td>
+
+              <td>
+                <select id="role-${doc.id}">
+                  <option value="corporate" ${doc.access_role === "corporate" ? "selected" : ""}>Corporate</option>
+                  <option value="bank" ${doc.access_role === "bank" ? "selected" : ""}>Bank</option>
+                  <option value="auditor" ${doc.access_role === "auditor" ? "selected" : ""}>Auditor</option>
+                </select>
+                <br><br>
+                <button onclick="updateRole(${doc.id})">Update</button>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          console.error(err);
+          alert("Error loading documents");
+        }
       }
 
+      // 🔄 UPDATE ACCESS ROLE
       async function updateRole(docId) {
         const role = document.getElementById(`role-${docId}`).value;
 
-        await fetch(
-          `http://127.0.0.1:8000/documents/${docId}/access-role?role=${role}`,
-          { method: "PUT" },
+        const res = await fetch(
+          `${API_BASE}/documents/${docId}/access-role?role=${role}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
         );
+
+        if (!res.ok) {
+          alert("Failed to update access");
+          return;
+        }
 
         alert("Access updated successfully ✅");
       }

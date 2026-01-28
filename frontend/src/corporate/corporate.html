@@ -68,13 +68,22 @@
         background: #3182ce;
         color: white;
         border: none;
-        padding: 10px 16px;
+        padding: 8px 14px;
         border-radius: 4px;
         cursor: pointer;
       }
 
       button:hover {
         background: #2b6cb0;
+      }
+
+      .delete-btn {
+        background: #e53e3e;
+        margin-left: 8px;
+      }
+
+      .delete-btn:hover {
+        background: #c53030;
       }
 
       table {
@@ -119,6 +128,13 @@
   </head>
 
   <body>
+    <!-- AUTH CHECK -->
+    <script>
+      if (localStorage.getItem("role") !== "corporate") {
+        window.location.href = "../../login.html";
+      }
+    </script>
+
     <!-- HEADER -->
     <header>
       <div class="left">
@@ -133,14 +149,11 @@
       <!-- UPLOAD SECTION -->
       <div class="card" id="uploadSection">
         <h3>Upload Trade Finance Document</h3>
-        <p>
-          📌 Upload Invoice, Bill of Lading, Letter of Credit, or Purchase
-          Order.
-        </p>
+        <p>📌 Upload Invoice, Bill of Lading, Letter of Credit, etc.</p>
 
         <input type="file" id="fileInput" />
         <br /><br />
-        <button onclick="uploadDocument()">Upload Document</button>
+        <button onclick="uploadDocument()">Upload</button>
 
         <p id="uploadStatus"></p>
       </div>
@@ -154,6 +167,7 @@
             <tr>
               <th>Document Name</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="docsTable"></tbody>
@@ -165,7 +179,6 @@
 
     <script>
       const token = localStorage.getItem("token");
-      if (!token) window.location.href = "../../login.html";
 
       function logout() {
         localStorage.clear();
@@ -173,13 +186,13 @@
       }
 
       function showUpload() {
-        document.getElementById("uploadSection").style.display = "block";
-        document.getElementById("myDocsSection").style.display = "none";
+        uploadSection.style.display = "block";
+        myDocsSection.style.display = "none";
       }
 
       function showMyDocs() {
-        document.getElementById("uploadSection").style.display = "none";
-        document.getElementById("myDocsSection").style.display = "block";
+        uploadSection.style.display = "none";
+        myDocsSection.style.display = "block";
         loadMyDocuments();
       }
 
@@ -203,7 +216,7 @@
         });
 
         if (res.ok) {
-          status.innerText = "Uploaded ✔ Waiting for bank verification";
+          status.innerText = "Uploaded ✔ Waiting for verification";
           status.style.color = "green";
           fileInput.value = "";
           setTimeout(showMyDocs, 800);
@@ -224,7 +237,7 @@
 
         if (docs.length === 0) {
           table.innerHTML =
-            "<tr><td colspan='2'>No documents uploaded yet</td></tr>";
+            "<tr><td colspan='3'>No documents uploaded yet</td></tr>";
           return;
         }
 
@@ -233,20 +246,44 @@
           if (doc.status === "ACCEPTED") cls = "status-accepted";
           if (doc.status === "REJECTED") cls = "status-rejected";
 
+          let action = "—";
+          if (doc.status === "PENDING") {
+            action = `
+              <button class="delete-btn" onclick="deleteDoc(${doc.id})">
+                Delete
+              </button>
+            `;
+          }
+
           table.innerHTML += `
             <tr>
               <td>${doc.filename}</td>
               <td class="${cls}">${doc.status}</td>
+              <td>${action}</td>
             </tr>
           `;
         });
       }
 
-      // 🔁 AUTO UPDATE EVERY 5 SECONDS (⭐ MAIN CHANGE)
+      async function deleteDoc(id) {
+        if (!confirm("Delete this document?")) return;
+
+        const res = await fetch(`http://127.0.0.1:8000/documents/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (res.ok) {
+          alert("Document deleted ✅");
+          loadMyDocuments();
+        } else {
+          alert("Cannot delete this document ❌");
+        }
+      }
+
+      // 🔁 AUTO REFRESH
       setInterval(() => {
-        if (
-          document.getElementById("myDocsSection").style.display === "block"
-        ) {
+        if (myDocsSection.style.display === "block") {
           loadMyDocuments();
         }
       }, 5000);
