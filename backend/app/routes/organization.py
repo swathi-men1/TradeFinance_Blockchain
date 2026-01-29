@@ -1,22 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models.organization import Organization
 from app.schemas.organization import OrganizationCreate
 from app.utils.rbac import require_role
 
-router = APIRouter(prefix="/organizations", tags=["Organizations"])
-
-
-# -------------------- DB Dependency --------------------
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
+router = APIRouter(
+    prefix="/organizations",
+    tags=["Organizations"]
+)
 
 # -------------------- CREATE ORGANIZATION --------------------
 # Only ADMIN users can create organizations
