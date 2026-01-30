@@ -17,6 +17,6 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)  # Hashed
-    role = Column(Enum(UserRole), nullable=False)
+    role = Column(Enum(UserRole, values_callable=lambda x: [e.value for e in x]), nullable=False)
     org_name = Column(String(255), nullable=False, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)

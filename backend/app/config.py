@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     S3_ENDPOINT_URL: str | None = None
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
     
     class Config:
         env_file = ".env"

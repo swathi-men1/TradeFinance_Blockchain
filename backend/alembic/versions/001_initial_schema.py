@@ -17,18 +17,19 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create custom types
-    user_role = postgresql.ENUM('bank', 'corporate', 'auditor', 'admin', name='user_role')
-    user_role.create(op.get_bind())
+    # Create custom types with checkfirst=True to handle retry scenarios
+    # Note: create_type=False prevents automatic creation when used in table columns
+    user_role = postgresql.ENUM('bank', 'corporate', 'auditor', 'admin', name='user_role', create_type=False)
+    user_role.create(op.get_bind(), checkfirst=True)
     
-    document_type = postgresql.ENUM('LOC', 'INVOICE', 'BILL_OF_LADING', 'PO', 'COO', 'INSURANCE_CERT', name='document_type')
-    document_type.create(op.get_bind())
+    document_type = postgresql.ENUM('LOC', 'INVOICE', 'BILL_OF_LADING', 'PO', 'COO', 'INSURANCE_CERT', name='document_type', create_type=False)
+    document_type.create(op.get_bind(), checkfirst=True)
     
-    ledger_action = postgresql.ENUM('ISSUED', 'AMENDED', 'SHIPPED', 'RECEIVED', 'PAID', 'CANCELLED', 'VERIFIED', name='ledger_action')
-    ledger_action.create(op.get_bind())
+    ledger_action = postgresql.ENUM('ISSUED', 'AMENDED', 'SHIPPED', 'RECEIVED', 'PAID', 'CANCELLED', 'VERIFIED', name='ledger_action', create_type=False)
+    ledger_action.create(op.get_bind(), checkfirst=True)
     
-    trade_status = postgresql.ENUM('pending', 'in_progress', 'completed', 'disputed', name='trade_status')
-    trade_status.create(op.get_bind())
+    trade_status = postgresql.ENUM('pending', 'in_progress', 'completed', 'disputed', name='trade_status', create_type=False)
+    trade_status.create(op.get_bind(), checkfirst=True)
     
     # Create users table
     op.create_table(
