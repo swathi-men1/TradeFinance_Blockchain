@@ -20,6 +20,8 @@ from app.routes.documents import router as documents_router
 from app.routes.trades import router as trade_router
 from app.routes.integrity import router as integrity_router
 from app.routes.risk import router as risk_router
+from app.routes.analytics import router as analytics_router
+from app.routes.export import router as export_router
 
 # -------------------- CREATE APP --------------------
 app = FastAPI(title="Trade Finance Blockchain Explorer")
@@ -34,6 +36,8 @@ app.include_router(documents_router)
 app.include_router(trade_router)
 app.include_router(integrity_router)
 app.include_router(risk_router)
+app.include_router(analytics_router)
+app.include_router(export_router)
 
 # -------------------- ROOT --------------------
 @app.get("/")
