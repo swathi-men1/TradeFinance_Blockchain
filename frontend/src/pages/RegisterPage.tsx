@@ -47,7 +47,7 @@ export default function RegisterPage() {
         { value: 'bank', label: 'Bank', icon: '🏦', description: 'Financial institution' },
         { value: 'corporate', label: 'Corporate', icon: '🏢', description: 'Business entity' },
         { value: 'auditor', label: 'Auditor', icon: '🔍', description: 'Compliance reviewer' },
-        { value: 'admin', label: 'Admin', icon: '⚙️', description: 'System administrator' },
+        
     ];
 
     return (
