@@ -4,7 +4,7 @@
 
 ### Step 1: Start the Application
 ```bash
-cd c:\Users\bapon\OneDrive\Desktop\serali\project
+cd .\TRADEFINANCE_BLOCKCHAIN
 docker-compose up --build
 ```
 
@@ -144,14 +144,6 @@ Check logs:
 ```bash
 docker-compose logs backend
 ```
-
-## 📚 Documentation
-
-- **Main README**: [README.md](file:///c:/Users/bapon/OneDrive/Desktop/serali/project/README.md)
-- **Backend README**: [backend/README.md](file:///c:/Users/bapon/OneDrive/Desktop/serali/project/backend/README.md)
-- **Frontend README**: [frontend/README.md](file:///c:/Users/bapon/OneDrive/Desktop/serali/project/frontend/README.md)
-- **Walkthrough**: [walkthrough.md](file:///C:/Users/bapon/.gemini/antigravity/brain/b2b41d49-72d5-4436-a760-a1cd0ace5c3a/walkthrough.md)
-- **Implementation Plan**: [implementation_plan.md](file:///C:/Users/bapon/.gemini/antigravity/brain/b2b41d49-72d5-4436-a760-a1cd0ace5c3a/implementation_plan.md)
 
 ## 🎯 Key Features to Test
 
