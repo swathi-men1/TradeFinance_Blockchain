@@ -1,24 +1,15 @@
-from fastapi import APIRouter, UploadFile, File
-from app.utils import generate_sha256
-from app.routes.ledger import add_ledger_entry
+from fastapi import APIRouter, Depends, UploadFile, File
+from app.routes.auth import require_role
 
-router = APIRouter()   # ✅ REQUIRED
+router = APIRouter()
 
 @router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
-    content = await file.read()
-    file_hash = generate_sha256(content)
-
-    add_ledger_entry(
-        action="DOCUMENT_UPLOADED",
-        details={
-            "filename": file.filename,
-            "hash": file_hash
-        }
-    )
-
+def upload_doc(
+    file: UploadFile = File(...),
+    token_data: dict = Depends(require_role("BUYER", "SELLER"))
+):
     return {
         "filename": file.filename,
-        "hash": file_hash,
-        "message": "Document uploaded and hashed successfully"
+        "uploaded_by": token_data["sub"],  # ✅ FIX
+        "role": token_data["role"]
     }
