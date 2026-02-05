@@ -82,6 +82,11 @@
         margin-top: 6px;
       }
 
+      .ledger-btn {
+        background: #805ad5;
+        margin-top: 6px;
+      }
+
       .hash {
         font-family: monospace;
         font-size: 12px;
@@ -96,6 +101,60 @@
       .tampered {
         color: red;
         font-weight: bold;
+      }
+
+      /* Modal Styles */
+      #ledgerModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      #ledgerModalContent {
+        background: white;
+        width: 85%;
+        max-width: 950px;
+        padding: 20px;
+        border-radius: 10px;
+        max-height: 80%;
+        overflow: auto;
+      }
+
+      #ledgerModalContent h2 {
+        margin-top: 0;
+      }
+
+      #ledgerModalContent table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      #ledgerModalContent th,
+      #ledgerModalContent td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        text-align: left;
+      }
+
+      #ledgerModalContent th {
+        background: #f1f5f9;
+      }
+
+      .close-btn {
+        padding: 8px 15px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -123,6 +182,29 @@
           </thead>
           <tbody id="docsTable"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Ledger Modal -->
+    <div id="ledgerModal">
+      <div id="ledgerModalContent">
+        <h2>Ledger History</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Action</th>
+              <th>Actor</th>
+              <th>Timestamp</th>
+              <th>Event Data</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerTableBody"></tbody>
+        </table>
+
+        <br />
+        <button class="close-btn" onclick="closeLedgerModal()">Close</button>
       </div>
     </div>
 
@@ -175,6 +257,8 @@
                 <button class="preview-btn" onclick="previewDoc(${doc.id})">Preview</button>
                 <button class="update-btn" onclick="updateStatus(${doc.id})">Update</button>
                 <br>
+                <button class="ledger-btn" onclick="viewLedger(${doc.id})">View Ledger</button>
+                <br>
                 <button class="delete-btn" onclick="deleteDoc(${doc.id})">Delete</button>
               </td>
             </tr>
@@ -216,6 +300,47 @@
 
         alert("Document deleted successfully ✅");
         loadDocuments();
+      }
+
+      async function viewLedger(docId) {
+        try {
+          const res = await fetch(
+            `http://127.0.0.1:8000/documents/${docId}/ledger`,
+            {
+              headers: { Authorization: "Bearer " + token },
+            },
+          );
+
+          if (!res.ok) {
+            alert("Failed to fetch ledger history ❌");
+            return;
+          }
+
+          const data = await res.json();
+
+          let rows = "";
+          data.forEach((entry) => {
+            rows += `
+              <tr>
+                <td>${entry.id}</td>
+                <td>${entry.action}</td>
+                <td>${entry.actor_email}</td>
+                <td>${entry.timestamp}</td>
+                <td>${JSON.stringify(entry.event_data)}</td>
+              </tr>
+            `;
+          });
+
+          document.getElementById("ledgerTableBody").innerHTML = rows;
+          document.getElementById("ledgerModal").style.display = "flex";
+        } catch (err) {
+          console.error(err);
+          alert("Error fetching ledger history ❌");
+        }
+      }
+
+      function closeLedgerModal() {
+        document.getElementById("ledgerModal").style.display = "none";
       }
 
       loadDocuments();
