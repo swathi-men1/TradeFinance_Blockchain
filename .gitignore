@@ -1,0 +1,38 @@
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Bytes and Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+.env.local
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Deployment/Build
+dist/
+build/
+.vercel
+coverage/
+
+# User Content & Logs
+backend/app/uploads/
+*.pdf
+*.log
+detailed_error.log
+backend_debug.log
+
+# IDE
+.vscode/
+.idea/
