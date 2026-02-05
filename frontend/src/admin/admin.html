@@ -61,6 +61,10 @@
         border-radius: 4px;
         cursor: pointer;
       }
+      .delete-btn {
+        background: #e53e3e;
+        margin-top: 6px;
+      }
     </style>
   </head>
 
@@ -87,8 +91,9 @@
           <tr>
             <th>#</th>
             <th>📄 Document Details</th>
-            <th>📌 Current Status</th>
-            <th>🔐 Access Control</th>
+            <th>📌 Status</th>
+            <th>🛡️ Integrity</th>
+            <th>🔐 Actions</th>
           </tr>
         </thead>
         <tbody id="docsTable"></tbody>
@@ -98,80 +103,96 @@
     <script>
       const API_BASE = "http://127.0.0.1:8000";
 
-      // 📥 LOAD ALL DOCUMENTS (ADMIN)
+      // 📥 LOAD ALL DOCUMENTS
       async function loadDocuments() {
-        try {
-          const res = await fetch(`${API_BASE}/documents`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+        const res = await fetch(`${API_BASE}/documents`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-          if (!res.ok) {
-            throw new Error("Failed to fetch documents");
-          }
+        const docs = await res.json();
+        const tbody = document.getElementById("docsTable");
+        tbody.innerHTML = "";
 
-          const docs = await res.json();
-          const tbody = document.getElementById("docsTable");
-          tbody.innerHTML = "";
+        docs.forEach((doc, i) => {
+          const row = document.createElement("tr");
 
-          if (docs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4">No documents found</td></tr>`;
-            return;
-          }
+          row.innerHTML = `
+            <td>${i + 1}</td>
 
-          docs.forEach((doc, i) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${i + 1}</td>
+            <td>
+              <b>File:</b> ${doc.filename}<br><br>
+              <b>Uploaded By:</b> ${doc.owner_email}<br><br>
+              <b>Hash:</b>
+              <div class="hash">${doc.file_hash}</div>
+              <br>
+              <a href="http://127.0.0.1:8000/documents/${doc.id}/preview" target="_blank">
+                🔍 Preview
+              </a>
+            </td>
 
-              <td>
-                <b>File:</b> ${doc.filename}<br><br>
-                <b>Uploaded By:</b> ${doc.owner_email}<br><br>
-                <b>Hash:</b>
-                <div class="hash">${doc.file_hash}</div>
-              </td>
+            <td><b>${doc.status}</b></td>
 
-              <td><b>${doc.status}</b></td>
+            <td>
+              ${
+                doc.tampered
+                  ? '<span style="color:red;font-weight:bold">❌ Tampered</span>'
+                  : '<span style="color:green;font-weight:bold">✅ Verified</span>'
+              }
+            </td>
 
-              <td>
-                <select id="role-${doc.id}">
-                  <option value="corporate" ${doc.access_role === "corporate" ? "selected" : ""}>Corporate</option>
-                  <option value="bank" ${doc.access_role === "bank" ? "selected" : ""}>Bank</option>
-                  <option value="auditor" ${doc.access_role === "auditor" ? "selected" : ""}>Auditor</option>
-                </select>
-                <br><br>
-                <button onclick="updateRole(${doc.id})">Update</button>
-              </td>
-            `;
-            tbody.appendChild(row);
-          });
-        } catch (err) {
-          console.error(err);
-          alert("Error loading documents");
-        }
+            <td>
+              <select id="role-${doc.id}">
+                <option value="corporate" ${doc.access_role === "corporate" ? "selected" : ""}>Corporate</option>
+                <option value="bank" ${doc.access_role === "bank" ? "selected" : ""}>Bank</option>
+                <option value="auditor" ${doc.access_role === "auditor" ? "selected" : ""}>Auditor</option>
+              </select>
+
+              <br><br>
+
+              <button onclick="updateRole(${doc.id})">Update</button>
+              <br>
+              <button class="delete-btn" onclick="deleteDoc(${doc.id})">Delete</button>
+            </td>
+          `;
+
+          tbody.appendChild(row);
+        });
       }
 
       // 🔄 UPDATE ACCESS ROLE
       async function updateRole(docId) {
         const role = document.getElementById(`role-${docId}`).value;
 
-        const res = await fetch(
-          `${API_BASE}/documents/${docId}/access-role?role=${role}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+        await fetch(`${API_BASE}/documents/${docId}/access-role?role=${role}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        );
+        });
+
+        alert("Access updated ✅");
+      }
+
+      // 🗑️ DELETE DOCUMENT (ADMIN)
+      async function deleteDoc(docId) {
+        if (!confirm("Are you sure you want to delete this document?")) return;
+
+        const res = await fetch(`${API_BASE}/documents/${docId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (!res.ok) {
-          alert("Failed to update access");
+          alert("Delete failed");
           return;
         }
 
-        alert("Access updated successfully ✅");
+        alert("Document deleted successfully 🗑️");
+        loadDocuments();
       }
 
       function logout() {

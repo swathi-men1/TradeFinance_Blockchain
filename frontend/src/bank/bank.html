@@ -31,7 +31,7 @@
 
       .container {
         padding: 30px;
-        max-width: 1100px;
+        max-width: 1200px;
         margin: auto;
       }
 
@@ -52,44 +52,55 @@
       td {
         padding: 12px;
         border-bottom: 1px solid #ddd;
-        text-align: left;
         font-size: 14px;
+        vertical-align: top;
       }
 
       th {
         background: #edf2f7;
       }
 
-      select,
       button {
         padding: 6px 10px;
         border-radius: 4px;
-      }
-
-      button {
-        background: #3182ce;
-        color: white;
         border: none;
         cursor: pointer;
+        color: white;
       }
 
-      button:hover {
-        background: #2b6cb0;
+      .update-btn {
+        background: #3182ce;
       }
 
-      .open-btn {
+      .preview-btn {
         background: #38a169;
         margin-right: 6px;
       }
 
-      .open-btn:hover {
-        background: #2f855a;
+      .delete-btn {
+        background: #e53e3e;
+        margin-top: 6px;
+      }
+
+      .hash {
+        font-family: monospace;
+        font-size: 12px;
+        word-break: break-all;
+      }
+
+      .verified {
+        color: green;
+        font-weight: bold;
+      }
+
+      .tampered {
+        color: red;
+        font-weight: bold;
       }
     </style>
   </head>
 
   <body>
-    <!-- HEADER -->
     <header>
       <h2>Bank Dashboard</h2>
       <button class="logout" onclick="logout()">Logout</button>
@@ -102,10 +113,11 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>File Name</th>
+              <th>#</th>
+              <th>File</th>
               <th>Hash</th>
               <th>Status</th>
+              <th>Integrity</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -118,7 +130,6 @@
       const token = localStorage.getItem("token");
       const role = localStorage.getItem("role");
 
-      // 🔐 Protect page
       if (!token || role !== "bank") {
         window.location.href = "../../login.html";
       }
@@ -128,73 +139,82 @@
         window.location.href = "../../login.html";
       }
 
-      // 📥 Load documents
       async function loadDocuments() {
         const res = await fetch("http://127.0.0.1:8000/documents", {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
+          headers: { Authorization: "Bearer " + token },
         });
 
-        if (!res.ok) {
-          alert("Failed to load documents ❌");
-          return;
-        }
-
         const docs = await res.json();
+        docs.sort((a, b) => a.id - b.id);
+
         const table = document.getElementById("docsTable");
         table.innerHTML = "";
 
-        docs.forEach((doc) => {
-          const row = document.createElement("tr");
+        docs.forEach((doc, i) => {
+          const integrity = doc.tampered
+            ? `<span class="tampered">❌ Tampered</span>`
+            : `<span class="verified">✅ Verified</span>`;
 
-          row.innerHTML = `
-            <td>${doc.id}</td>
-            <td>${doc.filename}</td>
-            <td style="font-family:monospace;font-size:12px">${doc.file_hash}</td>
-            <td>
-              <select id="status-${doc.id}">
-                <option value="PENDING" ${doc.status === "PENDING" ? "selected" : ""}>PENDING</option>
-                <option value="ACCEPTED" ${doc.status === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
-                <option value="REJECTED" ${doc.status === "REJECTED" ? "selected" : ""}>REJECTED</option>
-              </select>
-            </td>
-            <td>
-              <button class="open-btn" onclick="openDocument(${doc.id})">Open</button>
-              <button onclick="updateStatus(${doc.id})">Update</button>
-            </td>
+          table.innerHTML += `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${doc.filename}</td>
+              <td class="hash">${doc.file_hash}</td>
+
+              <td>
+                <select id="status-${doc.id}">
+                  <option value="PENDING" ${doc.status === "PENDING" ? "selected" : ""}>PENDING</option>
+                  <option value="ACCEPTED" ${doc.status === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
+                  <option value="REJECTED" ${doc.status === "REJECTED" ? "selected" : ""}>REJECTED</option>
+                </select>
+              </td>
+
+              <td>${integrity}</td>
+
+              <td>
+                <button class="preview-btn" onclick="previewDoc(${doc.id})">Preview</button>
+                <button class="update-btn" onclick="updateStatus(${doc.id})">Update</button>
+                <br>
+                <button class="delete-btn" onclick="deleteDoc(${doc.id})">Delete</button>
+              </td>
+            </tr>
           `;
-
-          table.appendChild(row);
         });
       }
 
-      // 👁️ PREVIEW DOCUMENT (INLINE – NO DOWNLOAD)
-      function openDocument(docId) {
-        const url = `http://127.0.0.1:8000/documents/${docId}/preview`;
-        window.open(url, "_blank");
+      function previewDoc(id) {
+        window.open(`http://127.0.0.1:8000/documents/${id}/preview`, "_blank");
       }
 
-      // ✅ UPDATE STATUS
-      async function updateStatus(docId) {
-        const status = document.getElementById(`status-${docId}`).value;
+      async function updateStatus(id) {
+        const status = document.getElementById(`status-${id}`).value;
 
-        const res = await fetch(
-          `http://127.0.0.1:8000/documents/${docId}/status?status=${status}`,
+        await fetch(
+          `http://127.0.0.1:8000/documents/${id}/status?status=${status}`,
           {
             method: "PUT",
-            headers: {
-              Authorization: "Bearer " + token,
-            },
+            headers: { Authorization: "Bearer " + token },
           },
         );
 
+        alert("Status updated ✅");
+        loadDocuments();
+      }
+
+      async function deleteDoc(id) {
+        if (!confirm("Are you sure you want to delete this document?")) return;
+
+        const res = await fetch(`http://127.0.0.1:8000/documents/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token },
+        });
+
         if (!res.ok) {
-          alert("Status update failed ❌");
+          alert("Delete failed ❌");
           return;
         }
 
-        alert("Status updated successfully ✅");
+        alert("Document deleted successfully ✅");
         loadDocuments();
       }
 
