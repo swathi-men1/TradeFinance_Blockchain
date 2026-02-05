@@ -10,7 +10,7 @@ from app.models import (
     document,
     ledger,
     trade_transaction,
-    risk_score
+    risk_score,
 )
 
 # -------------------- IMPORT ROUTERS --------------------
@@ -24,10 +24,17 @@ from app.routes.analytics import router as analytics_router
 from app.routes.export import router as export_router
 
 # -------------------- CREATE APP --------------------
-app = FastAPI(title="Trade Finance Blockchain Explorer")
+app = FastAPI(
+    title="Trade Finance Blockchain Explorer",
+    description="Tamper-evident trade finance document tracking with ledger and risk analysis",
+    version="1.0.0",
+)
 
-# -------------------- CREATE TABLES --------------------
-Base.metadata.create_all(bind=engine)
+# -------------------- CREATE TABLES (ON STARTUP) --------------------
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
+
 
 # -------------------- REGISTER ROUTERS --------------------
 app.include_router(auth_router)
@@ -48,7 +55,8 @@ def root():
 @app.get("/db-check")
 def db_check():
     try:
-        engine.connect()
+        with engine.connect() as connection:
+            pass
         return {"db": "connected"}
     except Exception:
         return {"db": "error"}

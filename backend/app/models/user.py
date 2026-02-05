@@ -7,10 +7,14 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+
     email = Column(String, unique=True, index=True, nullable=False)
+
+    # Store ONLY hashed password
     hashed_password = Column(String, nullable=False)
-    role = Column(String, nullable=False)
-    # examples: admin, bank_user, exporter_user
+
+    # Roles: corporate, bank, auditor, admin
+    role = Column(String, nullable=False, default="corporate")
 
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
 

@@ -1,21 +1,22 @@
 from pydantic import BaseModel, EmailStr
 
 
-# Used during signup (Week 2: includes org_id)
+# -------------------- SIGNUP --------------------
+# Users do NOT choose role
+# All users register as CORPORATE
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    role: str
     org_id: int
 
 
-# Used during login
+# -------------------- LOGIN --------------------
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
 
-# Used for API responses (never expose password)
+# -------------------- RESPONSE --------------------
 class UserResponse(BaseModel):
     id: int
     email: EmailStr

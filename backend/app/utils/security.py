@@ -6,7 +6,11 @@ SECRET_KEY = "CHANGE_THIS_SECRET"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ✅ Use PBKDF2 instead of bcrypt (Python 3.13 safe)
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto"
+)
 
 
 def hash_password(password: str) -> str:

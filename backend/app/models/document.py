@@ -1,16 +1,24 @@
 import uuid
-from sqlalchemy import Column, String, BigInteger, TIMESTAMP
+from sqlalchemy import Column, String, BigInteger, TIMESTAMP, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from app.database import Base
 
+
 class Document(Base):
     __tablename__ = "documents"
 
+    # Document primary key (UUID)
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    org_id = Column(UUID(as_uuid=True), nullable=False)
-    uploaded_by = Column(UUID(as_uuid=True), nullable=False)
+
+    # Organization foreign key (INTEGER → organizations.id)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+
+    # Uploaded by user (INTEGER → users.id)
+    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    document_type = Column(String, nullable=False)
 
     original_filename = Column(String, nullable=False)
     mime_type = Column(String, nullable=False)
@@ -18,5 +26,7 @@ class Document(Base):
 
     s3_key = Column(String, nullable=False)
     sha256_hash = Column(String(64), nullable=False)
+
+    status = Column(String, nullable=False, default="UPLOADED")
 
     created_at = Column(TIMESTAMP, server_default=func.now())
