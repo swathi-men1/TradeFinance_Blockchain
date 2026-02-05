@@ -1,9 +1,9 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
 from app.database import engine, Base
 
 # -------------------- IMPORT MODELS --------------------
-# Importing models ensures SQLAlchemy registers tables
 from app.models import (
     user,
     organization,
@@ -23,18 +23,21 @@ from app.routes.risk import router as risk_router
 from app.routes.analytics import router as analytics_router
 from app.routes.export import router as export_router
 
+
+# -------------------- LIFESPAN (DB INIT) --------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
 # -------------------- CREATE APP --------------------
 app = FastAPI(
     title="Trade Finance Blockchain Explorer",
     description="Tamper-evident trade finance document tracking with ledger and risk analysis",
     version="1.0.0",
+    lifespan=lifespan,
 )
-
-# -------------------- CREATE TABLES (ON STARTUP) --------------------
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
-
 
 # -------------------- REGISTER ROUTERS --------------------
 app.include_router(auth_router)
@@ -55,7 +58,7 @@ def root():
 @app.get("/db-check")
 def db_check():
     try:
-        with engine.connect() as connection:
+        with engine.connect():
             pass
         return {"db": "connected"}
     except Exception:

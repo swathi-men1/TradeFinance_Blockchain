@@ -1,45 +1,50 @@
 import uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.trade_transaction import TradeTransaction
 from app.models.ledger import LedgerEntry
+from app.models.user import User
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(
     prefix="/trades",
     tags=["Trade Transactions"]
 )
 
+
 @router.post("/")
 def create_trade(
     amount: float,
     currency: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    # TEMP: replace with JWT later
-    buyer_id = uuid.uuid4()
-    seller_id = uuid.uuid4()
+    actor_id = current_user.id
 
     trade = TradeTransaction(
-        buyer_id=buyer_id,
-        seller_id=seller_id,
+        buyer_id=uuid.uuid4(),
+        seller_id=uuid.uuid4(),
         amount=amount,
         currency=currency
     )
 
     db.add(trade)
-    db.commit()
-    db.refresh(trade)
+    db.flush()  # to get trade.id
 
-    # Ledger entry
     ledger = LedgerEntry(
-        document_id=trade.id,
-        document_hash="TRADE_CREATED",
-        previous_hash=None
+        entity_type="trade",
+        entity_id=trade.id,
+        previous_hash=None,
+        current_hash="TRADE_CREATED",
+        action="CREATE",
+        actor_id=actor_id
     )
+
     db.add(ledger)
     db.commit()
+    db.refresh(trade)
 
     return trade
 
@@ -48,18 +53,30 @@ def create_trade(
 def update_trade_status(
     trade_id: uuid.UUID,
     status: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    trade = db.query(TradeTransaction).get(trade_id)
-    trade.status = status
-    db.commit()
+    actor_id = current_user.id
 
-    # Ledger entry for lifecycle event
+    trade = db.query(TradeTransaction).filter(
+        TradeTransaction.id == trade_id
+    ).first()
+
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+
+    trade.status = status
+    db.flush()
+
     ledger = LedgerEntry(
-        document_id=trade.id,
-        document_hash=f"STATUS_{status}",
-        previous_hash=None
+        entity_type="trade",
+        entity_id=trade.id,
+        previous_hash=None,
+        current_hash=f"STATUS_{status}",
+        action="STATUS_UPDATE",
+        actor_id=actor_id
     )
+
     db.add(ledger)
     db.commit()
 

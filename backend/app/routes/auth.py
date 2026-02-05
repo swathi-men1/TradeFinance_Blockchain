@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.utils.security import (
@@ -12,15 +12,6 @@ from app.utils.security import (
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-# -------------------- DB DEPENDENCY --------------------
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # -------------------- SIGNUP --------------------
@@ -33,12 +24,11 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
 
-    # ✅ all users start as corporate
     new_user = User(
         email=user.email,
         hashed_password=hash_password(user.password),
-        role="corporate",  # DEFAULT ROLE
-        org_id=user.org_id,   # INTEGER
+        role="CORPORATE",     # default role
+        org_id=user.org_id,   # integer FK
     )
 
     db.add(new_user)
@@ -47,38 +37,41 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 
     return {
         "message": "User created successfully",
-        "email": new_user.email,
-        "role": new_user.role,
+        "user": {
+            "id": str(new_user.id),
+            "email": new_user.email,
+            "role": new_user.role,
+        }
     }
 
 
 # -------------------- LOGIN --------------------
-@router.post("/login", status_code=status.HTTP_200_OK)
+@router.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
-    db_user = db.query(User).filter(User.email == form_data.username).first()
+    user = db.query(User).filter(
+        User.email == form_data.username
+    ).first()
 
-    if not db_user or not verify_password(
-        form_data.password, db_user.hashed_password
-    ):
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Incorrect email or password",
         )
 
-    # ✅ FINAL CORRECT TOKEN PAYLOAD
-    token = create_access_token(
-        {
-            "sub": db_user.email,          # email
-            "user_id": str(db_user.id),    # UUID → string
-            "org_id": db_user.org_id,      # INTEGER (DO NOT stringify)
-            "role": db_user.role,
-        }
+    # ✅ CREATE TOKEN (THIS FIXES YOUR ERROR)
+    access_token = create_access_token(
+        data={"sub": user.email}   # email-based JWT (current setup)
     )
 
     return {
-        "access_token": token,
+        "access_token": access_token,
         "token_type": "bearer",
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "role": user.role,
+        }
     }

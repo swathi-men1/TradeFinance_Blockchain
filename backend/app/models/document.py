@@ -12,10 +12,10 @@ class Document(Base):
     # Document primary key (UUID)
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    # Organization foreign key (INTEGER → organizations.id)
+    # Organization foreign key
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
 
-    # Uploaded by user (INTEGER → users.id)
+    # Uploaded by user
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     document_type = Column(String, nullable=False)
