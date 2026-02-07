@@ -21,8 +21,8 @@ def create_ledger_entry(
         db,
         entry_data.document_id,
         entry_data.action,
-        current_user.id,
-        entry_data.meta_data
+        current_user,
+        entry_data.entry_metadata
     )
 
 

@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserLogin, Token
 from app.core.security import hash_password, verify_password, create_access_token
 
@@ -23,7 +23,7 @@ class AuthService:
             name=user_data.name,
             email=user_data.email,
             password=hashed_password,
-            role=user_data.role,
+            role=UserRole.CORPORATE,  # Force default role, block admin self-reg
             org_name=user_data.org_name
         )
         

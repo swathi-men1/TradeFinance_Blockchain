@@ -8,8 +8,8 @@ class UserCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr
     password: str = Field(..., min_length=8)
-    role: UserRole
     org_name: str = Field(..., min_length=1, max_length=255)
+    # role field removed from input to block tampering
 
 
 class UserLogin(BaseModel):

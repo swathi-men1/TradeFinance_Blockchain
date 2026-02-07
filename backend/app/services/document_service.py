@@ -6,6 +6,7 @@ from datetime import datetime
 from app.models.user import User, UserRole
 from app.models.document import Document, DocumentType
 from app.models.ledger import LedgerEntry, LedgerAction
+from app.models.audit import AuditLog
 from app.core.hashing import compute_file_hash
 from app.config import settings
 
@@ -18,9 +19,23 @@ class DocumentService:
         file: UploadFile,
         doc_type: DocumentType,
         doc_number: str,
-        issued_at: datetime
+        issued_at: str  # Changed to str, will parse below
     ) -> Document:
         """Upload a document with file to S3 and create database record"""
+        
+        # Parse issued_at string to datetime
+        try:
+            from dateutil import parser
+            issued_at_dt = parser.parse(issued_at)
+        except Exception:
+            # If parsing fails, try ISO format
+            try:
+                issued_at_dt = datetime.fromisoformat(issued_at.replace('Z', '+00:00'))
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid date format for issued_at: {issued_at}"
+                )
         
         # Read file content
         file_content = await file.read()
@@ -62,7 +77,7 @@ class DocumentService:
             doc_number=doc_number,
             file_url=s3_key if s3_upload_success else f"pending:{s3_key}",
             hash=document_hash,
-            issued_at=issued_at
+            issued_at=issued_at_dt  # Use parsed datetime
         )
         
         db.add(new_document)
@@ -74,7 +89,7 @@ class DocumentService:
             document_id=new_document.id,
             action=LedgerAction.ISSUED,
             actor_id=current_user.id,
-            meta_data={
+            entry_metadata={
                 "filename": file.filename,
                 "s3_upload_success": s3_upload_success
             }
@@ -82,6 +97,17 @@ class DocumentService:
         
         db.add(ledger_entry)
         db.commit()
+        
+        # Audit Log for Admin actions
+        if current_user.role == UserRole.ADMIN:
+            audit_log = AuditLog(
+                admin_id=current_user.id,
+                action="UPLOAD_DOCUMENT",
+                target_type="Document",
+                target_id=new_document.id
+            )
+            db.add(audit_log)
+            db.commit()
         
         return new_document
     
@@ -137,7 +163,7 @@ class DocumentService:
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
-                meta_data={
+                entry_metadata={
                     "stored_hash": document.hash,
                     "is_valid": True,
                     "note": "Document file pending upload to storage. Verified using stored hash only."
@@ -182,7 +208,7 @@ class DocumentService:
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
-                meta_data={
+                entry_metadata={
                     "stored_hash": document.hash,
                     "current_hash": current_hash,
                     "is_valid": is_valid
@@ -208,7 +234,7 @@ class DocumentService:
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
-                meta_data={
+                entry_metadata={
                     "stored_hash": document.hash,
                     "verification_error": error_message,
                     "is_valid": True,  # Hash exists in DB, assuming authentic

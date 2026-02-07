@@ -17,7 +17,7 @@ async def upload_document(
     file: UploadFile = File(...),
     doc_type: DocumentType = Form(...),
     doc_number: str = Form(...),
-    issued_at: datetime = Form(...),
+    issued_at: str = Form(...),  # Accept as string, parse in service
     current_user: User = Depends(require_roles([UserRole.BANK, UserRole.CORPORATE, UserRole.ADMIN])),
     db: Session = Depends(get_db)
 ):

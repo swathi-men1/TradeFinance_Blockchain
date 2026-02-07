@@ -6,6 +6,7 @@ import enum
 
 
 class LedgerAction(str, enum.Enum):
+    # Document actions
     ISSUED = "ISSUED"
     AMENDED = "AMENDED"
     SHIPPED = "SHIPPED"
@@ -13,6 +14,11 @@ class LedgerAction(str, enum.Enum):
     PAID = "PAID"
     CANCELLED = "CANCELLED"
     VERIFIED = "VERIFIED"
+    # Trade actions (Week 5)
+    TRADE_CREATED = "TRADE_CREATED"
+    TRADE_STATUS_UPDATED = "TRADE_STATUS_UPDATED"
+    DOCUMENT_LINKED_TO_TRADE = "DOCUMENT_LINKED_TO_TRADE"
+    TRADE_DISPUTED = "TRADE_DISPUTED"
 
 
 class LedgerEntry(Base):
@@ -22,7 +28,7 @@ class LedgerEntry(Base):
     document_id = Column(Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
     action = Column(Enum(LedgerAction), nullable=False)
     actor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    meta_data = Column(JSONB, nullable=True)
+    entry_metadata = Column("metadata", JSONB, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     
     # Relationships
