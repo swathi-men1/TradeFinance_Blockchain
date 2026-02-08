@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Enum, ForeignKey, TIMESTAMP, func
+from sqlalchemy import Column, Integer, Enum, ForeignKey, TIMESTAMP, func, String, Boolean, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -29,8 +29,23 @@ class LedgerEntry(Base):
     action = Column(Enum(LedgerAction), nullable=False)
     actor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     entry_metadata = Column("metadata", JSONB, nullable=True)
+    previous_hash = Column(String(64), nullable=True)
+    entry_hash = Column(String(64), nullable=True, unique=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     
     # Relationships
     document = relationship("Document", back_populates="ledger_entries")
     actor = relationship("User", backref="ledger_actions")
+
+
+class IntegrityReport(Base):
+    __tablename__ = "integrity_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    document_id = Column(Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=True)
+    status = Column(String(20), nullable=False)  # "VALID", "TAMPERED"
+    error_message = Column(Text, nullable=True)
+    checked_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+
+    # Relationships
+    document = relationship("Document")

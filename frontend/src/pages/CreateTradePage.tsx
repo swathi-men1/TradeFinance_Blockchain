@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { tradeService } from '../services/tradeService';
 
 export default function CreateTradePage() {
     const [buyerId, setBuyerId] = useState('');
@@ -44,22 +44,15 @@ export default function CreateTradePage() {
 
         try {
             setLoading(true);
-            const token = localStorage.getItem('access_token');
-            const response = await axios.post(
-                'http://localhost:8000/api/v1/trades',
-                {
-                    buyer_id: parseInt(buyerId),
-                    seller_id: parseInt(sellerId),
-                    amount: parseFloat(amount),
-                    currency: currency
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
+            const tradeData = await tradeService.createTrade({
+                buyer_id: parseInt(buyerId),
+                seller_id: parseInt(sellerId),
+                amount: parseFloat(amount),
+                currency: currency
+            });
 
             // Success - navigate to trade details
-            navigate(`/trades/${response.data.id}`);
+            navigate(`/trades/${tradeData.id}`);
         } catch (err: any) {
             const errorMsg = err.response?.data?.detail || 'Failed to create trade';
             setError(errorMsg);

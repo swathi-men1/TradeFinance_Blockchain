@@ -1,25 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
-interface Trade {
-    id: number;
-    buyer_id: number;
-    seller_id: number;
-    amount: string;
-    currency: string;
-    status: string;
-    created_at: string;
-    updated_at: string;
-}
-
-interface Document {
-    id: number;
-    doc_number: string;
-    doc_type: string;
-    created_at: string;
-}
+import { tradeService } from '../services/tradeService';
+import { Trade, TradeStatus } from '../types/trade.types';
+import { Document } from '../types/document.types';
 
 const statusColors = {
     pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
@@ -65,11 +49,8 @@ export default function TradeDetailsPage() {
     const fetchTradeDetails = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('access_token');
-            const response = await axios.get(`http://localhost:8000/api/v1/trades/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setTrade(response.data);
+            const tradeData = await tradeService.getTradeById(parseInt(id!));
+            setTrade(tradeData);
             setError('');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to load trade details');
@@ -81,11 +62,8 @@ export default function TradeDetailsPage() {
 
     const fetchTradeDocuments = async () => {
         try {
-            const token = localStorage.getItem('access_token');
-            const response = await axios.get(`http://localhost:8000/api/v1/trades/${id}/documents`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setDocuments(response.data);
+            const docs = await tradeService.getTradeDocuments(parseInt(id!));
+            setDocuments(docs);
         } catch (err: any) {
             console.error('Error fetching documents:', err);
         }
@@ -96,12 +74,7 @@ export default function TradeDetailsPage() {
 
         try {
             setUpdatingStatus(true);
-            const token = localStorage.getItem('access_token');
-            await axios.put(
-                `http://localhost:8000/api/v1/trades/${id}/status`,
-                { status: selectedStatus },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await tradeService.updateTradeStatus(parseInt(id!), selectedStatus as TradeStatus);
             await fetchTradeDetails();
             setShowStatusUpdate(false);
             setSelectedStatus('');

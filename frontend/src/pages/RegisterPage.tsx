@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { authService } from '../services/authService';
+import { UserCreate, UserRole } from '../types/auth.types';
 
 export default function RegisterPage() {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<UserCreate>({
         name: '',
         email: '',
         password: '',
-        role: 'corporate'
+        role: 'corporate',
+        org_name: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:8000/api/v1/auth/register', formData);
+            await authService.register(formData);
             navigate('/login');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Registration failed. Please try again.');
@@ -85,6 +87,21 @@ export default function RegisterPage() {
                             />
                         </div>
 
+                        {/* Organization Name */}
+                        <div>
+                            <label className="block text-sm font-medium text-white mb-2">
+                                Organization Name
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.org_name}
+                                onChange={(e) => setFormData({ ...formData, org_name: e.target.value })}
+                                className="modern-input"
+                                placeholder="Acme Corp"
+                                required
+                            />
+                        </div>
+
                         {/* Password */}
                         <div>
                             <label className="block text-sm font-medium text-white mb-2">
@@ -108,7 +125,7 @@ export default function RegisterPage() {
                             </label>
                             <select
                                 value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
                                 className="modern-input"
                             >
                                 <option value="corporate">Corporate</option>

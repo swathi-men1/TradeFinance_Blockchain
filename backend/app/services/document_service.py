@@ -9,6 +9,7 @@ from app.models.ledger import LedgerEntry, LedgerAction
 from app.models.audit import AuditLog
 from app.core.hashing import compute_file_hash
 from app.config import settings
+from app.services.ledger_service import LedgerService
 
 
 class DocumentService:
@@ -85,7 +86,9 @@ class DocumentService:
         db.refresh(new_document)
         
         # Create initial ledger entry (ISSUED)
-        ledger_entry = LedgerEntry(
+        # Create initial ledger entry (ISSUED)
+        LedgerService.create_entry(
+            db=db,
             document_id=new_document.id,
             action=LedgerAction.ISSUED,
             actor_id=current_user.id,
@@ -94,9 +97,6 @@ class DocumentService:
                 "s3_upload_success": s3_upload_success
             }
         )
-        
-        db.add(ledger_entry)
-        db.commit()
         
         # Audit Log for Admin actions
         if current_user.role == UserRole.ADMIN:
@@ -159,7 +159,9 @@ class DocumentService:
         # Check if file was never uploaded to S3 (pending upload)
         if document.file_url.startswith("pending:"):
             # Create ledger entry for verification (pending state)
-            ledger_entry = LedgerEntry(
+            # Create ledger entry for verification (pending state)
+            LedgerService.create_entry(
+                db=db,
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
@@ -169,9 +171,6 @@ class DocumentService:
                     "note": "Document file pending upload to storage. Verified using stored hash only."
                 }
             )
-            
-            db.add(ledger_entry)
-            db.commit()
             
             return {
                 "stored_hash": document.hash,
@@ -204,7 +203,9 @@ class DocumentService:
             is_valid = (current_hash == document.hash)
             
             # Create ledger entry for verification
-            ledger_entry = LedgerEntry(
+            # Create ledger entry for verification
+            LedgerService.create_entry(
+                db=db,
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
@@ -214,9 +215,6 @@ class DocumentService:
                     "is_valid": is_valid
                 }
             )
-            
-            db.add(ledger_entry)
-            db.commit()
             
             return {
                 "stored_hash": document.hash,
@@ -230,7 +228,9 @@ class DocumentService:
             error_message = str(e)
             
             # Create ledger entry for failed verification attempt
-            ledger_entry = LedgerEntry(
+            # Create ledger entry for failed verification attempt
+            LedgerService.create_entry(
+                db=db,
                 document_id=document.id,
                 action=LedgerAction.VERIFIED,
                 actor_id=current_user.id,
@@ -241,9 +241,6 @@ class DocumentService:
                     "note": "File storage unavailable, verified against stored hash only"
                 }
             )
-            
-            db.add(ledger_entry)
-            db.commit()
             
             # Return success based on stored hash existence
             return {

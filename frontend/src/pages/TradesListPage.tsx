@@ -1,18 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
-interface Trade {
-    id: number;
-    buyer_id: number;
-    seller_id: number;
-    amount: string;
-    currency: string;
-    status: string;
-    created_at: string;
-    updated_at: string;
-}
+import { tradeService } from '../services/tradeService';
+import { Trade } from '../types/trade.types';
 
 export default function TradesListPage() {
     const [trades, setTrades] = useState<Trade[]>([]);
@@ -28,11 +18,8 @@ export default function TradesListPage() {
     const fetchTrades = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('access_token');
-            const response = await axios.get('http://localhost:8000/api/v1/trades', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setTrades(response.data);
+            const data = await tradeService.getTrades();
+            setTrades(data);
             setError('');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to load trades');

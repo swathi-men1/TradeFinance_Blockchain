@@ -1,8 +1,50 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import RiskScoreWidget from '../components/RiskScoreWidget';
+import AdminStatsDashboard from '../components/AdminStatsDashboard';
+import { tradeService } from '../services/tradeService';
+import { documentService } from '../services/documentService';
 
 export default function DashboardPage() {
     const { user } = useAuth();
+    const [stats, setStats] = useState({
+        totalDocuments: 0,
+        completedTrades: 0,
+        pendingTrades: 0,
+        activeTrades: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            fetchDashboardData();
+        }
+    }, [user]);
+
+    const fetchDashboardData = async () => {
+        try {
+            const [trades, documents] = await Promise.all([
+                tradeService.getTrades(),
+                documentService.getDocuments()
+            ]);
+
+            const completed = trades.filter(t => t.status === 'completed' || t.status === 'paid').length;
+            const pending = trades.filter(t => t.status === 'pending').length;
+            const active = trades.filter(t => t.status === 'in_progress').length;
+
+            setStats({
+                totalDocuments: documents.length,
+                completedTrades: completed,
+                pendingTrades: pending,
+                activeTrades: active
+            });
+        } catch (error) {
+            console.error('Failed to fetch dashboard data', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!user) {
         return null;
@@ -29,29 +71,43 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="text-5xl mb-3">📄</div>
-                        <div className="stat-number">24</div>
-                        <div className="stat-label">Total Documents</div>
+                {/* Risk Score Widget (Corporate/Bank) */}
+                {(user.role === 'corporate' || user.role === 'bank') && (
+                    <div className="mb-8">
+                        <RiskScoreWidget />
                     </div>
-                    <div className="stat-card">
-                        <div className="text-5xl mb-3">✅</div>
-                        <div className="stat-number">18</div>
-                        <div className="stat-label">Verified</div>
+                )}
+
+                {/* Admin Dashboard (Admin) */}
+                {user.role === 'admin' ? (
+                    <div className="mb-8">
+                        <AdminStatsDashboard />
                     </div>
-                    <div className="stat-card">
-                        <div className="text-5xl mb-3">⏳</div>
-                        <div className="stat-number">6</div>
-                        <div className="stat-label">Pending</div>
+                ) : (
+                    /* Stats Grid for non-admin */
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <div className="text-5xl mb-3">📄</div>
+                            <div className="stat-number">{loading ? '-' : stats.totalDocuments}</div>
+                            <div className="stat-label">Total Documents</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-5xl mb-3">✅</div>
+                            <div className="stat-number">{loading ? '-' : stats.completedTrades}</div>
+                            <div className="stat-label">Completed Trades</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-5xl mb-3">⏳</div>
+                            <div className="stat-number">{loading ? '-' : stats.pendingTrades}</div>
+                            <div className="stat-label">Pending Trades</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-5xl mb-3">💼</div>
+                            <div className="stat-number">{loading ? '-' : stats.activeTrades}</div>
+                            <div className="stat-label">Active Trades</div>
+                        </div>
                     </div>
-                    <div className="stat-card">
-                        <div className="text-5xl mb-3">💼</div>
-                        <div className="stat-number">12</div>
-                        <div className="stat-label">Active Trades</div>
-                    </div>
-                </div>
+                )}
 
                 {/* Quick Actions */}
                 <div className="mt-12">

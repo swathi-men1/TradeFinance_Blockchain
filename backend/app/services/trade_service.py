@@ -8,6 +8,7 @@ from app.models.document import Document
 from app.models.ledger import LedgerEntry, LedgerAction
 from app.models.audit import AuditLog
 from app.schemas.trade import TradeCreate, TradeStatusUpdate
+from app.services.ledger_service import LedgerService
 
 
 class TradeService:
@@ -77,8 +78,10 @@ class TradeService:
         db.refresh(new_trade)
         
         # Create ledger entry
-        ledger_entry = LedgerEntry(
-            document_id=None,  # Trade-related entries don't need a document
+        # Create ledger entry
+        LedgerService.create_entry(
+            db=db,
+            document_id=None,
             action=LedgerAction.TRADE_CREATED,
             actor_id=current_user.id,
             entry_metadata={
@@ -90,8 +93,6 @@ class TradeService:
                 "initial_status": new_trade.status.value
             }
         )
-        db.add(ledger_entry)
-        db.commit()
         
         # Audit log for admin
         if current_user.role == UserRole.ADMIN:
@@ -196,7 +197,9 @@ class TradeService:
             ledger_action = LedgerAction.TRADE_STATUS_UPDATED
         
         # Create ledger entry
-        ledger_entry = LedgerEntry(
+        # Create ledger entry
+        LedgerService.create_entry(
+            db=db,
             document_id=None,
             action=ledger_action,
             actor_id=current_user.id,
@@ -207,8 +210,6 @@ class TradeService:
                 "admin_override": current_user.role == UserRole.ADMIN
             }
         )
-        db.add(ledger_entry)
-        db.commit()
         
         # Audit log for admin
         if current_user.role == UserRole.ADMIN:
@@ -264,7 +265,9 @@ class TradeService:
         db.refresh(trade)
         
         # Create ledger entry
-        ledger_entry = LedgerEntry(
+        # Create ledger entry
+        LedgerService.create_entry(
+            db=db,
             document_id=document.id,
             action=LedgerAction.DOCUMENT_LINKED_TO_TRADE,
             actor_id=current_user.id,
@@ -274,8 +277,6 @@ class TradeService:
                 "document_number": document.doc_number
             }
         )
-        db.add(ledger_entry)
-        db.commit()
         
         # Audit log for admin
         if current_user.role == UserRole.ADMIN:

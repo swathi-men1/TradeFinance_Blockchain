@@ -3,20 +3,46 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { documentService } from '../services/documentService';
 import { Document } from '../types/document.types';
 import { useAuth } from '../context/AuthContext';
+import { ledgerService } from '../services/ledgerService';
+import { LedgerEntry } from '../types/ledger.types';
 
 export default function DocumentDetailsPage() {
     const { id } = useParams();
     const [document, setDocument] = useState<Document | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+    const [verifying, setVerifying] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    const handleVerifyDocument = async () => {
+        try {
+            setVerifying(true);
+            const result = await documentService.verifyDocument(parseInt(id!));
+            alert(`Verification Result: ${result.status}\nMessage: ${result.message || 'Integrity Verified'}`);
+        } catch (err: any) {
+            alert(`Verification Failed: ${err.response?.data?.detail || 'Unknown error'}`);
+        } finally {
+            setVerifying(false);
+        }
+    };
 
     useEffect(() => {
         if (id) {
             loadDocument();
+            loadLedger();
         }
     }, [id]);
+
+    const loadLedger = async () => {
+        try {
+            const data = await ledgerService.getDocumentLedger(parseInt(id!));
+            setLedgerEntries(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const loadDocument = async () => {
         try {
@@ -205,6 +231,41 @@ export default function DocumentDetailsPage() {
                                 <p className="text-lime text-sm">Tamper-Proof</p>
                             </div>
                         </div>
+
+                        {/* Hash Chain Visualizer */}
+                        <div className="mt-8 border-t border-border-dark pt-8">
+                            <h3 className="text-xl font-bold text-white mb-4">Ledger Hash Chain</h3>
+                            <div className="relative border-l-2 border-lime ml-4 space-y-8">
+                                {ledgerEntries.map((entry) => (
+                                    <div key={entry.id} className="relative pl-8">
+                                        <div className="absolute -left-2.5 top-0 w-5 h-5 rounded-full bg-lime border-4 border-dark"></div>
+                                        <div className="bg-dark-elevated p-4 rounded-lg border border-border-dark">
+                                            <div className="flex justify-between mb-2">
+                                                <span className="font-bold text-white">{entry.action}</span>
+                                                <span className="text-xs text-secondary">{new Date(entry.created_at).toLocaleString()}</span>
+                                            </div>
+                                            <div className="text-xs font-mono space-y-1">
+                                                <div className="flex gap-2">
+                                                    <span className="text-secondary w-20">Prev Hash:</span>
+                                                    <span className="text-lime/70 truncate w-48" title={entry.previous_hash || 'Genesis'}>
+                                                        {entry.previous_hash ? `${entry.previous_hash.substring(0, 16)}...` : 'Genesis'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <span className="text-secondary w-20">Entry Hash:</span>
+                                                    <span className="text-white truncate w-48" title={entry.entry_hash || 'Pending'}>
+                                                        {entry.entry_hash ? `${entry.entry_hash.substring(0, 16)}...` : 'Pending'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {ledgerEntries.length === 0 && (
+                                    <p className="text-secondary pl-8">No ledger entries found.</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -230,8 +291,12 @@ export default function DocumentDetailsPage() {
                                 View File
                             </button>
                             {user?.role === 'bank' && (
-                                <button className="btn-dark">
-                                    Verify Document
+                                <button
+                                    onClick={handleVerifyDocument}
+                                    disabled={verifying}
+                                    className="btn-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {verifying ? 'Verifying...' : 'Verify Document'}
                                 </button>
                             )}
                         </div>

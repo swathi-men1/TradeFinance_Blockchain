@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api import auth, documents, ledger, trades
+from app.api import auth, documents, ledger, trades, admin, risk, monitoring, consistency
+from app.core.scheduler import start_scheduler
+from app.core.middleware import TimingMiddleware
 
 # Create FastAPI application
 app = FastAPI(
@@ -20,11 +22,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add Performance Middleware
+app.add_middleware(TimingMiddleware)
+
 # Include routers with prefix
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(documents.router, prefix=settings.API_V1_PREFIX)
 app.include_router(ledger.router, prefix=settings.API_V1_PREFIX)
 app.include_router(trades.router, prefix=settings.API_V1_PREFIX)
+app.include_router(risk.router, prefix=f"{settings.API_V1_PREFIX}/risk", tags=["Risk"])
+app.include_router(admin.router, prefix=f"{settings.API_V1_PREFIX}/admin", tags=["Admin"])
+app.include_router(monitoring.router, prefix=f"{settings.API_V1_PREFIX}/admin", tags=["Monitoring"])
+app.include_router(consistency.router, prefix=f"{settings.API_V1_PREFIX}/admin", tags=["Consistency"])
 
 
 @app.get("/")
@@ -37,3 +46,9 @@ def root():
 def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on startup"""
+    start_scheduler()

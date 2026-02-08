@@ -15,6 +15,7 @@ export interface UserCreate {
     password: string;
 
     org_name: string;
+    role: UserRole;
 }
 
 export interface UserLogin {
