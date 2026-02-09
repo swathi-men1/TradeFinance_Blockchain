@@ -10,6 +10,7 @@ from app.models.audit import AuditLog
 from app.core.hashing import compute_file_hash
 from app.config import settings
 from app.services.ledger_service import LedgerService
+from app.services.risk_service import RiskService
 
 
 class DocumentService:
@@ -215,6 +216,9 @@ class DocumentService:
                     "is_valid": is_valid
                 }
             )
+            
+            # Trigger risk recalculation on verification (especially if failed)
+            RiskService.trigger_on_document_verification(db, document.id, is_valid)
             
             return {
                 "stored_hash": document.hash,

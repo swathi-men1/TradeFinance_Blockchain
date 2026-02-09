@@ -4,21 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { tradeService } from '../services/tradeService';
 import { Trade, TradeStatus } from '../types/trade.types';
 import { Document } from '../types/document.types';
+import { GlassCard } from '../components/GlassCard';
 
-const statusColors = {
-    pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-    in_progress: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    completed: 'bg-green-500/20 text-green-300 border-green-500/30',
-    paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    disputed: 'bg-red-500/20 text-red-300 border-red-500/30',
-};
-
-const statusIcons = {
-    pending: '⏳',
-    in_progress: '🔄',
-    completed: '✅',
-    paid: '💰',
-    disputed: '⚠️',
+const statusConfig = {
+    pending: { color: 'warning', icon: '⏳', label: 'Pending' },
+    in_progress: { color: 'info', icon: '🔄', label: 'In Progress' },
+    completed: { color: 'success', icon: '✅', label: 'Completed' },
+    paid: { color: 'success', icon: '💰', label: 'Paid' },
+    disputed: { color: 'error', icon: '⚠️', label: 'Disputed' },
 };
 
 const nextStatuses: { [key: string]: string[] } = {
@@ -88,7 +81,7 @@ export default function TradeDetailsPage() {
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
-            month: 'short',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -104,10 +97,10 @@ export default function TradeDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+            <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mx-auto"></div>
-                    <p className="mt-4 text-slate-300">Loading trade details...</p>
+                    <div className="spinner mx-auto mb-4" />
+                    <p className="text-secondary">Loading trade details...</p>
                 </div>
             </div>
         );
@@ -115,18 +108,17 @@ export default function TradeDetailsPage() {
 
     if (error && !trade) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-6xl mb-4">❌</div>
-                    <h2 className="text-2xl font-bold text-red-400 mb-2">Error Loading Trade</h2>
-                    <p className="text-slate-400 mb-6">{error}</p>
-                    <button
-                        onClick={() => navigate('/trades')}
-                        className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all"
-                    >
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <GlassCard className="text-center max-w-md">
+                    <div className="text-6xl mb-4">⚠️</div>
+                    <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        Error Loading Trade
+                    </h2>
+                    <p className="text-secondary mb-6">{error}</p>
+                    <button onClick={() => navigate('/trades')} className="btn-primary">
                         Back to Trades
                     </button>
-                </div>
+                </GlassCard>
             </div>
         );
     }
@@ -134,157 +126,225 @@ export default function TradeDetailsPage() {
     if (!trade) return null;
 
     const canUpdateStatus = user?.role !== 'auditor' && nextStatuses[trade.status]?.length > 0;
+    const config = statusConfig[trade.status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={() => navigate('/trades')}
-                        className="text-cyan-400 hover:text-cyan-300 mb-4 flex items-center gap-2 transition-colors"
-                    >
-                        ← Back to Trades
-                    </button>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                Trade #{trade.id}
-                            </h1>
-                            <p className="text-slate-400 mt-2">
-                                Created {formatDate(trade.created_at)}
-                            </p>
-                        </div>
-                        <span className={`px-4 py-2 rounded-xl text-sm font-medium border ${statusColors[trade.status as keyof typeof statusColors]}`}>
-                            {statusIcons[trade.status as keyof typeof statusIcons]} {trade.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                    </div>
-                </div>
+        <div className="fade-in max-w-6xl">
+            {/* Header */}
+            <div className="mb-8">
+                <button
+                    onClick={() => navigate('/trades')}
+                    className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
+                >
+                    <span>←</span>
+                    <span>Back to Trades</span>
+                </button>
 
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300">
-                        {error}
-                    </div>
-                )}
-
-                <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Trade Details */}
-                    <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6">
-                        <h2 className="text-xl font-semibold text-white mb-6">Trade Details</h2>
-
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                <span className="text-slate-400">Amount</span>
-                                <span className="text-2xl font-bold text-white">
-                                    {formatAmount(trade.amount, trade.currency)}
-                                </span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                <span className="text-slate-400">Buyer ID</span>
-                                <span className="text-cyan-300 font-semibold">{trade.buyer_id}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                <span className="text-slate-400">Seller ID</span>
-                                <span className="text-cyan-300 font-semibold">{trade.seller_id}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3 border-b border-slate-700">
-                                <span className="text-slate-400">Currency</span>
-                                <span className="text-white font-semibold">{trade.currency}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3">
-                                <span className="text-slate-400">Last Updated</span>
-                                <span className="text-slate-300">{formatDate(trade.updated_at)}</span>
-                            </div>
-                        </div>
+                <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            Trade #{trade.id}
+                        </h1>
+                        <p className="text-secondary">
+                            Created {formatDate(trade.created_at)}
+                        </p>
                     </div>
 
-                    {/* Status Management */}
-                    {canUpdateStatus && (
-                        <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6">
-                            <h2 className="text-xl font-semibold text-white mb-6">Update Status</h2>
-
-                            {!showStatusUpdate ? (
-                                <button
-                                    onClick={() => setShowStatusUpdate(true)}
-                                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 shadow-lg shadow-blue-500/30"
-                                >
-                                    Change Status
-                                </button>
-                            ) : (
-                                <div className="space-y-4">
-                                    <select
-                                        value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                                    >
-                                        <option value="">Select new status...</option>
-                                        {nextStatuses[trade.status].map((status) => (
-                                            <option key={status} value={status}>
-                                                {statusIcons[status as keyof typeof statusIcons]} {status.replace('_', ' ').toUpperCase()}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setShowStatusUpdate(false);
-                                                setSelectedStatus('');
-                                            }}
-                                            className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-600 transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleStatusUpdate}
-                                            disabled={!selectedStatus || updatingStatus}
-                                            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {updatingStatus ? 'Updating...' : 'Update'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Linked Documents */}
-                    <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 lg:col-span-2">
-                        <h2 className="text-xl font-semibold text-white mb-6">Linked Documents</h2>
-
-                        {documents.length === 0 ? (
-                            <div className="text-center py-8">
-                                <div className="text-4xl mb-2">📄</div>
-                                <p className="text-slate-400">No documents linked to this trade yet</p>
-                            </div>
-                        ) : (
-                            <div className="grid gap-4 md:grid-cols-2">
-                                {documents.map((doc) => (
-                                    <div
-                                        key={doc.id}
-                                        onClick={() => navigate(`/documents/${doc.id}`)}
-                                        className="p-4 bg-slate-700/30 border border-slate-600/50 rounded-xl hover:border-cyan-500/50 transition-all cursor-pointer group"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                                                    {doc.doc_number}
-                                                </p>
-                                                <p className="text-sm text-slate-400">{doc.doc_type}</p>
-                                            </div>
-                                            <span className="text-slate-400 group-hover:text-cyan-400 transition-colors">→</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                    <div className={`status-badge status-${config.color}`}>
+                        <span>{config.icon}</span>
+                        <span>{config.label}</span>
                     </div>
                 </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="alert alert-error mb-6">
+                    <span className="text-2xl">⚠️</span>
+                    <span>{error}</span>
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Trade Details Card */}
+                <GlassCard>
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <span>💼</span>
+                        <span>Trade Details</span>
+                    </h2>
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <span className="text-muted">Amount</span>
+                            <span className="text-2xl font-bold text-lime">
+                                {formatAmount(trade.amount, trade.currency)}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <span className="text-muted">Buyer</span>
+                            <div className="text-right">
+                                <p className="text-white font-semibold">{trade.buyer?.name || 'Unknown'}</p>
+                                <p className="text-secondary text-sm">ID: #{trade.buyer_id}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <span className="text-muted">Seller</span>
+                            <div className="text-right">
+                                <p className="text-white font-semibold">{trade.seller?.name || 'Unknown'}</p>
+                                <p className="text-secondary text-sm">ID: #{trade.seller_id}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <span className="text-muted">Currency</span>
+                            <span className="text-white font-semibold">{trade.currency}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-3">
+                            <span className="text-muted">Last Updated</span>
+                            <span className="text-secondary text-sm">{formatDate(trade.updated_at)}</span>
+                        </div>
+                    </div>
+                </GlassCard>
+
+                {/* Status Management Card */}
+                {canUpdateStatus && (
+                    <GlassCard>
+                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <span>🔄</span>
+                            <span>Update Status</span>
+                        </h2>
+
+                        {!showStatusUpdate ? (
+                            <button
+                                onClick={() => setShowStatusUpdate(true)}
+                                className="btn-primary w-full"
+                            >
+                                <span>🔄</span>
+                                <span>Change Status</span>
+                            </button>
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
+                                    <select
+                                        value={selectedStatus}
+                                        onChange={(e) => setSelectedStatus(e.target.value)}
+                                        className="input-field"
+                                    >
+                                        <option value="">Choose status...</option>
+                                        {nextStatuses[trade.status].map((status) => {
+                                            const cfg = statusConfig[status as keyof typeof statusConfig];
+                                            return (
+                                                <option key={status} value={status}>
+                                                    {cfg.icon} {cfg.label}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowStatusUpdate(false);
+                                            setSelectedStatus('');
+                                        }}
+                                        className="btn-secondary flex-1"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleStatusUpdate}
+                                        disabled={!selectedStatus || updatingStatus}
+                                        className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {updatingStatus ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                                Updating...
+                                            </span>
+                                        ) : (
+                                            'Update'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Status Lifecycle Timeline */}
+                        <div className="mt-8 pt-8 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <h3 className="text-sm font-semibold text-white mb-4">Trade Lifecycle</h3>
+                            <div className="space-y-2">
+                                {Object.entries(statusConfig).map(([key, cfg], index) => {
+                                    const isCurrentStatus = trade.status === key;
+                                    const isPastStatus = Object.keys(statusConfig).indexOf(trade.status) > index;
+
+                                    return (
+                                        <div
+                                            key={key}
+                                            className={`flex items-center gap-3 p-2 rounded-lg transition-all ${isCurrentStatus ? 'bg-lime bg-opacity-10' : ''
+                                                }`}
+                                        >
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentStatus ? 'bg-lime text-primary' :
+                                                isPastStatus ? 'bg-success bg-opacity-20 text-success' :
+                                                    'bg-secondary bg-opacity-20 text-muted'
+                                                }`}>
+                                                {isPastStatus ? '✓' : cfg.icon}
+                                            </div>
+                                            <span className={`text-sm ${isCurrentStatus ? 'text-lime font-semibold' :
+                                                isPastStatus ? 'text-success' :
+                                                    'text-muted'
+                                                }`}>
+                                                {cfg.label}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </GlassCard>
+                )}
+            </div>
+
+            {/* Linked Documents */}
+            <GlassCard>
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <span>📎</span>
+                    <span>Linked Documents</span>
+                </h2>
+
+                {documents.length === 0 ? (
+                    <div className="text-center py-12">
+                        <div className="text-6xl mb-4">📄</div>
+                        <p className="text-secondary">No documents linked to this trade yet</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {documents.map((doc) => (
+                            <div
+                                key={doc.id}
+                                onClick={() => navigate(`/documents/${doc.id}`)}
+                                className="glass-card-flat cursor-pointer group hover:border-lime transition-all"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="font-semibold text-white group-hover:text-lime transition-colors">
+                                            {doc.doc_number}
+                                        </p>
+                                        <p className="text-sm text-secondary">
+                                            {doc.doc_type.replace(/_/g, ' ')}
+                                        </p>
+                                    </div>
+                                    <span className="text-secondary group-hover:text-lime transition-colors text-xl">→</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </GlassCard>
         </div>
     );
 }

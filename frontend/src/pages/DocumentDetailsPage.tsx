@@ -5,6 +5,8 @@ import { Document } from '../types/document.types';
 import { useAuth } from '../context/AuthContext';
 import { ledgerService } from '../services/ledgerService';
 import { LedgerEntry } from '../types/ledger.types';
+import { LedgerTimeline } from '../components/LedgerTimeline';
+import { GlassCard } from '../components/GlassCard';
 
 export default function DocumentDetailsPage() {
     const { id } = useParams();
@@ -66,7 +68,7 @@ export default function DocumentDetailsPage() {
     const getDocIcon = (docType: string) => {
         const icons: Record<string, string> = {
             'LOC': '💰',
-            'INVOICE': '🚢',
+            'INVOICE': '🧾',
             'BILL_OF_LADING': '📄',
             'PO': '📋',
             'COO': '✅',
@@ -89,7 +91,7 @@ export default function DocumentDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-dark flex items-center justify-center">
+            <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
                     <div className="spinner mx-auto mb-4" />
                     <p className="text-secondary">Loading document...</p>
@@ -100,216 +102,232 @@ export default function DocumentDetailsPage() {
 
     if (error || !document) {
         return (
-            <div className="min-h-screen bg-dark flex items-center justify-center">
-                <div className="modern-card text-center max-w-md">
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <GlassCard className="text-center max-w-md">
                     <div className="text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         Document Not Found
                     </h2>
                     <p className="text-secondary mb-6">
                         {error || 'The document you are looking for does not exist'}
                     </p>
-                    <button onClick={() => navigate('/documents')} className="btn-lime">
+                    <button onClick={() => navigate('/documents')} className="btn-primary">
                         Back to Documents
                     </button>
-                </div>
+                </GlassCard>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-dark">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={() => navigate('/documents')}
-                        className="text-lime hover:underline mb-4 flex items-center gap-2"
-                    >
-                        ← Back to Documents
+        <div className="fade-in max-w-6xl">
+            {/* Header */}
+            <div className="mb-8">
+                <button
+                    onClick={() => navigate('/documents')}
+                    className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
+                >
+                    <span>←</span>
+                    <span>Back to Documents</span>
+                </button>
+
+                <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="text-6xl">{getDocIcon(document.doc_type)}</div>
+                        <div>
+                            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                {document.doc_number}
+                            </h1>
+                            <p className="text-secondary text-lg">
+                                {formatDocType(document.doc_type)}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button onClick={handleDownload} className="btn-primary">
+                        <span>⬇️</span>
+                        <span>Download</span>
                     </button>
-                    <div className="flex items-start justify-between">
+                </div>
+            </div>
+
+            {/* Document Metadata Card */}
+            <GlassCard className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <span>📋</span>
+                    <span>Document Information</span>
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Document ID</label>
+                        <p className="text-white font-semibold">#{document.id}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Document Number</label>
+                        <p className="text-white font-semibold">{document.doc_number}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Document Type</label>
+                        <p className="text-white font-semibold">{formatDocType(document.doc_type)}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Owner Organization</label>
+                        <p className="text-white font-semibold">{document.owner?.org_name || 'Unknown'}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Issued Date</label>
+                        <p className="text-white font-semibold">
+                            {new Date(document.issued_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="text-muted text-sm block mb-1">Upload Date</label>
+                        <p className="text-white font-semibold">
+                            {new Date(document.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+                    </div>
+                </div>
+            </GlassCard>
+
+            {/* Blockchain Verification */}
+            <GlassCard className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <span>⛓️</span>
+                    <span>Blockchain Verification</span>
+                </h2>
+
+                <div className="space-y-6">
+                    {/* SHA-256 Hash */}
+                    <div>
+                        <label className="text-muted text-sm block mb-2">Document Hash (SHA-256)</label>
+                        <div className="glass-card-flat">
+                            <code className="text-mono text-sm text-lime break-all block">
+                                {document.hash}
+                            </code>
+                        </div>
+                        <p className="text-xs text-muted mt-2">
+                            This unique cryptographic hash ensures document integrity on the blockchain
+                        </p>
+                    </div>
+
+                    {/* Verification Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="glass-card-flat text-center">
+                            <div className="text-4xl mb-2">⛓️</div>
+                            <p className="text-white font-semibold mb-1">Blockchain</p>
+                            <p className="text-success text-sm font-semibold">✓ Verified</p>
+                        </div>
+
+                        <div className="glass-card-flat text-center">
+                            <div className="text-4xl mb-2">🔐</div>
+                            <p className="text-white font-semibold mb-1">Encryption</p>
+                            <p className="text-lime text-sm font-semibold">SHA-256</p>
+                        </div>
+
+                        <div className="glass-card-flat text-center">
+                            <div className="text-4xl mb-2">✅</div>
+                            <p className="text-white font-semibold mb-1">Status</p>
+                            <p className="text-success text-sm font-semibold">Immutable</p>
+                        </div>
+                    </div>
+
+                    {/* Verify Button for Banks */}
+                    {user?.role === 'bank' && (
+                        <div className="pt-4 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                            <button
+                                onClick={handleVerifyDocument}
+                                disabled={verifying}
+                                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {verifying ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                        Verifying...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <span>🔍</span>
+                                        <span>Run Verification</span>
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </GlassCard>
+
+            {/* Ledger Hash Chain Timeline */}
+            <GlassCard className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <span>🔗</span>
+                    <span>Ledger Hash Chain</span>
+                </h2>
+
+                {ledgerEntries.length > 0 ? (
+                    <LedgerTimeline entries={ledgerEntries.map(entry => ({
+                        id: entry.id,
+                        action: entry.action,
+                        actor: `User #${entry.actor_id}`,
+                        timestamp: entry.created_at,
+                        previousHash: entry.previous_hash || '',
+                        entryHash: entry.entry_hash || ''
+                    }))} />
+                ) : (
+                    <div className="text-center py-12">
+                        <div className="text-6xl mb-4">⛓️</div>
+                        <p className="text-secondary">
+                            No ledger entries found for this document
+                        </p>
+                    </div>
+                )}
+            </GlassCard>
+
+            {/* File Access */}
+            <GlassCard>
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <span>📁</span>
+                    <span>File Access</span>
+                </h2>
+
+                <div className="glass-card-flat">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="text-6xl">{getDocIcon(document.doc_type)}</div>
+                            <div className="text-5xl">📄</div>
                             <div>
-                                <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                    {document.doc_number}
-                                </h1>
-                                <p className="text-secondary text-lg">
-                                    {formatDocType(document.doc_type)}
-                                </p>
+                                <p className="text-white font-semibold text-lg">Document File</p>
+                                <p className="text-secondary text-sm">Securely stored and encrypted</p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleDownload}
-                            className="btn-lime"
-                        >
-                            ⬇️ Download
+
+                        <button onClick={handleDownload} className="btn-outline">
+                            <span>👁️</span>
+                            <span>View File</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Document Details Card */}
-                <div className="modern-card-lime mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        Document Information
-                    </h2>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="text-muted text-sm">Document ID</label>
-                            <p className="text-white font-semibold mt-1">#{document.id}</p>
-                        </div>
-                        <div>
-                            <label className="text-muted text-sm">Document Number</label>
-                            <p className="text-white font-semibold mt-1">{document.doc_number}</p>
-                        </div>
-                        <div>
-                            <label className="text-muted text-sm">Document Type</label>
-                            <p className="text-white font-semibold mt-1">{formatDocType(document.doc_type)}</p>
-                        </div>
-                        <div>
-                            <label className="text-muted text-sm">Owner ID</label>
-                            <p className="text-white font-semibold mt-1">User #{document.owner_id}</p>
-                        </div>
-                        <div>
-                            <label className="text-muted text-sm">Issued Date</label>
-                            <p className="text-white font-semibold mt-1">
-                                {new Date(document.issued_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </p>
-                        </div>
-                        <div>
-                            <label className="text-muted text-sm">Upload Date</label>
-                            <p className="text-white font-semibold mt-1">
-                                {new Date(document.created_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </p>
-                        </div>
+                <div className="mt-6 alert alert-info">
+                    <span className="text-2xl">🔒</span>
+                    <div className="text-sm">
+                        <p className="font-semibold mb-1">Access Control</p>
+                        <p>Only authorized users can view and download this document. All access is logged and recorded on the blockchain for audit purposes.</p>
                     </div>
                 </div>
-
-                {/* Blockchain Information */}
-                <div className="modern-card mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        Blockchain Verification
-                    </h2>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-muted text-sm">Document Hash (SHA-256)</label>
-                            <div className="mt-2 p-4 bg-dark-elevated rounded-xl">
-                                <code className="text-lime text-sm break-all font-mono">
-                                    {document.hash}
-                                </code>
-                            </div>
-                            <p className="text-xs text-muted mt-2">
-                                This unique cryptographic hash ensures document integrity on the blockchain
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 pt-4">
-                            <div className="modern-card bg-dark-elevated text-center">
-                                <div className="text-3xl mb-2">⛓️</div>
-                                <p className="text-white font-semibold">Blockchain</p>
-                                <p className="text-lime text-sm">Verified</p>
-                            </div>
-                            <div className="modern-card bg-dark-elevated text-center">
-                                <div className="text-3xl mb-2">🔐</div>
-                                <p className="text-white font-semibold">Encrypted</p>
-                                <p className="text-lime text-sm">256-bit AES</p>
-                            </div>
-                            <div className="modern-card bg-dark-elevated text-center">
-                                <div className="text-3xl mb-2">✅</div>
-                                <p className="text-white font-semibold">Immutable</p>
-                                <p className="text-lime text-sm">Tamper-Proof</p>
-                            </div>
-                        </div>
-
-                        {/* Hash Chain Visualizer */}
-                        <div className="mt-8 border-t border-border-dark pt-8">
-                            <h3 className="text-xl font-bold text-white mb-4">Ledger Hash Chain</h3>
-                            <div className="relative border-l-2 border-lime ml-4 space-y-8">
-                                {ledgerEntries.map((entry) => (
-                                    <div key={entry.id} className="relative pl-8">
-                                        <div className="absolute -left-2.5 top-0 w-5 h-5 rounded-full bg-lime border-4 border-dark"></div>
-                                        <div className="bg-dark-elevated p-4 rounded-lg border border-border-dark">
-                                            <div className="flex justify-between mb-2">
-                                                <span className="font-bold text-white">{entry.action}</span>
-                                                <span className="text-xs text-secondary">{new Date(entry.created_at).toLocaleString()}</span>
-                                            </div>
-                                            <div className="text-xs font-mono space-y-1">
-                                                <div className="flex gap-2">
-                                                    <span className="text-secondary w-20">Prev Hash:</span>
-                                                    <span className="text-lime/70 truncate w-48" title={entry.previous_hash || 'Genesis'}>
-                                                        {entry.previous_hash ? `${entry.previous_hash.substring(0, 16)}...` : 'Genesis'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <span className="text-secondary w-20">Entry Hash:</span>
-                                                    <span className="text-white truncate w-48" title={entry.entry_hash || 'Pending'}>
-                                                        {entry.entry_hash ? `${entry.entry_hash.substring(0, 16)}...` : 'Pending'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                                {ledgerEntries.length === 0 && (
-                                    <p className="text-secondary pl-8">No ledger entries found.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* File Information */}
-                <div className="modern-card">
-                    <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        File Access
-                    </h2>
-
-                    <div className="flex items-center justify-between p-4 bg-dark-elevated rounded-xl">
-                        <div className="flex items-center gap-4">
-                            <div className="text-4xl">📄</div>
-                            <div>
-                                <p className="text-white font-semibold">Document File</p>
-                                <p className="text-secondary text-sm">Securely stored and encrypted</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleDownload}
-                                className="btn-outline-lime"
-                            >
-                                View File
-                            </button>
-                            {user?.role === 'bank' && (
-                                <button
-                                    onClick={handleVerifyDocument}
-                                    disabled={verifying}
-                                    className="btn-dark disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {verifying ? 'Verifying...' : 'Verify Document'}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-dark-elevated border border-border-dark rounded-xl">
-                        <p className="text-sm text-secondary">
-                            <strong className="text-white">Access Control:</strong> Only authorized users can view and download this document.
-                            All access is logged and recorded on the blockchain for audit purposes.
-                        </p>
-                    </div>
-                </div>
-            </div>
+            </GlassCard>
         </div>
     );
 }

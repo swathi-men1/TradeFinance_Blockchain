@@ -1,86 +1,213 @@
 from typing import List, Dict, Any, Tuple
 from decimal import Decimal
 
+
 class RiskRules:
     """
-    Implements the risk scoring formula.
+    Implements the risk scoring formula per mentor requirements.
     
-    Total Risk Score = 
-      (Trade Failure Rate * 40)
-    + (Tamper Rate * 30)
-    + (Volume Risk * 20)
-    + (External Risk * 10)
+    Risk Score is USER-based, deterministic, and rule-based (NOT ML).
     
-    Final Score clamped between 0 and 100.
+    Weights (Mentor Specified):
+    - Document Integrity: 40% (Highest)
+    - Activity Risk (Ledger): 25%
+    - Transaction Behavior: 25%
+    - External Risk: 10% (Lowest)
+    
+    Score Range: 0-100
+    Categories:
+    - 0-33: LOW Risk
+    - 34-66: MEDIUM Risk
+    - 67-100: HIGH Risk
     """
     
+    # Weight Constants (Mentor Required)
+    WEIGHT_DOCUMENT = 40  # Highest priority as per mentor
+    WEIGHT_ACTIVITY = 25  # Ledger-based activity
+    WEIGHT_TRANSACTION = 25  # Trade behavior
+    WEIGHT_EXTERNAL = 10  # External/Country risk (lowest)
+    
+    # Category Thresholds (Mentor Specified)
+    LOW_THRESHOLD = 33
+    MEDIUM_THRESHOLD = 66
+    
     @staticmethod
-    def calculate_trade_failure_rate(total_trades: int, disputed_trades: int) -> float:
-        if total_trades == 0:
-            return 0.5  # Neutral risk assumption
-        return disputed_trades / total_trades
-
-    @staticmethod
-    def calculate_tamper_rate(total_documents: int, tampered_documents: int) -> float:
+    def calculate_document_risk(total_documents: int, tampered_documents: int) -> Tuple[float, str]:
+        """
+        Calculate document integrity risk score (0-1).
+        
+        Input 1: Document Integrity (Highest Weight)
+        - Checks document hash verification
+        - Detects tampered ledger
+        - Counts failed integrity checks
+        
+        tamper_rate = tampered_docs / total_docs
+        Higher tamper → higher risk
+        """
         if total_documents == 0:
-            return 0.3  # Slight risk for no history
-        return tampered_documents / total_documents
+            # No documents = slight uncertainty risk
+            rate = 0.3
+            explanation = "No documents uploaded yet (default uncertainty risk: 0.30)"
+        else:
+            rate = tampered_documents / total_documents
+            explanation = f"Tamper rate: {tampered_documents}/{total_documents} documents = {rate:.2%}"
+        
+        return rate, explanation
 
     @staticmethod
-    def calculate_volume_risk(total_trades: int) -> float:
-        # Higher trade count = safer counterparty
-        if total_trades >= 50:
-            return 0.1
-        elif 10 <= total_trades <= 49:
-            return 0.3
-        elif 1 <= total_trades <= 9:
-            return 0.6
+    def calculate_activity_risk(
+        total_ledger_entries: int,
+        failed_verifications: int,
+        corrections_count: int
+    ) -> Tuple[float, str]:
+        """
+        Calculate user activity risk based on ledger behavior (0-1).
+        
+        Input 2: User Activity (Ledger Based)
+        - Failed ledger events
+        - Abnormal action frequency
+        - Repeated corrections/amendments
+        """
+        if total_ledger_entries == 0:
+            rate = 0.4  # No activity = moderate uncertainty
+            explanation = "No ledger activity recorded (default uncertainty risk: 0.40)"
         else:
-            return 0.8  # 0 trades
+            # Weight failed verifications heavily
+            failure_rate = failed_verifications / total_ledger_entries if total_ledger_entries > 0 else 0
+            correction_rate = corrections_count / total_ledger_entries if total_ledger_entries > 0 else 0
+            
+            # Combined activity risk
+            rate = min(1.0, (failure_rate * 0.7) + (correction_rate * 0.3))
+            explanation = f"Activity: {failed_verifications} failures, {corrections_count} corrections out of {total_ledger_entries} entries = {rate:.2%}"
+        
+        return rate, explanation
+
+    @staticmethod
+    def calculate_transaction_risk(
+        total_trades: int,
+        disputed_trades: int,
+        cancelled_trades: int = 0,
+        delayed_trades: int = 0
+    ) -> Tuple[float, str]:
+        """
+        Calculate transaction behavior risk (0-1).
+        
+        Input 3: Transaction Behavior
+        - Trade disputes
+        - Delays
+        - Cancelled trades
+        - Failed trades
+        """
+        if total_trades == 0:
+            # No trades = uncertainty, moderate risk
+            rate = 0.5
+            explanation = "No trade history (default uncertainty risk: 0.50)"
+        else:
+            # Weight disputed trades most heavily
+            dispute_rate = disputed_trades / total_trades
+            cancel_rate = cancelled_trades / total_trades
+            delay_rate = delayed_trades / total_trades
+            
+            # Weighted combination
+            rate = min(1.0, (dispute_rate * 0.6) + (cancel_rate * 0.25) + (delay_rate * 0.15))
+            explanation = f"Transactions: {disputed_trades} disputed, {cancelled_trades} cancelled, {delayed_trades} delayed out of {total_trades} trades = {rate:.2%}"
+        
+        return rate, explanation
+
+    @staticmethod
+    def calculate_external_risk(external_score: float, source: str = "country") -> Tuple[float, str]:
+        """
+        Calculate external trade risk (0-1).
+        
+        Input 4: External Trade Risk (Optional)
+        - Country trade risk
+        - Region compliance risk
+        
+        Note: External data stays backend only.
+        """
+        explanation = f"External {source} risk score: {external_score:.2%}"
+        return external_score, explanation
 
     @staticmethod
     def calculate_final_score(
-        trade_failure_rate: float,
-        tamper_rate: float,
-        volume_risk: float,
-        external_risk: float
-    ) -> Tuple[Decimal, List[str]]:
+        doc_risk: float,
+        activity_risk: float,
+        transaction_risk: float,
+        external_risk: float,
+        doc_explanation: str = "",
+        activity_explanation: str = "",
+        transaction_explanation: str = "",
+        external_explanation: str = ""
+    ) -> Tuple[Decimal, str, List[str]]:
         """
-        Calculate weighted score and return (score, rationale_list).
+        Calculate weighted final score and return (score, category, rationale_list).
+        
+        Formula:
+        final_score = 
+            (doc_score × 40) 
+            + (activity_score × 25) 
+            + (transaction_score × 25) 
+            + (external_score × 10)
         """
+        # Clamp inputs to 0-1 range
+        doc_risk = max(0, min(1, doc_risk))
+        activity_risk = max(0, min(1, activity_risk))
+        transaction_risk = max(0, min(1, transaction_risk))
+        external_risk = max(0, min(1, external_risk))
         
-        # Weights
-        w_trade = 40
-        w_tamper = 30
-        w_volume = 20
-        w_external = 10
+        # Calculate weighted components
+        component_doc = doc_risk * RiskRules.WEIGHT_DOCUMENT
+        component_activity = activity_risk * RiskRules.WEIGHT_ACTIVITY
+        component_transaction = transaction_risk * RiskRules.WEIGHT_TRANSACTION
+        component_external = external_risk * RiskRules.WEIGHT_EXTERNAL
         
-        # Components
-        c_trade = trade_failure_rate * w_trade
-        c_tamper = tamper_rate * w_tamper
-        c_volume = volume_risk * w_volume
-        c_external = external_risk * w_external
+        # Sum for total score (0-100)
+        total_score = component_doc + component_activity + component_transaction + component_external
         
-        total_score = c_trade + c_tamper + c_volume + c_external
-        
-        # Clamp
+        # Clamp final score
         final_score = max(0, min(100, total_score))
         
-        # Rationale generation
-        rationale = []
-        rationale.append(f"Trade Failure Rate ({trade_failure_rate:.2f}) contributed {c_trade:.2f} points (Weight: {w_trade}%)")
-        rationale.append(f"Document Tamper Rate ({tamper_rate:.2f}) contributed {c_tamper:.2f} points (Weight: {w_tamper}%)")
-        rationale.append(f"Volume Risk ({volume_risk:.2f}) contributed {c_volume:.2f} points (Weight: {w_volume}%)")
-        rationale.append(f"External Country Risk ({external_risk:.2f}) contributed {c_external:.2f} points (Weight: {w_external}%)")
+        # Determine category (Mentor thresholds: 0-33 LOW, 34-66 MEDIUM, 67-100 HIGH)
+        category = RiskRules.get_risk_category(Decimal(final_score))
         
-        return Decimal(final_score).quantize(Decimal("0.01")), rationale
+        # Generate rationale (human-readable explanation)
+        rationale = []
+        rationale.append(f"=== Risk Score Calculation ===")
+        rationale.append(f"")
+        rationale.append(f"1. DOCUMENT INTEGRITY (Weight: {RiskRules.WEIGHT_DOCUMENT}%)")
+        rationale.append(f"   {doc_explanation}")
+        rationale.append(f"   Contribution: {doc_risk:.2f} × {RiskRules.WEIGHT_DOCUMENT} = {component_doc:.2f} points")
+        rationale.append(f"")
+        rationale.append(f"2. USER ACTIVITY (Weight: {RiskRules.WEIGHT_ACTIVITY}%)")
+        rationale.append(f"   {activity_explanation}")
+        rationale.append(f"   Contribution: {activity_risk:.2f} × {RiskRules.WEIGHT_ACTIVITY} = {component_activity:.2f} points")
+        rationale.append(f"")
+        rationale.append(f"3. TRANSACTION BEHAVIOR (Weight: {RiskRules.WEIGHT_TRANSACTION}%)")
+        rationale.append(f"   {transaction_explanation}")
+        rationale.append(f"   Contribution: {transaction_risk:.2f} × {RiskRules.WEIGHT_TRANSACTION} = {component_transaction:.2f} points")
+        rationale.append(f"")
+        rationale.append(f"4. EXTERNAL RISK (Weight: {RiskRules.WEIGHT_EXTERNAL}%)")
+        rationale.append(f"   {external_explanation}")
+        rationale.append(f"   Contribution: {external_risk:.2f} × {RiskRules.WEIGHT_EXTERNAL} = {component_external:.2f} points")
+        rationale.append(f"")
+        rationale.append(f"=== TOTAL RISK SCORE: {final_score:.2f}/100 ({category}) ===")
+        
+        return Decimal(final_score).quantize(Decimal("0.01")), category, rationale
 
     @staticmethod
     def get_risk_category(score: Decimal) -> str:
+        """
+        Determine risk category from score.
+        
+        Mentor thresholds:
+        - 0-33: LOW Risk
+        - 34-66: MEDIUM Risk  
+        - 67-100: HIGH Risk
+        """
         s = float(score)
-        if s <= 30:
+        if s <= RiskRules.LOW_THRESHOLD:
             return "LOW"
-        elif s <= 70:
+        elif s <= RiskRules.MEDIUM_THRESHOLD:
             return "MEDIUM"
         else:
             return "HIGH"

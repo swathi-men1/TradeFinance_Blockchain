@@ -6,6 +6,7 @@ from app.models.user import User, UserRole
 
 
 from app.core.ledger_hash import LedgerHash
+from app.services.risk_service import RiskService
 
 class LedgerService:
     @staticmethod
@@ -69,6 +70,12 @@ class LedgerService:
             db.add(audit_log)
             db.commit()
         
+            db.commit()
+        
+        # Trigger risk recalculation based on actor activity
+        # (Input 2: User Activity - Ledger Based)
+        RiskService.trigger_on_ledger_entry(db, actor_id, action.value)
+
         return ledger_entry
     
     @staticmethod

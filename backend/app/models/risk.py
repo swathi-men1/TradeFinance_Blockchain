@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, Text, ForeignKey, TIMESTAMP, func, CheckConstraint
+from sqlalchemy import Column, Integer, Numeric, Text, ForeignKey, TIMESTAMP, func, CheckConstraint, String
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -9,6 +9,7 @@ class RiskScore(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     score = Column(Numeric(5, 2), nullable=False)
+    category = Column(String(20), nullable=False, default="MEDIUM")  # LOW, MEDIUM, HIGH
     rationale = Column(Text, nullable=False)
     last_updated = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     

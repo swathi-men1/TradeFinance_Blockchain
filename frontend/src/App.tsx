@@ -1,6 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Sidebar } from './components/Sidebar';
+import { TopNavbar } from './components/TopNavbar';
+
+// Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -12,86 +17,33 @@ import TradesListPage from './pages/TradesListPage';
 import CreateTradePage from './pages/CreateTradePage';
 import TradeDetailsPage from './pages/TradeDetailsPage';
 
-function Navbar() {
-    const { user, logout } = useAuth();
+function AppLayout({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
     const location = useLocation();
-    const navigate = useNavigate();
+    // Default to open on desktop
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
 
-    // Don't show navbar on landing page, login, or register pages
-    if (!user || location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register') {
-        return null;
+    // Don't show sidebar/navbar on public pages
+    const isPublicPage = !user || ['/', '/login', '/register'].includes(location.pathname);
+
+    if (isPublicPage) {
+        return <>{children}</>;
     }
 
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-    };
-
     return (
-        <nav className="navbar-modern">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
-                    <div className="flex items-center">
-                        <a href="/" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#BFFF00] to-[#C0FF00] flex items-center justify-center rounded-lg transition-all duration-300 group-hover:scale-110">
-                                <span className="text-lg">⛓️</span>
-                            </div>
-                            <span className="text-xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                TradeFin
-                            </span>
-                        </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <a
-                            href="/dashboard"
-                            className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
-                        >
-                            Dashboard
-                        </a>
-                        <a
-                            href="/documents"
-                            className={`nav-link ${location.pathname === '/documents' || location.pathname.startsWith('/documents/') ? 'active' : ''}`}
-                        >
-                            Documents
-                        </a>
-                        <a
-                            href="/trades"
-                            className={`nav-link ${location.pathname === '/trades' || location.pathname.startsWith('/trades/') ? 'active' : ''}`}
-                        >
-                            Trades
-                        </a>
-                        {user.role !== 'auditor' && (
-                            <a
-                                href="/upload"
-                                className={`nav-link ${location.pathname === '/upload' ? 'active' : ''}`}
-                            >
-                                Upload
-                            </a>
-                        )}
-                        <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-700">
-                            <div className="text-right">
-                                <div className="text-sm font-medium text-white">{user.name}</div>
-                                <div className="text-xs text-[#BFFF00] font-semibold uppercase">{user.role}</div>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="btn-outline-lime text-sm"
-                                style={{ padding: '0.5rem 1rem' }}
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        <div className="min-h-screen bg-primary">
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <TopNavbar isOpen={sidebarOpen} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+            <main className={`main-content ${!sidebarOpen ? 'main-content-collapsed' : ''}`}>
+                {children}
+            </main>
+        </div>
     );
 }
 
 function AppRoutes() {
     return (
-        <>
-            <Navbar />
+        <AppLayout>
             <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<LandingPage />} />
@@ -135,7 +87,7 @@ function AppRoutes() {
                     }
                 />
 
-                {/*  Trade routes */}
+                {/* Trade routes */}
                 <Route
                     path="/trades"
                     element={
@@ -166,7 +118,7 @@ function AppRoutes() {
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-        </>
+        </AppLayout>
     );
 }
 

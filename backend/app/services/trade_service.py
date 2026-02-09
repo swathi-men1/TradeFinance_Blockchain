@@ -9,6 +9,7 @@ from app.models.ledger import LedgerEntry, LedgerAction
 from app.models.audit import AuditLog
 from app.schemas.trade import TradeCreate, TradeStatusUpdate
 from app.services.ledger_service import LedgerService
+from app.services.risk_service import RiskService
 
 
 class TradeService:
@@ -221,6 +222,9 @@ class TradeService:
             )
             db.add(audit_log)
             db.commit()
+        
+        # Trigger risk recalculation for buyer and seller
+        RiskService.trigger_on_trade_status_change(db, trade.id, new_status.value)
         
         return trade
     

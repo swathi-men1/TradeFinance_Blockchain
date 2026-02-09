@@ -3,6 +3,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { UserCreate, UserRole } from '../types/auth.types';
 
+const roleOptions = [
+    {
+        value: 'corporate' as UserRole,
+        label: 'Corporate',
+        icon: '🏢',
+        description: 'For corporate entities managing trade documents'
+    },
+    {
+        value: 'bank' as UserRole,
+        label: 'Bank',
+        icon: '🏦',
+        description: 'For banking institutions handling financial documents'
+    },
+    {
+        value: 'auditor' as UserRole,
+        label: 'Auditor',
+        icon: '📋',
+        description: 'For auditors with read-only access'
+    }
+];
+
 export default function RegisterPage() {
     const [formData, setFormData] = useState<UserCreate>({
         name: '',
@@ -11,6 +32,9 @@ export default function RegisterPage() {
         role: 'corporate',
         org_name: ''
     });
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -18,6 +42,19 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        // Validate password match
+        if (formData.password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        // Validate password strength
+        if (formData.password.length < 8) {
+            setError('Password must be at least 8 characters long');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -31,15 +68,22 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-dark flex items-center justify-center px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full">
-                {/* Logo */}
+        <div className="min-h-screen bg-gradient flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-2xl w-full">
+                {/* Logo & Header */}
                 <div className="text-center mb-8">
-                    <div className="flex justify-center mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#BFFF00] to-[#C0FF00] rounded-2xl flex items-center justify-center">
-                            <span className="text-3xl">⛓️</span>
+                    <Link to="/" className="inline-flex items-center gap-3 mb-6">
+                        <div className="w-16 h-16 bg-gradient-to-br from-lime to-success rounded-2xl flex items-center justify-center text-3xl">
+                            ⛓️
                         </div>
-                    </div>
+                        <div className="text-left">
+                            <div className="text-2xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                TradeFin
+                            </div>
+                            <div className="text-xs text-muted">Blockchain Explorer</div>
+                        </div>
+                    </Link>
+
                     <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         Create Account
                     </h1>
@@ -49,15 +93,16 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="modern-card">
+                <div className="glass-card">
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300">
-                            {error}
+                        <div className="alert alert-error mb-6">
+                            <span className="text-2xl">⚠️</span>
+                            <span>{error}</span>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Name */}
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Full Name */}
                         <div>
                             <label className="block text-sm font-medium text-white mb-2">
                                 Full Name
@@ -66,7 +111,7 @@ export default function RegisterPage() {
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="modern-input"
+                                className="input-field"
                                 placeholder="John Doe"
                                 required
                             />
@@ -81,7 +126,7 @@ export default function RegisterPage() {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="modern-input"
+                                className="input-field"
                                 placeholder="your@email.com"
                                 required
                             />
@@ -96,10 +141,42 @@ export default function RegisterPage() {
                                 type="text"
                                 value={formData.org_name}
                                 onChange={(e) => setFormData({ ...formData, org_name: e.target.value })}
-                                className="modern-input"
-                                placeholder="Acme Corp"
+                                className="input-field"
+                                placeholder="Acme Corporation"
                                 required
                             />
+                        </div>
+
+                        {/* Role Selection - Card Style */}
+                        <div>
+                            <label className="block text-sm font-medium text-white mb-3">
+                                Select Role
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {roleOptions.map((role) => (
+                                    <button
+                                        key={role.value}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, role: role.value })}
+                                        className={`p-4 rounded-xl border-2 transition-all text-left ${formData.role === role.value
+                                                ? 'border-lime bg-lime bg-opacity-10'
+                                                : 'border-opacity-20 hover:border-lime hover:bg-opacity-5 hover:bg-lime'
+                                            }`}
+                                        style={{ borderColor: formData.role === role.value ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                                    >
+                                        <div className="text-3xl mb-2">{role.icon}</div>
+                                        <div className={`font-semibold mb-1 ${formData.role === role.value ? 'text-lime' : 'text-white'}`}>
+                                            {role.label}
+                                        </div>
+                                        <div className="text-xs text-muted">
+                                            {role.description}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="mt-3 text-xs text-warning">
+                                ⚠️ Note: Admin role cannot be self-registered. Admin accounts must be created by system administrators.
+                            </p>
                         </div>
 
                         {/* Password */}
@@ -107,54 +184,76 @@ export default function RegisterPage() {
                             <label className="block text-sm font-medium text-white mb-2">
                                 Password
                             </label>
-                            <input
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="modern-input"
-                                placeholder="••••••••"
-                                required
-                                minLength={8}
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="input-field pr-12"
+                                    placeholder="••••••••"
+                                    required
+                                    minLength={8}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-lime transition-colors"
+                                >
+                                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                                </button>
+                            </div>
+                            <p className="mt-1 text-xs text-muted">
+                                Must be at least 8 characters
+                            </p>
                         </div>
 
-                        {/* Role */}
+                        {/* Confirm Password */}
                         <div>
                             <label className="block text-sm font-medium text-white mb-2">
-                                Account Type
+                                Confirm Password
                             </label>
-                            <select
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                                className="modern-input"
-                            >
-                                <option value="corporate">Corporate</option>
-                                <option value="bank">Bank</option>
-                            </select>
-                            <p className="mt-2 text-xs text-muted">
-                                Note: Admin and Auditor accounts must be created by an administrator
-                            </p>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="input-field pr-12"
+                                    placeholder="••••••••"
+                                    required
+                                    minLength={8}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-lime transition-colors"
+                                >
+                                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full btn-lime text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                         >
                             {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <div className="spinner w-5 h-5" />
+                                <span className="flex items-center justify-center gap-3">
+                                    <div className="spinner spinner-small" />
                                     Creating account...
                                 </span>
                             ) : (
-                                'Create Account'
+                                <span className="flex items-center justify-center gap-2">
+                                    <span>Create Account</span>
+                                    <span>→</span>
+                                </span>
                             )}
                         </button>
                     </form>
 
                     {/* Login Link */}
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 pt-6 border-t border-opacity-10 text-center" style={{ borderColor: 'var(--accent-lime)' }}>
                         <p className="text-secondary">
                             Already have an account?{' '}
                             <Link to="/login" className="text-lime hover:underline font-semibold">
@@ -166,8 +265,9 @@ export default function RegisterPage() {
 
                 {/* Back to Home */}
                 <div className="mt-6 text-center">
-                    <Link to="/" className="text-secondary hover:text-lime transition-colors">
-                        ← Back to Home
+                    <Link to="/" className="text-secondary hover:text-lime transition-colors inline-flex items-center gap-2">
+                        <span>←</span>
+                        <span>Back to Home</span>
                     </Link>
                 </div>
             </div>

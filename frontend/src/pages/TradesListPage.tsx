@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { tradeService } from '../services/tradeService';
 import { Trade } from '../types/trade.types';
+import { useAuth } from '../context/AuthContext';
+import { TradeCard } from '../components/TradeCard';
+import { GlassCard } from '../components/GlassCard';
 
 export default function TradesListPage() {
     const [trades, setTrades] = useState<Trade[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
     const { user } = useAuth();
-    const navigate = useNavigate();
 
     useEffect(() => {
-        fetchTrades();
+        loadTrades();
     }, []);
 
-    const fetchTrades = async () => {
+    const loadTrades = async () => {
         try {
             setLoading(true);
             const data = await tradeService.getTrades();
@@ -23,54 +26,26 @@ export default function TradesListPage() {
             setError('');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to load trades');
-            console.error('Error fetching trades:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+    // Filter trades by search term and status
+    const filteredTrades = trades.filter(trade => {
+        const matchesSearch = searchTerm === '' ||
+            trade.id.toString().includes(searchTerm) ||
+            trade.buyer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trade.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const formatAmount = (amount: string, currency: string) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency,
-        }).format(parseFloat(amount));
-    };
+        const matchesStatus = statusFilter === 'all' || trade.status === statusFilter;
 
-    const getStatusClass = (status: string) => {
-        const classes: Record<string, string> = {
-            'pending': 'status-pending',
-            'in_progress': 'status-in-progress',
-            'completed': 'status-completed',
-            'paid': 'status-completed',
-            'disputed': 'status-disputed'
-        };
-        return classes[status] || 'badge-outline';
-    };
-
-    const getStatusIcon = (status: string) => {
-        const icons: Record<string, string> = {
-            'pending': '⏳',
-            'in_progress': '🔄',
-            'completed': '✅',
-            'paid': '💰',
-            'disputed': '⚠️'
-        };
-        return icons[status] || '📊';
-    };
+        return matchesSearch && matchesStatus;
+    });
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-dark flex items-center justify-center">
+            <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
                     <div className="spinner mx-auto mb-4" />
                     <p className="text-secondary">Loading trades...</p>
@@ -80,108 +55,118 @@ export default function TradesListPage() {
     }
 
     return (
-        <div className="min-h-screen bg-dark">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
-                        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            Trade Transactions
-                        </h1>
-                        <p className="text-secondary">
-                            {trades.length} trade{trades.length !== 1 ? 's' : ''} in total
-                        </p>
-                    </div>
-                    {user?.role !== 'auditor' && (
-                        <button
-                            onClick={() => navigate('/trades/create')}
-                            className="btn-lime"
-                        >
-                            ➕ Create New Trade
-                        </button>
-                    )}
+        <div className="fade-in">
+            {/* Page Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        Trade Transactions
+                    </h1>
+                    <p className="text-secondary">
+                        {trades.length} trade{trades.length !== 1 ? 's' : ''} in total
+                    </p>
                 </div>
-
-                {/* Error Message */}
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300">
-                        {error}
-                    </div>
-                )}
-
-                {/* Trades List */}
-                {trades.length === 0 ? (
-                    <div className="modern-card text-center py-12">
-                        <div className="text-6xl mb-4">💱</div>
-                        <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            No Trades Yet
-                        </h3>
-                        <p className="text-secondary mb-6">
-                            Create your first trade transaction to get started
-                        </p>
-                        {user?.role !== 'auditor' && (
-                            <button
-                                onClick={() => navigate('/trades/create')}
-                                className="btn-lime inline-block"
-                            >
-                                Create Trade
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {trades.map((trade) => (
-                            <div
-                                key={trade.id}
-                                onClick={() => navigate(`/trades/${trade.id}`)}
-                                className="modern-card cursor-pointer group"
-                            >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    {/* Left: Trade Info */}
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-xl font-bold text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                                Trade #{trade.id}
-                                            </h3>
-                                            <span className={`status-badge ${getStatusClass(trade.status)}`}>
-                                                {getStatusIcon(trade.status)} {trade.status.replace('_', ' ').toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                            <div>
-                                                <span className="text-muted">Buyer ID</span>
-                                                <p className="text-white font-semibold">{trade.buyer_id}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted">Seller ID</span>
-                                                <p className="text-white font-semibold">{trade.seller_id}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted">Currency</span>
-                                                <p className="text-white font-semibold">{trade.currency}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted">Created</span>
-                                                <p className="text-white font-semibold">{formatDate(trade.created_at)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Amount */}
-                                    <div className="text-right">
-                                        <p className="text-3xl font-bold text-lime" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                            {formatAmount(trade.amount, trade.currency)}
-                                        </p>
-                                        <p className="text-sm text-secondary mt-1">
-                                            View Details →
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                {user?.role !== 'auditor' && (
+                    <Link to="/trades/create" className="btn-primary">
+                        <span>➕</span>
+                        <span>Create Trade</span>
+                    </Link>
                 )}
             </div>
+
+            {/* Search Bar */}
+            <div className="mb-6">
+                <input
+                    type="text"
+                    placeholder="🔍 Search by trade ID, buyer, or seller..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input-field"
+                />
+            </div>
+
+            {/* Status Filters */}
+            <div className="mb-8 flex flex-wrap gap-3">
+                <button
+                    onClick={() => setStatusFilter('all')}
+                    className={statusFilter === 'all' ? 'badge-lime' : 'badge text-secondary hover:border-lime hover:text-lime transition-all'}
+                    style={{ borderColor: statusFilter === 'all' ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                >
+                    All Trades
+                </button>
+                <button
+                    onClick={() => setStatusFilter('pending')}
+                    className={statusFilter === 'pending' ? 'badge-lime' : 'badge text-secondary hover:border-lime hover:text-lime transition-all'}
+                    style={{ borderColor: statusFilter === 'pending' ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                >
+                    ⏳ Pending
+                </button>
+                <button
+                    onClick={() => setStatusFilter('in_progress')}
+                    className={statusFilter === 'in_progress' ? 'badge-lime' : 'badge text-secondary hover:border-lime hover:text-lime transition-all'}
+                    style={{ borderColor: statusFilter === 'in_progress' ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                >
+                    🔄 In Progress
+                </button>
+                <button
+                    onClick={() => setStatusFilter('completed')}
+                    className={statusFilter === 'completed' ? 'badge-lime' : 'badge text-secondary hover:border-lime hover:text-lime transition-all'}
+                    style={{ borderColor: statusFilter === 'completed' ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                >
+                    ✓ Completed
+                </button>
+                <button
+                    onClick={() => setStatusFilter('paid')}
+                    className={statusFilter === 'paid' ? 'badge-lime' : 'badge text-secondary hover:border-lime hover:text-lime transition-all'}
+                    style={{ borderColor: statusFilter === 'paid' ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
+                >
+                    💰 Paid
+                </button>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="alert alert-error mb-6">
+                    <span className="text-2xl">⚠️</span>
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {/* Trades Grid */}
+            {filteredTrades.length === 0 ? (
+                <GlassCard className="text-center py-16">
+                    <div className="text-6xl mb-4">💼</div>
+                    <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        No Trades Found
+                    </h3>
+                    <p className="text-secondary mb-6">
+                        {searchTerm || statusFilter !== 'all'
+                            ? 'No trades match your search criteria'
+                            : 'Create your first trade to get started'}
+                    </p>
+                    {user?.role !== 'auditor' && !searchTerm && statusFilter === 'all' && (
+                        <Link to="/trades/create" className="btn-primary">
+                            <span>➕</span>
+                            <span>Create Trade</span>
+                        </Link>
+                    )}
+                </GlassCard>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTrades.map((trade) => (
+                        <TradeCard
+                            key={trade.id}
+                            id={trade.id}
+                            buyerName={trade.buyer?.name || `User #${trade.buyer_id}`}
+                            sellerName={trade.seller?.name || `User #${trade.seller_id}`}
+                            amount={parseFloat(trade.amount)}
+                            currency={trade.currency}
+                            status={trade.status}
+                            createdAt={trade.created_at}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

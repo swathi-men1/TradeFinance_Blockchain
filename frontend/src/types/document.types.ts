@@ -1,8 +1,17 @@
 export type DocumentType = 'LOC' | 'INVOICE' | 'BILL_OF_LADING' | 'PO' | 'COO' | 'INSURANCE_CERT';
 
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    org_name?: string;
+}
+
 export interface Document {
     id: number;
     owner_id: number;
+    owner?: User; // Optional: populated by backend sometimes
     doc_type: DocumentType;
     doc_number: string;
     file_url: string;
