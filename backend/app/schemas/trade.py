@@ -21,11 +21,15 @@ class TradeLinkDocument(BaseModel):
     document_id: int = Field(..., description="Document ID to link to trade")
 
 
+from app.schemas.user import UserResponse
+
 # Response schemas
 class TradeResponse(BaseModel):
     id: int
     buyer_id: int
     seller_id: int
+    buyer: UserResponse
+    seller: UserResponse
     amount: Decimal
     currency: str
     status: TradeStatus

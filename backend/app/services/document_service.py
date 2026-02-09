@@ -5,6 +5,7 @@ import boto3
 from datetime import datetime
 from app.models.user import User, UserRole
 from app.models.document import Document, DocumentType
+from app.schemas.document import DocumentUpdate
 from app.models.ledger import LedgerEntry, LedgerAction
 from app.models.audit import AuditLog
 from app.core.hashing import compute_file_hash
@@ -254,3 +255,58 @@ class DocumentService:
                 "message": "Document hash verified (storage unavailable, using stored hash)",
                 "note": "File storage is currently unavailable. Verification based on stored hash."
             }
+
+    @staticmethod
+    def delete_document(db: Session, current_user: User, document_id: int):
+        """Delete document (Admin only)"""
+        document = db.query(Document).filter(Document.id == document_id).first()
+        
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document not found"
+            )
+            
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can delete documents"
+            )
+            
+        db.delete(document)
+        db.commit()
+
+    @staticmethod
+    def update_document(
+        db: Session,
+        current_user: User,
+        document_id: int,
+        update_data: DocumentUpdate
+    ) -> Document:
+        """Update document metadata (Admin only)"""
+        document = DocumentService.get_document_by_id(db, current_user, document_id)
+        
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can update documents"
+            )
+            
+        # Update fields
+        changes = update_data.dict(exclude_unset=True)
+        for key, value in changes.items():
+            setattr(document, key, value)
+            
+        db.commit()
+        db.refresh(document)
+        
+        # Create Ledger Entry
+        LedgerService.create_entry(
+            db=db,
+            document_id=document.id,
+            action=LedgerAction.AMENDED,
+            actor_id=current_user.id,
+            entry_metadata=changes
+        )
+        
+        return document

@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { Document } from '../types/document.types';
+import { Document, DocumentUpdate } from '../types/document.types';
 
 export const documentService = {
     getDocuments: async (): Promise<Document[]> => {
@@ -19,8 +19,17 @@ export const documentService = {
         return response.data;
     },
 
+    updateDocument: async (id: number, updateData: DocumentUpdate): Promise<Document> => {
+        const response = await apiClient.put(`/documents/${id}`, updateData);
+        return response.data;
+    },
+
     verifyDocument: async (id: number): Promise<any> => {
         const response = await apiClient.get(`/documents/${id}/verify`);
         return response.data;
+    },
+
+    deleteDocument: async (id: number): Promise<void> => {
+        await apiClient.delete(`/documents/${id}`);
     },
 };

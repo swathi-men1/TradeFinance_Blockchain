@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List
 from app.models.ledger import LedgerEntry, LedgerAction
 from app.models.audit import AuditLog
 from app.models.user import User, UserRole
+from app.models.document import Document
 
 
 from app.core.ledger_hash import LedgerHash
@@ -84,3 +86,23 @@ class LedgerService:
         return db.query(LedgerEntry).filter(
             LedgerEntry.document_id == document_id
         ).order_by(LedgerEntry.created_at.asc()).all()
+
+    @staticmethod
+    def get_recent_activity(db: Session, user: User, limit: int = 10) -> List[LedgerEntry]:
+        """Get recent ledger entries visible to the user"""
+        query = db.query(LedgerEntry)
+        
+        # Admin and Auditors can see all activity
+        if user.role in [UserRole.ADMIN, UserRole.AUDITOR]:
+            pass
+        else:
+            # Corporate/Bank: See actions they performed OR actions on their documents
+            query = query.outerjoin(Document, LedgerEntry.document_id == Document.id)
+            query = query.filter(
+                or_(
+                    LedgerEntry.actor_id == user.id,
+                    Document.owner_id == user.id
+                )
+            )
+            
+        return query.order_by(LedgerEntry.created_at.desc()).limit(limit).all()

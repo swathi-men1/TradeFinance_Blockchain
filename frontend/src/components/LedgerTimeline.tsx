@@ -25,6 +25,7 @@ export function LedgerTimeline({ entries }: LedgerTimelineProps) {
     };
 
     const truncateHash = (hash: string) => {
+        if (!hash) return "Pending";
         if (hash.length <= 16) return hash;
         return `${hash.slice(0, 8)}...${hash.slice(-8)}`;
     };
@@ -35,10 +36,10 @@ export function LedgerTimeline({ entries }: LedgerTimelineProps) {
                 <div
                     key={entry.id}
                     className={`timeline-item ${entry.isValid === false
-                            ? 'timeline-invalid'
-                            : entry.isValid === true
-                                ? 'timeline-valid'
-                                : ''
+                        ? 'timeline-invalid'
+                        : entry.isValid === true
+                            ? 'timeline-valid'
+                            : ''
                         }`}
                 >
                     <div className="timeline-content">

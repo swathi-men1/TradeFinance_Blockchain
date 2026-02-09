@@ -21,7 +21,7 @@ def create_ledger_entry(
         db,
         entry_data.document_id,
         entry_data.action,
-        current_user,
+        current_user.id,
         entry_data.entry_metadata
     )
 
@@ -34,3 +34,13 @@ def get_document_ledger(
 ):
     """Get ledger timeline for a document"""
     return LedgerService.get_document_timeline(db, document_id)
+
+
+@router.get("/activity", response_model=List[LedgerEntryResponse])
+def get_recent_activity(
+    limit: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get recent ledger activity"""
+    return LedgerService.get_recent_activity(db, current_user, limit)

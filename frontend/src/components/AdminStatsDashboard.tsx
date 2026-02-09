@@ -54,12 +54,18 @@ export default function AdminStatsDashboard() {
         try {
             setCheckingIntegrity(true);
             const report = await monitoringService.getIntegrityReport();
+
+            // Calculate integrity percentage if not provided
+            const total = report.total_documents || 0;
+            const valid = report.valid_documents || 0;
+            const percentage = total > 0 ? Math.round((valid / total) * 100) : 100;
+
             // Format report for better display
             const message = `🔒 Blockchain Integrity Report\n\n` +
-                `Total Chains: ${report.total_chains || 'N/A'}\n` +
-                `Valid Chains: ${report.valid_chains || 'N/A'}\n` +
-                `Tampered Chains: ${report.tampered_chains || 0}\n` +
-                `Integrity: ${report.integrity_percentage || 100}%`;
+                `Total Chains: ${report.total_documents || 0}\n` +
+                `Valid Chains: ${report.valid_documents || 0}\n` +
+                `Tampered Chains: ${report.failed_documents || 0}\n` +
+                `Integrity: ${percentage}%`;
             alert(message);
         } catch (err) {
             alert('Failed to fetch integrity report');

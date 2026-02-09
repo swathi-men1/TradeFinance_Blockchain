@@ -3,10 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import RiskScoreWidget from '../components/RiskScoreWidget';
 import AdminStatsDashboard from '../components/AdminStatsDashboard';
+import AdminUserManagement from '../components/AdminUserManagement';
 import { StatCard } from '../components/StatCard';
 import { GlassCard } from '../components/GlassCard';
 import { tradeService } from '../services/tradeService';
 import { documentService } from '../services/documentService';
+import { ledgerService } from '../services/ledgerService';
+import { LedgerTimeline } from '../components/LedgerTimeline';
+import { LedgerEntry } from '../types/ledger.types';
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -16,6 +20,7 @@ export default function DashboardPage() {
         pendingTrades: 0,
         activeTrades: 0
     });
+    const [recentActivity, setRecentActivity] = useState<LedgerEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,9 +31,10 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
         try {
-            const [trades, documents] = await Promise.all([
+            const [trades, documents, activity] = await Promise.all([
                 tradeService.getTrades(),
-                documentService.getDocuments()
+                documentService.getDocuments(),
+                ledgerService.getRecentActivity(5)
             ]);
 
             const completed = trades.filter(t => t.status === 'completed' || t.status === 'paid').length;
@@ -41,6 +47,7 @@ export default function DashboardPage() {
                 pendingTrades: pending,
                 activeTrades: active
             });
+            setRecentActivity(activity);
         } catch (error) {
             console.error('Failed to fetch dashboard data', error);
         } finally {
@@ -88,8 +95,9 @@ export default function DashboardPage() {
 
             {/* Admin Dashboard */}
             {isDashboardAdmin ? (
-                <div className="mb-8">
+                <div className="mb-8 space-y-8">
                     <AdminStatsDashboard />
+                    <AdminUserManagement />
                 </div>
             ) : (
                 /* Stats Grid for Corporate, Bank, Auditor */
@@ -188,12 +196,24 @@ export default function DashboardPage() {
                     Recent Activity
                 </h2>
                 <GlassCard>
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-4">📊</div>
-                        <p className="text-secondary text-lg">
-                            Activity timeline will display document uploads, trade events, and ledger updates
-                        </p>
-                    </div>
+                    {recentActivity.length > 0 ? (
+                        <LedgerTimeline entries={recentActivity.map(entry => ({
+                            id: entry.id,
+                            action: entry.action,
+                            actor: entry.actor?.name || (entry.actor_id ? `User #${entry.actor_id}` : 'System'),
+                            timestamp: entry.created_at,
+                            previousHash: entry.previous_hash || '',
+                            entryHash: entry.entry_hash || '',
+                            isValid: entry.metadata?.is_valid
+                        }))} />
+                    ) : (
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">📊</div>
+                            <p className="text-secondary text-lg">
+                                No recent activity found.
+                            </p>
+                        </div>
+                    )}
                 </GlassCard>
             </div>
 

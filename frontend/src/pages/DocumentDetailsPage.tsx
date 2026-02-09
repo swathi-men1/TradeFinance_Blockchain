@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { documentService } from '../services/documentService';
-import { Document } from '../types/document.types';
+import { Document, DocumentUpdate } from '../types/document.types';
 import { useAuth } from '../context/AuthContext';
 import { ledgerService } from '../services/ledgerService';
 import { LedgerEntry } from '../types/ledger.types';
@@ -15,6 +15,9 @@ export default function DocumentDetailsPage() {
     const [error, setError] = useState('');
     const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
     const [verifying, setVerifying] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState<DocumentUpdate>({});
+    const [saving, setSaving] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -22,11 +25,22 @@ export default function DocumentDetailsPage() {
         try {
             setVerifying(true);
             const result = await documentService.verifyDocument(parseInt(id!));
-            alert(`Verification Result: ${result.status}\nMessage: ${result.message || 'Integrity Verified'}`);
+            const statusText = result.is_valid ? 'Verified' : 'Failed';
+            alert(`Verification Result: ${statusText}\nMessage: ${result.message || 'Integrity Verified'}`);
         } catch (err: any) {
             alert(`Verification Failed: ${err.response?.data?.detail || 'Unknown error'}`);
         } finally {
             setVerifying(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+        try {
+            await documentService.deleteDocument(parseInt(id!));
+            navigate('/documents');
+        } catch (err: any) {
+            alert(err.response?.data?.detail || 'Failed to delete document');
         }
     };
 
@@ -51,11 +65,32 @@ export default function DocumentDetailsPage() {
             setLoading(true);
             const doc = await documentService.getDocumentById(parseInt(id!));
             setDocument(doc);
+            setEditForm({
+                doc_number: doc.doc_number,
+                doc_type: doc.doc_type,
+                issued_at: new Date(doc.issued_at).toISOString().split('T')[0]
+            });
             setError('');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to load document');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            const updatedDoc = await documentService.updateDocument(parseInt(id!), editForm);
+            setDocument(updatedDoc);
+            setIsEditing(false);
+            alert('Document updated successfully');
+            // Refresh ledger to show AMENDED action
+            loadLedger();
+        } catch (err: any) {
+            alert(`Update Failed: ${err.response?.data?.detail || 'Unknown error'}`);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -144,10 +179,41 @@ export default function DocumentDetailsPage() {
                         </div>
                     </div>
 
-                    <button onClick={handleDownload} className="btn-primary">
-                        <span>⬇️</span>
-                        <span>Download</span>
-                    </button>
+                    <div className="flex gap-4">
+                        {user?.role === 'admin' && (
+                            <>
+                                {isEditing ? (
+                                    <>
+                                        <button onClick={handleSave} disabled={saving} className="btn-primary bg-lime text-black hover:bg-white">
+                                            <span>💾</span>
+                                            <span>{saving ? 'Saving...' : 'Save'}</span>
+                                        </button>
+                                        <button onClick={() => setIsEditing(false)} className="btn-outline">
+                                            <span>❌</span>
+                                            <span>Cancel</span>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => setIsEditing(true)} className="btn-outline text-lime border-lime hover:bg-lime hover:text-black">
+                                            <span>✏️</span>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button onClick={handleDelete} className="btn-outline text-red-400 border-red-400 hover:bg-red-400 hover:text-white">
+                                            <span>🗑️</span>
+                                            <span>Delete</span>
+                                        </button>
+                                    </>
+                                )}
+                            </>
+                        )}
+                        {!isEditing && (
+                            <button onClick={handleDownload} className="btn-primary">
+                                <span>⬇️</span>
+                                <span>Download</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -166,12 +232,36 @@ export default function DocumentDetailsPage() {
 
                     <div>
                         <label className="text-muted text-sm block mb-1">Document Number</label>
-                        <p className="text-white font-semibold">{document.doc_number}</p>
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                className="input-field w-full"
+                                value={editForm.doc_number}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditForm({ ...editForm, doc_number: e.target.value })}
+                            />
+                        ) : (
+                            <p className="text-white font-semibold">{document.doc_number}</p>
+                        )}
                     </div>
 
                     <div>
                         <label className="text-muted text-sm block mb-1">Document Type</label>
-                        <p className="text-white font-semibold">{formatDocType(document.doc_type)}</p>
+                        {isEditing ? (
+                            <select
+                                className="input-field w-full"
+                                value={editForm.doc_type}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditForm({ ...editForm, doc_type: e.target.value as any })}
+                            >
+                                <option value="LOC">Letter of Credit</option>
+                                <option value="INVOICE">Commercial Invoice</option>
+                                <option value="BILL_OF_LADING">Bill of Lading</option>
+                                <option value="PO">Purchase Order</option>
+                                <option value="COO">Certificate of Origin</option>
+                                <option value="INSURANCE_CERT">Insurance Certificate</option>
+                            </select>
+                        ) : (
+                            <p className="text-white font-semibold">{formatDocType(document.doc_type)}</p>
+                        )}
                     </div>
 
                     <div>
@@ -181,13 +271,22 @@ export default function DocumentDetailsPage() {
 
                     <div>
                         <label className="text-muted text-sm block mb-1">Issued Date</label>
-                        <p className="text-white font-semibold">
-                            {new Date(document.issued_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}
-                        </p>
+                        {isEditing ? (
+                            <input
+                                type="date"
+                                className="input-field w-full"
+                                value={editForm.issued_at ? new Date(editForm.issued_at).toISOString().split('T')[0] : ''}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditForm({ ...editForm, issued_at: e.target.value })}
+                            />
+                        ) : (
+                            <p className="text-white font-semibold">
+                                {new Date(document.issued_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -245,8 +344,8 @@ export default function DocumentDetailsPage() {
                         </div>
                     </div>
 
-                    {/* Verify Button for Banks */}
-                    {user?.role === 'bank' && (
+                    {/* Verify Button for Banks and Admins */}
+                    {(user?.role === 'bank' || user?.role === 'admin') && (
                         <div className="pt-4 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
                             <button
                                 onClick={handleVerifyDocument}
@@ -281,10 +380,11 @@ export default function DocumentDetailsPage() {
                     <LedgerTimeline entries={ledgerEntries.map(entry => ({
                         id: entry.id,
                         action: entry.action,
-                        actor: `User #${entry.actor_id}`,
+                        actor: entry.actor_id ? `User #${entry.actor_id}` : 'System',
                         timestamp: entry.created_at,
                         previousHash: entry.previous_hash || '',
-                        entryHash: entry.entry_hash || ''
+                        entryHash: entry.entry_hash || '',
+                        isValid: entry.metadata?.is_valid
                     }))} />
                 ) : (
                     <div className="text-center py-12">

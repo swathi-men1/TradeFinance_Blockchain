@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 from app.db.session import get_db
-from app.schemas.document import DocumentResponse
+from app.schemas.document import DocumentResponse, DocumentUpdate
 from app.services.document_service import DocumentService
 from app.api.deps import get_current_user, require_roles
 from app.models.user import User, UserRole
@@ -53,4 +53,27 @@ def verify_document(
     db: Session = Depends(get_db)
 ):
     """Verify document hash integrity"""
+    """Verify document hash integrity"""
     return DocumentService.verify_document_hash(db, current_user, document_id)
+
+
+@router.delete("/{document_id}")
+def delete_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete document (Admin only)"""
+    DocumentService.delete_document(db, current_user, document_id)
+    return {"message": "Document deleted successfully"}
+
+
+@router.put("/{document_id}", response_model=DocumentResponse)
+def update_document(
+    document_id: int,
+    update_data: DocumentUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update document metadata (Admin only)"""
+    return DocumentService.update_document(db, current_user, document_id, update_data)

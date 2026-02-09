@@ -25,3 +25,9 @@ export interface DocumentCreate {
     doc_number: string;
     issued_at: string;
 }
+
+export interface DocumentUpdate {
+    doc_type?: DocumentType;
+    doc_number?: string;
+    issued_at?: string;
+}

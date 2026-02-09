@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 from app.models.document import DocumentType
 
 
@@ -10,10 +11,19 @@ class DocumentCreate(BaseModel):
     issued_at: datetime
 
 
+class DocumentUpdate(BaseModel):
+    doc_type: Optional[DocumentType] = None
+    doc_number: Optional[str] = Field(None, max_length=100)
+    issued_at: Optional[datetime] = None
+
+
+from app.schemas.user import UserResponse
+
 # Response schemas
 class DocumentResponse(BaseModel):
     id: int
     owner_id: int
+    owner: UserResponse
     doc_type: DocumentType
     doc_number: str
     file_url: str

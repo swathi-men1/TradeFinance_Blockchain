@@ -4,8 +4,10 @@ from typing import Dict, Any, List
 from app.db.session import get_db
 from app.models.user import User, UserRole
 from app.models.ledger import IntegrityReport
+from app.schemas.user import UserResponse, UserAdminCreate, UserUpdate
 from app.api.deps import get_current_user
 from app.services.integrity_service import IntegrityService
+from app.core.security import hash_password
 
 router = APIRouter()
 
@@ -55,3 +57,88 @@ def get_integrity_report(
     # Actually, verify_all_documents returns exactly the structure we need.
     # Let's just call it. It stores reports as side effect.
     return IntegrityService.verify_all_documents(db)
+
+
+@router.get("/users", response_model=List[UserResponse])
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List all users (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return db.query(User).all()
+
+
+@router.post("/users", response_model=UserResponse)
+def create_user(
+    user_in: UserAdminCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new user (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if db.query(User).filter(User.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    user = User(
+        name=user_in.name,
+        email=user_in.email,
+        password=hash_password(user_in.password),
+        role=user_in.role,
+        org_name=user_in.org_name
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.put("/users/{user_id}", response_model=UserResponse)
+def update_user(
+    user_id: int,
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update user details including role (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user_in.name: user.name = user_in.name
+    if user_in.email: user.email = user_in.email
+    if user_in.role: user.role = user_in.role
+    if user_in.org_name: user.org_name = user_in.org_name
+    if user_in.password: user.password = hash_password(user_in.password)
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a user (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+        
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}

@@ -31,6 +31,16 @@ export default function DocumentsListPage() {
         }
     };
 
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+        try {
+            await documentService.deleteDocument(id);
+            setDocuments(documents.filter(d => d.id !== id));
+        } catch (err: any) {
+            alert(err.response?.data?.detail || 'Failed to delete document');
+        }
+    };
+
     // Filter documents by search term and type
     const filteredDocuments = documents.filter(doc => {
         const matchesSearch = searchTerm === '' ||
@@ -163,6 +173,7 @@ export default function DocumentsListPage() {
                             ownerOrg={doc.owner?.org_name}
                             uploadedAt={doc.created_at}
                             status="verified"
+                            onDelete={user?.role === 'admin' ? () => handleDelete(doc.id) : undefined}
                         />
                     ))}
                 </div>

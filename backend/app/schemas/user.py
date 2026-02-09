@@ -12,6 +12,18 @@ class UserCreate(BaseModel):
     # role field removed from input to block tampering
 
 
+class UserAdminCreate(UserCreate):
+    role: UserRole
+
+
+class UserUpdate(BaseModel):
+    name: str | None = None
+    email: EmailStr | None = None
+    role: UserRole | None = None
+    org_name: str | None = None
+    password: str | None = None
+
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
