@@ -310,3 +310,50 @@ class DocumentService:
         )
         
         return document
+    @staticmethod
+    def get_document_file(db: Session, current_user: User, document_id: int):
+        """Get document file stream and filename"""
+        document = DocumentService.get_document_by_id(db, current_user, document_id)
+        
+        if document.file_url.startswith("pending:"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File is pending upload to storage"
+            )
+            
+        # Download from S3
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=settings.S3_ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+        
+        try:
+            response = s3_client.get_object(
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=document.file_url
+            )
+            
+            # Extract original filename from key (format: path/hash_filename)
+            # key: documents/Org/hash_filename.ext
+            filename = document.file_url.split('_', 1)[-1]  # Simple split on first _ after path?
+            # Actually line 50: hash[:8] + "_" + filename.
+            # But the path might contain underscores.
+            # Safe way: take basename, then split on first _
+            import os
+            basename = os.path.basename(document.file_url)
+            if '_' in basename:
+                filename = basename.split('_', 1)[1]
+            else:
+                filename = basename
+                
+            return response['Body'].iter_chunks(), filename, response.get('ContentType', 'application/octet-stream')
+            
+        except Exception as e:
+            print(f"S3 Download Error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve file from storage"
+            )

@@ -77,3 +77,24 @@ def update_document(
 ):
     """Update document metadata (Admin only)"""
     return DocumentService.update_document(db, current_user, document_id, update_data)
+
+
+@router.get("/{document_id}/download")
+def download_document(
+    document_id: int,
+    inline: bool = False,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download or view document file"""
+    file_stream, filename, content_type = DocumentService.get_document_file(db, current_user, document_id)
+    
+    from fastapi.responses import StreamingResponse
+    
+    disposition = "inline" if inline else "attachment"
+    
+    return StreamingResponse(
+        file_stream,
+        media_type=content_type,
+        headers={"Content-Disposition": f'{disposition}; filename="{filename}"'}
+    )

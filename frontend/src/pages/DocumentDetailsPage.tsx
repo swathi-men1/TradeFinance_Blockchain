@@ -94,9 +94,21 @@ export default function DocumentDetailsPage() {
         }
     };
 
-    const handleDownload = () => {
-        if (document?.file_url) {
-            window.open(document.file_url, '_blank');
+    const handleDownload = async () => {
+        if (!document) return;
+        try {
+            await documentService.downloadDocument(document.id);
+        } catch (err) {
+            alert('Failed to download document');
+        }
+    };
+
+    const handleViewFile = async () => {
+        if (!document) return;
+        try {
+            await documentService.viewDocument(document.id);
+        } catch (err) {
+            alert('Failed to view document');
         }
     };
 
@@ -413,7 +425,7 @@ export default function DocumentDetailsPage() {
                             </div>
                         </div>
 
-                        <button onClick={handleDownload} className="btn-outline">
+                        <button onClick={handleViewFile} className="btn-outline">
                             <span>👁️</span>
                             <span>View File</span>
                         </button>
