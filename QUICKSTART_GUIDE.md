@@ -133,6 +133,38 @@ curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 
 ---
 
+### Test 6: Create a Trade (Corporate/Bank)
+
+```bash
+# Create a trade transaction
+curl -X POST \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "buyer_id": 2,
+    "seller_id": 3,
+    "amount": 50000.00,
+    "currency": "USD"
+  }' \
+  http://localhost:8000/api/v1/trades
+```
+
+---
+
+### Test 7: Monitoring & Risk (Admin Only)
+
+```bash
+# Get System Stats including Risk Distribution
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  http://localhost:8000/api/v1/admin/system-stats
+
+# Check Ledger Consistency
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  http://localhost:8000/api/v1/admin/verify-consistency
+```
+
+---
+
 ## 🔍 Verify System Status
 
 ### Check Backend Status
@@ -238,4 +270,7 @@ You'll know the system is working correctly when:
 6. ✅ Admin actions appear in audit_logs table
 7. ✅ Corporate users can only see their own documents
 8. ✅ JWT tokens work for authentication
+9. ✅ Trades can be created and tracked
+10. ✅ Risk scores are calculated for users
+11. ✅ Admin can run integrity checks
 

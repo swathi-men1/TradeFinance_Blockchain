@@ -51,12 +51,15 @@ npm run build
 
 Output in `dist/` folder
 
+
 ## Project Structure
 
 ```
 src/
 ├── components/       # Reusable components
-│   └── ProtectedRoute.tsx
+│   ├── ProtectedRoute.tsx
+│   ├── RiskScoreWidget.tsx
+│   └── AdminStatsDashboard.tsx
 ├── context/          # React context
 │   └── AuthContext.tsx
 ├── pages/            # Page components
@@ -65,16 +68,23 @@ src/
 │   ├── DashboardPage.tsx
 │   ├── DocumentsListPage.tsx
 │   ├── UploadDocumentPage.tsx
-│   └── DocumentDetailsPage.tsx
+│   ├── DocumentDetailsPage.tsx
+│   ├── TradesListPage.tsx
+│   ├── CreateTradePage.tsx
+│   └── TradeDetailsPage.tsx
 ├── services/         # API services
 │   ├── api.ts
 │   ├── authService.ts
 │   ├── documentService.ts
-│   └── ledgerService.ts
+│   ├── ledgerService.ts
+│   ├── tradeService.ts
+│   ├── riskService.ts
+│   └── monitoringService.ts
 ├── types/            # TypeScript types
 │   ├── auth.types.ts
 │   ├── document.types.ts
-│   └── ledger.types.ts
+│   ├── ledger.types.ts
+│   └── trade.types.ts
 ├── App.tsx           # Main app component
 ├── main.tsx          # Entry point
 └── index.css         # Global styles
@@ -92,6 +102,15 @@ Wrapper component that redirects unauthenticated users to login.
 - **DocumentsListPage**: Grid view of all documents
 - **UploadDocumentPage**: Form for document upload
 - **DocumentDetailsPage**: Document details + ledger timeline
+
+### Trade Pages
+- **TradesListPage**: List of all trade transactions
+- **CreateTradePage**: Form to initiate a new trade
+- **TradeDetailsPage**: View trade details, status updates, and linked documents
+
+### Admin Components
+- **AdminStatsDashboard**: System-wide statistics, integrity reports, and consistency checks
+- **RiskScoreWidget**: Real-time risk assessment visualization for Corporate/Bank users
 
 ## API Integration
 

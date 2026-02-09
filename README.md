@@ -168,9 +168,10 @@ npm run dev
 - `users` - User accounts with roles
 - `documents` - Document metadata + SHA-256 hash
 - `ledger_entries` - Immutable audit trail
-- `trade_transactions` - Trade lifecycle tracking (future)
-- `risk_scores` - Counterparty risk (future)
-- `audit_logs` - Admin actions (future)
+- `trade_transactions` - Trade lifecycle tracking
+- `trade_documents` - Trade-Document linkage
+- `risk_scores` - Counterparty risk calculation & history
+- `audit_logs` - Admin actions & system monitoring
 
 ## 🔒 Security Features
 
@@ -189,6 +190,22 @@ npm run dev
 4. **View Documents** → List role-scoped documents
 5. **Verify Hash** → Re-compute hash from S3 file, compare with stored hash
 6. **View Ledger** → Timeline of all document actions
+
+## 📚 Documentation
+
+### Core Documentation
+- **[Document Management Guide](docs/DOCUMENT_MANAGEMENT.md)** - Complete feature specifications and role-based capabilities
+- **[Implementation Verification](docs/IMPLEMENTATION_VERIFICATION.md)** - Technical compliance report
+- **[Quick Start Guide](QUICKSTART_GUIDE.md)** - Step-by-step setup and testing
+- **[Documentation Index](docs/INDEX.md)** - Complete documentation overview
+
+### API Documentation
+- Interactive Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+### Additional Resources
+- Backend Architecture: [backend/README.md](backend/README.md)
+- Frontend Components: [frontend/README.md](frontend/README.md)
 
 ## 🐛 Troubleshooting
 

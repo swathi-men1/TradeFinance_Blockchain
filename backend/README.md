@@ -75,19 +75,32 @@ Once running, visit:
 - `GET /api/v1/documents/{id}` - Get document details
 - `GET /api/v1/documents/{id}/verify` - Verify document hash
 
+### Trade Transactions
+- `POST /api/v1/trades` - Create new trade
+- `GET /api/v1/trades` - List trades (role-scoped)
+- `GET /api/v1/trades/{id}` - Get trade details
+- `PUT /api/v1/trades/{id}/status` - Update trade status
+- `POST /api/v1/trades/{id}/documents` - Link document to trade
+
+### Risk & Monitoring
+- `GET /api/v1/admin/system-stats` - System overview (Admin)
+- `GET /api/v1/admin/integrity-report` - Check data integrity
+- `GET /api/v1/admin/verify-consistency` - Verify ledger consistency
+
 ### Ledger
 - `POST /api/v1/ledger/entries` - Create ledger entry
 - `GET /api/v1/ledger/documents/{doc_id}` - Get ledger timeline
 
 ## Database Schema
 
-6 core tables:
+System core tables:
 1. **users**: User accounts with roles
 2. **documents**: Document metadata + SHA-256 hash
 3. **ledger_entries**: Immutable audit trail
-4. **trade_transactions**: Trade lifecycle tracking
-5. **risk_scores**: Counterparty risk assessment
-6. **audit_logs**: Admin action tracking
+4. **trade_transactions**: Trade lifecycle & status tracking
+5. **trade_documents**: Many-to-many link between trades and documents
+6. **risk_scores**: Counterparty risk assessment & history
+7. **audit_logs**: Admin action tracking
 
 ## Development
 
