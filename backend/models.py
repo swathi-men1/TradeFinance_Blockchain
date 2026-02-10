@@ -9,10 +9,20 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+
     name = Column(String)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     role = Column(String)
+
+    # External Risk Input
+    country = Column(String, default="India")
+
+    # Risk Score Fields
+    risk_score = Column(Integer, default=0)
+    risk_level = Column(String, default="LOW")
+    risk_reason = Column(Text, nullable=True)
+    risk_updated_at = Column(DateTime, nullable=True)
 
 
 # ================= DOCUMENT TABLE =================
@@ -53,3 +63,19 @@ class LedgerEntry(Base):
     actor_email = Column(String)
 
     event_data = Column(JSON, nullable=True)
+
+
+# ================= TRANSACTION TABLE =================
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    buyer_email = Column(String)
+    seller_email = Column(String)
+
+    status = Column(String, default="PENDING")  # PENDING, COMPLETED, CANCELLED, DISPUTED, DELAYED
+    remarks = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)

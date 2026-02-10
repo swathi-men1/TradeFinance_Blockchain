@@ -127,6 +127,9 @@
           localStorage.setItem("token", data.access_token || "");
           localStorage.setItem("role", data.role);
 
+          // ✅ IMPORTANT FIX: Save email also
+          localStorage.setItem("email", email);
+
           status.style.color = "green";
           status.innerText = "Login successful ✔ Redirecting...";
 

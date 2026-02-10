@@ -31,7 +31,7 @@
 
       .container {
         padding: 30px;
-        max-width: 1200px;
+        max-width: 1400px;
         margin: auto;
       }
 
@@ -94,6 +94,21 @@
       }
 
       .tampered {
+        color: red;
+        font-weight: bold;
+      }
+
+      .risk-low {
+        color: green;
+        font-weight: bold;
+      }
+
+      .risk-medium {
+        color: orange;
+        font-weight: bold;
+      }
+
+      .risk-high {
         color: red;
         font-weight: bold;
       }
@@ -192,9 +207,13 @@
             <tr>
               <th>#</th>
               <th>File Name</th>
+              <th>Owner</th>
               <th>Hash</th>
               <th>Status</th>
               <th>Integrity</th>
+              <th>Risk Score</th>
+              <th>Risk Level</th>
+              <th>Risk Reason</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -244,6 +263,42 @@
         window.open(`http://127.0.0.1:8000/documents/${id}/preview`, "_blank");
       }
 
+      function getRiskClass(level) {
+        if (level === "LOW") return "risk-low";
+        if (level === "MEDIUM") return "risk-medium";
+        if (level === "HIGH") return "risk-high";
+        return "";
+      }
+
+      async function fetchRiskScore(email) {
+        try {
+          if (!email) {
+            return { risk_score: "-", risk_level: "N/A", risk_reason: "-" };
+          }
+
+          const res = await fetch(
+            `http://127.0.0.1:8000/users/${email}/risk-score`,
+            {
+              headers: { Authorization: "Bearer " + token },
+            },
+          );
+
+          if (!res.ok) {
+            return { risk_score: "-", risk_level: "N/A", risk_reason: "-" };
+          }
+
+          const data = await res.json();
+
+          return {
+            risk_score: data.risk_score ?? "-",
+            risk_level: data.risk_level ?? "N/A",
+            risk_reason: data.risk_reason ?? "-",
+          };
+        } catch (err) {
+          return { risk_score: "-", risk_level: "N/A", risk_reason: "-" };
+        }
+      }
+
       async function viewLedger(docId) {
         try {
           const res = await fetch(
@@ -261,17 +316,22 @@
           const data = await res.json();
 
           let rows = "";
-          data.forEach((entry) => {
-            rows += `
-              <tr>
-                <td>${entry.id}</td>
-                <td>${entry.action}</td>
-                <td>${entry.actor_email}</td>
-                <td>${entry.timestamp}</td>
-                <td>${JSON.stringify(entry.event_data)}</td>
-              </tr>
-            `;
-          });
+
+          if (data.length === 0) {
+            rows = `<tr><td colspan="5" style="text-align:center;">No ledger history found</td></tr>`;
+          } else {
+            data.forEach((entry) => {
+              rows += `
+                <tr>
+                  <td>${entry.id}</td>
+                  <td>${entry.action}</td>
+                  <td>${entry.actor_email}</td>
+                  <td>${entry.timestamp}</td>
+                  <td>${JSON.stringify(entry.event_data)}</td>
+                </tr>
+              `;
+            });
+          }
 
           document.getElementById("ledgerTableBody").innerHTML = rows;
           document.getElementById("ledgerModal").style.display = "flex";
@@ -296,13 +356,14 @@
           if (!res.ok) throw new Error();
 
           let docs = await res.json();
-
           docs.sort((a, b) => a.id - b.id);
 
           const table = document.getElementById("auditTable");
           table.innerHTML = "";
 
-          docs.forEach((doc, index) => {
+          for (let index = 0; index < docs.length; index++) {
+            const doc = docs[index];
+
             let statusClass = "pending";
             if (doc.status === "ACCEPTED") statusClass = "accepted";
             if (doc.status === "REJECTED") statusClass = "rejected";
@@ -311,13 +372,22 @@
               ? `<span class="tampered">❌ Tampered</span>`
               : `<span class="verified">✅ Verified</span>`;
 
+            const risk = await fetchRiskScore(doc.owner_email);
+            const riskClass = getRiskClass(risk.risk_level);
+
             const row = document.createElement("tr");
             row.innerHTML = `
               <td>${index + 1}</td>
               <td>${doc.filename}</td>
+              <td>${doc.owner_email ?? "-"}</td>
               <td class="hash">${doc.file_hash}</td>
               <td class="${statusClass}">${doc.status}</td>
               <td>${integrityHtml}</td>
+
+              <td>${risk.risk_score}</td>
+              <td class="${riskClass}">${risk.risk_level}</td>
+              <td>${risk.risk_reason}</td>
+
               <td>
                 <button class="preview-btn" onclick="previewDoc(${doc.id})">Preview</button>
                 <button class="ledger-btn" onclick="viewLedger(${doc.id})">View Ledger</button>
@@ -325,7 +395,7 @@
             `;
 
             table.appendChild(row);
-          });
+          }
         } catch (err) {
           alert("Failed to load audit data ❌");
         }

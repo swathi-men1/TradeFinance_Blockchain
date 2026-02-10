@@ -118,11 +118,35 @@
         font-weight: bold;
       }
 
+      .risk-low {
+        color: green;
+        font-weight: bold;
+      }
+
+      .risk-medium {
+        color: orange;
+        font-weight: bold;
+      }
+
+      .risk-high {
+        color: red;
+        font-weight: bold;
+      }
+
       footer {
         text-align: center;
         padding: 15px;
         font-size: 13px;
         color: #666;
+      }
+
+      .note {
+        font-size: 13px;
+        color: #555;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-top: 10px;
       }
     </style>
   </head>
@@ -146,6 +170,20 @@
     </header>
 
     <div class="container">
+      <!-- RISK SCORE CARD -->
+      <div class="card" id="riskCard">
+        <h3>My Risk Score</h3>
+
+        <p><b>Risk Score:</b> <span id="riskScore">-</span></p>
+        <p><b>Risk Level:</b> <span id="riskLevel">-</span></p>
+        <p><b>Risk Reason:</b> <span id="riskReason">-</span></p>
+
+        <div class="note">
+          📌 Risk score is calculated in backend based on document integrity,
+          ledger activity, transactions, and external country risk.
+        </div>
+      </div>
+
       <!-- UPLOAD SECTION -->
       <div class="card" id="uploadSection">
         <h3>Upload Trade Finance Document</h3>
@@ -179,6 +217,10 @@
 
     <script>
       const token = localStorage.getItem("token");
+      const email = localStorage.getItem("email");
+
+      const uploadSection = document.getElementById("uploadSection");
+      const myDocsSection = document.getElementById("myDocsSection");
 
       function logout() {
         localStorage.clear();
@@ -196,6 +238,49 @@
         loadMyDocuments();
       }
 
+      function getRiskClass(level) {
+        if (level === "LOW") return "risk-low";
+        if (level === "MEDIUM") return "risk-medium";
+        if (level === "HIGH") return "risk-high";
+        return "";
+      }
+
+      async function loadRiskScore() {
+        try {
+          if (!email) {
+            document.getElementById("riskReason").innerText =
+              "Email not found in localStorage (check login.html)";
+            return;
+          }
+
+          const res = await fetch(
+            `http://127.0.0.1:8000/users/${email}/risk-score`,
+            {
+              headers: { Authorization: "Bearer " + token },
+            },
+          );
+
+          if (!res.ok) return;
+
+          const data = await res.json();
+
+          document.getElementById("riskScore").innerText =
+            data.risk_score ?? "-";
+
+          document.getElementById("riskLevel").innerText =
+            data.risk_level ?? "-";
+
+          document.getElementById("riskReason").innerText =
+            data.risk_reason ?? "-";
+
+          document.getElementById("riskLevel").className = getRiskClass(
+            data.risk_level,
+          );
+        } catch (err) {
+          console.log("Risk Score Fetch Error:", err);
+        }
+      }
+
       async function uploadDocument() {
         const fileInput = document.getElementById("fileInput");
         const status = document.getElementById("uploadStatus");
@@ -209,6 +294,9 @@
         const formData = new FormData();
         formData.append("file", fileInput.files[0]);
 
+        status.innerText = "Uploading...";
+        status.style.color = "blue";
+
         const res = await fetch("http://127.0.0.1:8000/upload-document", {
           method: "POST",
           headers: { Authorization: "Bearer " + token },
@@ -219,50 +307,63 @@
           status.innerText = "Uploaded ✔ Waiting for verification";
           status.style.color = "green";
           fileInput.value = "";
+
+          loadRiskScore();
           setTimeout(showMyDocs, 800);
         } else {
-          status.innerText = "Upload failed ❌";
+          const errData = await res.json();
+          status.innerText = errData.detail || "Upload failed ❌";
           status.style.color = "red";
         }
       }
 
       async function loadMyDocuments() {
-        const res = await fetch("http://127.0.0.1:8000/my-documents", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        try {
+          const res = await fetch("http://127.0.0.1:8000/my-documents", {
+            headers: { Authorization: "Bearer " + token },
+          });
 
-        const docs = await res.json();
-        const table = document.getElementById("docsTable");
-        table.innerHTML = "";
-
-        if (docs.length === 0) {
-          table.innerHTML =
-            "<tr><td colspan='3'>No documents uploaded yet</td></tr>";
-          return;
-        }
-
-        docs.forEach((doc) => {
-          let cls = "status-pending";
-          if (doc.status === "ACCEPTED") cls = "status-accepted";
-          if (doc.status === "REJECTED") cls = "status-rejected";
-
-          let action = "—";
-          if (doc.status === "PENDING") {
-            action = `
-              <button class="delete-btn" onclick="deleteDoc(${doc.id})">
-                Delete
-              </button>
-            `;
+          if (!res.ok) {
+            alert("Failed to load documents ❌");
+            return;
           }
 
-          table.innerHTML += `
-            <tr>
-              <td>${doc.filename}</td>
-              <td class="${cls}">${doc.status}</td>
-              <td>${action}</td>
-            </tr>
-          `;
-        });
+          const docs = await res.json();
+          const table = document.getElementById("docsTable");
+          table.innerHTML = "";
+
+          if (docs.length === 0) {
+            table.innerHTML =
+              "<tr><td colspan='3'>No documents uploaded yet</td></tr>";
+            return;
+          }
+
+          docs.forEach((doc) => {
+            let cls = "status-pending";
+            if (doc.status === "ACCEPTED") cls = "status-accepted";
+            if (doc.status === "REJECTED") cls = "status-rejected";
+
+            let action = "—";
+            if (doc.status === "PENDING") {
+              action = `
+                <button class="delete-btn" onclick="deleteDoc(${doc.id})">
+                  Delete
+                </button>
+              `;
+            }
+
+            table.innerHTML += `
+              <tr>
+                <td>${doc.filename}</td>
+                <td class="${cls}">${doc.status}</td>
+                <td>${action}</td>
+              </tr>
+            `;
+          });
+        } catch (err) {
+          console.log(err);
+          alert("Error loading documents ❌");
+        }
       }
 
       async function deleteDoc(id) {
@@ -276,17 +377,25 @@
         if (res.ok) {
           alert("Document deleted ✅");
           loadMyDocuments();
+          loadRiskScore();
         } else {
           alert("Cannot delete this document ❌");
         }
       }
 
-      // 🔁 AUTO REFRESH
+      // 🔁 AUTO REFRESH (Risk every 15 sec)
       setInterval(() => {
         if (myDocsSection.style.display === "block") {
           loadMyDocuments();
         }
       }, 5000);
+
+      setInterval(() => {
+        loadRiskScore();
+      }, 15000);
+
+      // initial load
+      loadRiskScore();
     </script>
   </body>
 </html>
