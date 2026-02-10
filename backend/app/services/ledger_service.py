@@ -61,18 +61,16 @@ class LedgerService:
         # I should probably pass 'actor: User' OR query it. 
         # To strictly follow the "Refactoring" idea, I should update the signature.
         
+        # Audit log for ALL ledger entries (not just Admin actions)
         actor = db.query(User).filter(User.id == actor_id).first()
-        if actor and actor.role == UserRole.ADMIN:
-            audit_log = AuditLog(
-                admin_id=actor.id,
-                action=f"CREATE_LEDGER_ENTRY_{action.value}",
-                target_type="LedgerEntry",
-                target_id=ledger_entry.id
-            )
-            db.add(audit_log)
-            db.commit()
-        
-            db.commit()
+        audit_log = AuditLog(
+            admin_id=actor.id if actor and actor.role == UserRole.ADMIN else None,
+            action=f"CREATE_LEDGER_ENTRY_{action.value}",
+            target_type="LedgerEntry",
+            target_id=ledger_entry.id
+        )
+        db.add(audit_log)
+        db.commit()
         
         # Trigger risk recalculation based on actor activity
         # (Input 2: User Activity - Ledger Based)

@@ -49,10 +49,9 @@ def get_document(
 @router.get("/{document_id}/verify")
 def verify_document(
     document_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([UserRole.BANK, UserRole.CORPORATE, UserRole.ADMIN])),
     db: Session = Depends(get_db)
 ):
-    """Verify document hash integrity"""
     """Verify document hash integrity"""
     return DocumentService.verify_document_hash(db, current_user, document_id)
 
@@ -60,7 +59,7 @@ def verify_document(
 @router.delete("/{document_id}")
 def delete_document(
     document_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
     db: Session = Depends(get_db)
 ):
     """Delete document (Admin only)"""
@@ -72,7 +71,7 @@ def delete_document(
 def update_document(
     document_id: int,
     update_data: DocumentUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
     db: Session = Depends(get_db)
 ):
     """Update document metadata (Admin only)"""

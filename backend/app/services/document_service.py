@@ -100,16 +100,15 @@ class DocumentService:
             }
         )
         
-        # Audit Log for Admin actions
-        if current_user.role == UserRole.ADMIN:
-            audit_log = AuditLog(
-                admin_id=current_user.id,
-                action="UPLOAD_DOCUMENT",
-                target_type="Document",
-                target_id=new_document.id
-            )
-            db.add(audit_log)
-            db.commit()
+        # Audit Log for ALL document uploads (not just Admin actions)
+        audit_log = AuditLog(
+            admin_id=current_user.id if current_user.role == UserRole.ADMIN else None,
+            action="UPLOAD_DOCUMENT",
+            target_type="Document",
+            target_id=new_document.id
+        )
+        db.add(audit_log)
+        db.commit()
         
         return new_document
     

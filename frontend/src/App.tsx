@@ -16,6 +16,8 @@ import DocumentDetailsPage from './pages/DocumentDetailsPage';
 import TradesListPage from './pages/TradesListPage';
 import CreateTradePage from './pages/CreateTradePage';
 import TradeDetailsPage from './pages/TradeDetailsPage';
+import RiskScorePage from './pages/RiskScorePage';
+import MonitoringPage from './pages/MonitoringPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -111,6 +113,26 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <TradeDetailsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Risk Score routes */}
+                <Route
+                    path="/risk-score"
+                    element={
+                        <ProtectedRoute>
+                            <RiskScorePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Admin Monitoring routes */}
+                <Route
+                    path="/monitoring"
+                    element={
+                        <ProtectedRoute>
+                            <MonitoringPage />
                         </ProtectedRoute>
                     }
                 />

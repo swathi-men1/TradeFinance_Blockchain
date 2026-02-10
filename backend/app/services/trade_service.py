@@ -95,16 +95,15 @@ class TradeService:
             }
         )
         
-        # Audit log for admin
-        if current_user.role == UserRole.ADMIN:
-            audit_log = AuditLog(
-                admin_id=current_user.id,
-                action="CREATE_TRADE",
-                target_type="TradeTransaction",
-                target_id=new_trade.id
-            )
-            db.add(audit_log)
-            db.commit()
+        # Audit log for ALL trade creations (not just Admin actions)
+        audit_log = AuditLog(
+            admin_id=current_user.id if current_user.role == UserRole.ADMIN else None,
+            action="CREATE_TRADE",
+            target_type="TradeTransaction",
+            target_id=new_trade.id
+        )
+        db.add(audit_log)
+        db.commit()
         
         return new_trade
     
@@ -212,16 +211,15 @@ class TradeService:
             }
         )
         
-        # Audit log for admin
-        if current_user.role == UserRole.ADMIN:
-            audit_log = AuditLog(
-                admin_id=current_user.id,
-                action="UPDATE_TRADE_STATUS",
-                target_type="TradeTransaction",
-                target_id=trade.id
-            )
-            db.add(audit_log)
-            db.commit()
+        # Audit log for ALL trade status updates (not just Admin actions)
+        audit_log = AuditLog(
+            admin_id=current_user.id if current_user.role == UserRole.ADMIN else None,
+            action="UPDATE_TRADE_STATUS",
+            target_type="TradeTransaction",
+            target_id=trade.id
+        )
+        db.add(audit_log)
+        db.commit()
         
         # Trigger risk recalculation for buyer and seller
         RiskService.trigger_on_trade_status_change(db, trade.id, new_status.value)
@@ -282,15 +280,14 @@ class TradeService:
             }
         )
         
-        # Audit log for admin
-        if current_user.role == UserRole.ADMIN:
-            audit_log = AuditLog(
-                admin_id=current_user.id,
-                action="LINK_DOCUMENT_TO_TRADE",
-                target_type="TradeTransaction",
-                target_id=trade.id
-            )
-            db.add(audit_log)
-            db.commit()
+        # Audit log for ALL document linking actions (not just Admin actions)
+        audit_log = AuditLog(
+            admin_id=current_user.id if current_user.role == UserRole.ADMIN else None,
+            action="LINK_DOCUMENT_TO_TRADE",
+            target_type="TradeTransaction",
+            target_id=trade.id
+        )
+        db.add(audit_log)
+        db.commit()
         
         return trade

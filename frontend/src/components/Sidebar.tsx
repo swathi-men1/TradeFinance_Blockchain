@@ -92,7 +92,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </Link>
                     )}
 
-                    {user.role === 'admin' && (
+                    {(user.role === 'admin' || user.role === 'auditor') && (
                         <Link
                             to="/monitoring"
                             className={`sidebar-link ${isActive('/monitoring') ? 'active' : ''}`}

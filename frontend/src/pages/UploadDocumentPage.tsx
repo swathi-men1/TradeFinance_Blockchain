@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { documentService } from '../services/documentService';
 import { DocumentType } from '../types/document.types';
 import { UploadZone } from '../components/UploadZone';
 import { GlassCard } from '../components/GlassCard';
 
 export default function UploadDocumentPage() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [docType, setDocType] = useState<DocumentType>('BILL_OF_LADING');
     const [docNumber, setDocNumber] = useState('');
     const [issuedAt, setIssuedAt] = useState('');
@@ -15,7 +18,27 @@ export default function UploadDocumentPage() {
     const [hashGenerating, setHashGenerating] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const navigate = useNavigate();
+
+    // Role-based access control: Auditors cannot upload documents
+    if (user?.role === 'auditor') {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <GlassCard className="text-center max-w-md">
+                    <div className="text-6xl mb-4">🔒</div>
+                    <h2 className="text-2xl font-bold text-white mb-4">Access Denied</h2>
+                    <p className="text-secondary mb-6">
+                        Auditors have read-only access and cannot upload documents.
+                    </p>
+                    <button
+                        onClick={() => navigate('/documents')}
+                        className="btn-primary"
+                    >
+                        View Documents
+                    </button>
+                </GlassCard>
+            </div>
+        );
+    }
 
     const handleFileSelect = (selectedFile: File) => {
         setFile(selectedFile);
