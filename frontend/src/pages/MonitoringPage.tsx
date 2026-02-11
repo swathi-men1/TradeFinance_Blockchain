@@ -28,7 +28,7 @@ export default function MonitoringPage() {
                 riskService.getHighRiskUsers(),
                 riskService.getDistribution()
             ]);
-            
+
             setAllScores(scores);
             setHighRiskUsers(highRisk);
             setDistribution(dist);
@@ -43,10 +43,10 @@ export default function MonitoringPage() {
         try {
             setRecalculating(true);
             const result = await riskService.recalculateAll();
-            
+
             // Refresh data after recalculation
             await fetchMonitoringData();
-            
+
             alert(`Successfully recalculated ${result.total_processed} users`);
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to recalculate scores');
@@ -174,7 +174,7 @@ export default function MonitoringPage() {
                             <div key={user.user_id} className="flex items-center justify-between bg-black/20 rounded-lg p-3">
                                 <div className="flex items-center gap-3">
                                     <span className="text-white">User ID: {user.user_id}</span>
-                                    <RiskBadge category={user.category} />
+                                    <RiskBadge category={user.category} score={Number(user.score)} />
                                 </div>
                                 <div className="text-right">
                                     <div className="text-white font-bold">{user.score}/100</div>
@@ -193,7 +193,7 @@ export default function MonitoringPage() {
                 <h3 className="text-xl font-bold text-white mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
                     All User Risk Scores
                 </h3>
-                
+
                 {allScores.length === 0 ? (
                     <p className="text-secondary text-center py-8">No risk scores available</p>
                 ) : (
@@ -215,18 +215,17 @@ export default function MonitoringPage() {
                                             <div className="flex items-center gap-2">
                                                 <span className="font-bold">{score.score}/100</span>
                                                 <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
-                                                    <div 
-                                                        className={`h-full ${
-                                                            score.category === 'LOW' ? 'bg-success' :
-                                                            score.category === 'MEDIUM' ? 'bg-warning' : 'bg-error'
-                                                        }`}
+                                                    <div
+                                                        className={`h-full ${score.category === 'LOW' ? 'bg-success' :
+                                                                score.category === 'MEDIUM' ? 'bg-warning' : 'bg-error'
+                                                            }`}
                                                         style={{ width: `${score.score}%` }}
                                                     />
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-3">
-                                            <RiskBadge category={score.category} />
+                                            <RiskBadge category={score.category} score={Number(score.score)} />
                                         </td>
                                         <td className="text-secondary p-3">
                                             {new Date(score.last_updated).toLocaleString()}

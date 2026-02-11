@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { riskService } from '../services/riskService';
 import { RiskScore } from '../types/risk.types';
-import { RiskScoreWidget } from '../components/RiskScoreWidget';
+import RiskScoreWidget from '../components/RiskScoreWidget';
 import { GlassCard } from '../components/GlassCard';
 
 export default function RiskScorePage() {
@@ -73,7 +73,7 @@ export default function RiskScorePage() {
             {/* Risk Score Widget */}
             {riskScore && (
                 <div className="mb-8">
-                    <RiskScoreWidget riskScore={riskScore} />
+                    <RiskScoreWidget />
                 </div>
             )}
 
@@ -83,21 +83,21 @@ export default function RiskScorePage() {
                     <h3 className="text-xl font-bold text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         Risk Assessment Details
                     </h3>
-                    
+
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <span className="text-secondary">Risk Category:</span>
-                            <span className={`badge ${riskScore.category === 'LOW' ? 'badge-success' : 
+                            <span className={`badge ${riskScore.category === 'LOW' ? 'badge-success' :
                                 riskScore.category === 'MEDIUM' ? 'badge-warning' : 'badge-error'}`}>
                                 {riskScore.category}
                             </span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <span className="text-secondary">Score:</span>
                             <span className="text-white font-bold">{riskScore.score}/100</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <span className="text-secondary">Last Updated:</span>
                             <span className="text-white">
