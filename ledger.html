@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ledger</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<h1>Ledger</h1>
+
+<table class="trades-table" id="ledgerTable">
+    <tr>
+        <th>Action</th>
+        <th>Details</th>
+        <th>Time</th>
+    </tr>
+</table>
+
+<script>
+async function loadLedger() {
+    const res = await fetch("http://127.0.0.1:8000/ledger");
+    const ledger = await res.json();
+
+    const table = document.getElementById("ledgerTable");
+
+    ledger.reverse().forEach(l => {
+        const row = table.insertRow();
+        row.insertCell().innerText = l.action;
+
+        const d = row.insertCell();
+        d.innerText = l.details;
+        if (l.action === "TAMPER_DETECTED") {
+            d.style.color = "red";
+            d.style.fontWeight = "bold";
+        }
+
+        row.insertCell().innerText = l.timestamp;
+    });
+}
+window.onload = loadLedger;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Trade</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<div class="form-section">
+    <h1>Create Trade</h1>
+
+    <form id="tradeForm">
+
+        <label>Seller</label>
+        <input type="text" id="seller" required>
+
+        <label>Product</label>
+        <input type="text" id="product" required>
+
+        <label>Quantity</label>
+        <input type="number" id="quantity" required>
+
+        <label>Price</label>
+        <input type="number" id="price" required>
+
+        <button type="submit">Create Trade</button>
+        <p id="msg"></p>
+    </form>
+</div>
+
+<script>
+document.getElementById("tradeForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const tradeData = {
+        seller: document.getElementById("seller").value,
+        product: document.getElementById("product").value,
+        quantity: Number(document.getElementById("quantity").value),
+        price: Number(document.getElementById("price").value)
+    };
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/trade", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tradeData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || "Trade creation failed");
+        }
+
+        document.getElementById("msg").style.color = "green";
+        document.getElementById("msg").innerText =
+            `Trade created successfully ✅ (Trade ID: ${result.trade_id})`;
+
+        document.getElementById("tradeForm").reset();
+
+    } catch (error) {
+        document.getElementById("msg").style.color = "red";
+        document.getElementById("msg").innerText = error.message;
+    }
+});
+</script>
+
+</body>
+</html>
