@@ -8,6 +8,7 @@ from app.schemas.user import UserResponse, UserAdminCreate, UserUpdate
 from app.api.deps import get_current_user
 from app.services.integrity_service import IntegrityService
 from app.core.security import hash_password
+from app.utils.user_utils import generate_user_code
 
 router = APIRouter()
 
@@ -82,8 +83,12 @@ def create_user(
     
     if db.query(User).filter(User.email == user_in.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Generate unique user code
+    user_code = generate_user_code(user_in.name, db)
         
     user = User(
+        user_code=user_code,
         name=user_in.name,
         email=user_in.email,
         password=hash_password(user_in.password),
@@ -138,7 +143,38 @@ def delete_user(
         
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
-        
+    
+    # Delete related records in proper order to avoid foreign key constraints
+    
+    # Delete risk scores
+    from app.models.risk import RiskScore
+    db.query(RiskScore).filter(RiskScore.user_id == user_id).delete()
+    
+    # Delete documents owned by user
+    from app.models.document import Document
+    documents = db.query(Document).filter(Document.owner_id == user_id).all()
+    for doc in documents:
+        # Delete ledger entries for this document
+        from app.models.ledger import LedgerEntry
+        db.query(LedgerEntry).filter(LedgerEntry.document_id == doc.id).delete()
+    
+    db.query(Document).filter(Document.owner_id == user_id).delete()
+    
+    # Delete ledger entries where user is the actor
+    from app.models.ledger import LedgerEntry
+    db.query(LedgerEntry).filter(LedgerEntry.actor_id == user_id).delete()
+    
+    # Delete audit logs where user is the admin
+    from app.models.audit import AuditLog
+    db.query(AuditLog).filter(AuditLog.admin_id == user_id).delete()
+    
+    # Delete trades where user is buyer or seller
+    from app.models.trade import TradeTransaction
+    db.query(TradeTransaction).filter(
+        (TradeTransaction.buyer_id == user_id) | (TradeTransaction.seller_id == user_id)
+    ).delete()
+    
+    # Finally delete the user
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}

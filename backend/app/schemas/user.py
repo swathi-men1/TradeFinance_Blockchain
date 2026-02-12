@@ -32,6 +32,7 @@ class UserLogin(BaseModel):
 # Response schemas
 class UserResponse(BaseModel):
     id: int
+    user_code: str
     name: str
     email: str
     role: UserRole

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { UserCreate, UserRole } from '../types/auth.types';
+import { generateUserId } from '../utils';
 
 const roleOptions = [
     {
@@ -49,17 +50,18 @@ export default function RegisterPage() {
             return;
         }
 
-        // Validate password strength
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long');
-            return;
-        }
-
-        setLoading(true);
-
         try {
+            setLoading(true);
             await authService.register(formData);
-            navigate('/login');
+            
+            // Show success message with user ID
+            const userId = generateUserId(formData.name);
+            alert(`Registration successful! Your User ID is: ${userId}\n\nPlease save this ID for future logins.\n\nRedirecting to login page...`);
+            
+            // Navigate to login after a short delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 3000);
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Registration failed. Please try again.');
         } finally {

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserLogin, Token
 from app.core.security import hash_password, verify_password, create_access_token
+from app.utils.user_utils import generate_user_code
 
 
 class AuthService:
@@ -17,9 +18,13 @@ class AuthService:
                 detail="Email already registered"
             )
         
+        # Generate unique user code
+        user_code = generate_user_code(user_data.name, db)
+        
         # Create new user
         hashed_password = hash_password(user_data.password)
         new_user = User(
+            user_code=user_code,
             name=user_data.name,
             email=user_data.email,
             password=hashed_password,

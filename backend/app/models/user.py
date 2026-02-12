@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP, func
 from app.db.base import Base
 import enum
+import random
 
 
 class UserRole(str, enum.Enum):
@@ -14,6 +15,7 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_code = Column(String(10), unique=True, nullable=False, index=True)  # Display ID (e.g., JOH847)
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String(255), nullable=False)  # Hashed

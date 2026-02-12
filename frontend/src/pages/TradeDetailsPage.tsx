@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { tradeService } from '../services/tradeService';
+import { documentService } from '../services/documentService';
 import { Trade, TradeStatus } from '../types/trade.types';
 import { Document } from '../types/document.types';
 import { GlassCard } from '../components/GlassCard';
@@ -26,11 +27,16 @@ export default function TradeDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const [trade, setTrade] = useState<Trade | null>(null);
     const [documents, setDocuments] = useState<Document[]>([]);
+    const [allDocuments, setAllDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [showStatusUpdate, setShowStatusUpdate] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState('');
+    const [showDocumentManagement, setShowDocumentManagement] = useState(false);
+    const [loadingAllDocuments, setLoadingAllDocuments] = useState(false);
+    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+    const [updatingDocuments, setUpdatingDocuments] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -75,6 +81,54 @@ export default function TradeDetailsPage() {
             setError(err.response?.data?.detail || 'Failed to update status');
         } finally {
             setUpdatingStatus(false);
+        }
+    };
+
+    const loadAllDocuments = async () => {
+        try {
+            setLoadingAllDocuments(true);
+            const docs = await documentService.getDocuments();
+            setAllDocuments(docs);
+        } catch (err: any) {
+            console.error('Error loading all documents:', err);
+        } finally {
+            setLoadingAllDocuments(false);
+        }
+    };
+
+    const handleDocumentToggle = (documentId: number) => {
+        setSelectedDocuments(prev => 
+            prev.includes(documentId) 
+                ? prev.filter(id => id !== documentId)
+                : [...prev, documentId]
+        );
+    };
+
+    const handleAttachDocuments = async () => {
+        if (selectedDocuments.length === 0) return;
+
+        try {
+            setUpdatingDocuments(true);
+            for (const documentId of selectedDocuments) {
+                await tradeService.linkDocumentToTrade(parseInt(id!), documentId);
+            }
+            await fetchTradeDocuments();
+            setShowDocumentManagement(false);
+            setSelectedDocuments([]);
+            setError('');
+        } catch (err: any) {
+            setError(err.response?.data?.detail || 'Failed to attach documents');
+        } finally {
+            setUpdatingDocuments(false);
+        }
+    };
+
+    const handleRemoveDocument = async (documentId: number) => {
+        try {
+            await tradeService.unlinkDocumentFromTrade(parseInt(id!), documentId);
+            await fetchTradeDocuments();
+        } catch (err: any) {
+            setError(err.response?.data?.detail || 'Failed to remove document');
         }
     };
 
@@ -311,10 +365,28 @@ export default function TradeDetailsPage() {
 
             {/* Linked Documents */}
             <GlassCard>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    <span>📎</span>
-                    <span>Linked Documents</span>
-                </h2>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <span>📎</span>
+                        <span>Linked Documents</span>
+                    </h2>
+                    
+                    {/* Admin Document Management */}
+                    {user?.role === 'admin' && (
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowDocumentManagement(true);
+                                    loadAllDocuments();
+                                }}
+                                className="btn-secondary text-sm"
+                            >
+                                <span>📎</span>
+                                <span>Manage Documents</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 {documents.length === 0 ? (
                     <div className="text-center py-12">
@@ -326,25 +398,162 @@ export default function TradeDetailsPage() {
                         {documents.map((doc) => (
                             <div
                                 key={doc.id}
-                                onClick={() => navigate(`/documents/${doc.id}`)}
-                                className="glass-card-flat cursor-pointer group hover:border-lime transition-all"
+                                className="glass-card-flat group hover:border-lime transition-all relative"
                             >
                                 <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-semibold text-white group-hover:text-lime transition-colors">
-                                            {doc.doc_number}
-                                        </p>
-                                        <p className="text-sm text-secondary">
-                                            {doc.doc_type.replace(/_/g, ' ')}
-                                        </p>
+                                    <div className="flex-1">
+                                        <div
+                                            onClick={() => navigate(`/documents/${doc.id}`)}
+                                            className="cursor-pointer group"
+                                        >
+                                            <p className="font-semibold text-white group-hover:text-lime transition-colors">
+                                                {doc.doc_number}
+                                            </p>
+                                            <p className="text-sm text-secondary">
+                                                {doc.doc_type.replace(/_/g, ' ')}
+                                            </p>
+                                        </div>
+                                        <div className="text-xs text-secondary mt-1">
+                                            {doc.owner_name} • {formatDate(doc.uploaded_at || doc.created_at)}
+                                        </div>
                                     </div>
-                                    <span className="text-secondary group-hover:text-lime transition-colors text-xl">→</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-secondary group-hover:text-lime transition-colors text-xl cursor-pointer"
+                                              onClick={() => navigate(`/documents/${doc.id}`)}>→</span>
+                                        {user?.role === 'admin' && (
+                                            <button
+                                                onClick={() => handleRemoveDocument(doc.id)}
+                                                className="text-red-400 hover:text-red-300 transition-colors text-lg"
+                                                title="Remove document from trade"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </GlassCard>
+
+            {/* Admin Document Management Modal */}
+            {showDocumentManagement && user?.role === 'admin' && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="glass-card max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-white">Manage Trade Documents</h3>
+                            <button
+                                onClick={() => {
+                                    setShowDocumentManagement(false);
+                                    setSelectedDocuments([]);
+                                }}
+                                className="text-secondary hover:text-white text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {loadingAllDocuments ? (
+                            <div className="text-center py-12">
+                                <div className="spinner spinner-small mx-auto mb-4"></div>
+                                <p className="text-secondary">Loading documents...</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="text-sm text-secondary mb-4">
+                                    Select documents to attach to this trade
+                                </div>
+                                
+                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                    {allDocuments.map((doc) => {
+                                        const isLinked = documents.some(d => d.id === doc.id);
+                                        const isSelected = selectedDocuments.includes(doc.id);
+                                        
+                                        return (
+                                            <div
+                                                key={doc.id}
+                                                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                    isLinked 
+                                                        ? 'opacity-50 cursor-not-allowed' 
+                                                        : 'hover:bg-opacity-10'
+                                                }`}
+                                                style={{ 
+                                                    borderColor: isSelected 
+                                                        ? 'var(--accent-neon-purple)' 
+                                                        : 'rgba(255, 255, 255, 0.1)',
+                                                    backgroundColor: isSelected 
+                                                        ? 'rgba(184, 38, 255, 0.1)' 
+                                                        : 'transparent'
+                                                }}
+                                                onClick={() => !isLinked && handleDocumentToggle(doc.id)}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    disabled={isLinked}
+                                                    onChange={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                    className="w-4 h-4 rounded"
+                                                    style={{ accentColor: 'var(--accent-neon-purple)' }}
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-white font-medium">{doc.doc_type}</span>
+                                                        <span className="text-xs text-muted">#{doc.id}</span>
+                                                        {isLinked && (
+                                                            <span className="text-xs text-success">✓ Linked</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-secondary mt-1">
+                                                        {doc.doc_number} • {doc.owner_name}
+                                                    </div>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <span className={`badge ${doc.status === 'verified' ? 'badge-success' : 'badge-warning'}`}>
+                                                        {doc.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {selectedDocuments.length > 0 && (
+                                    <div className="pt-4 border-t border-opacity-20" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                                        <p className="text-sm text-secondary mb-4">
+                                            <span className="text-neon-purple font-medium">{selectedDocuments.length}</span> document(s) selected
+                                        </p>
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedDocuments([]);
+                                                }}
+                                                className="btn-secondary flex-1"
+                                            >
+                                                Clear Selection
+                                            </button>
+                                            <button
+                                                onClick={handleAttachDocuments}
+                                                disabled={updatingDocuments}
+                                                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {updatingDocuments ? (
+                                                    <span className="flex items-center justify-center gap-2">
+                                                        <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                                        Attaching...
+                                                    </span>
+                                                ) : (
+                                                    <span>Attach Documents</span>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

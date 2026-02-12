@@ -12,6 +12,7 @@ import { ledgerService } from '../services/ledgerService';
 import { LedgerTimeline } from '../components/LedgerTimeline';
 import { LedgerEntry } from '../types/ledger.types';
 
+
 export default function DashboardPage() {
     const { user } = useAuth();
     const [stats, setStats] = useState({
@@ -34,7 +35,7 @@ export default function DashboardPage() {
             const [trades, documents, activity] = await Promise.all([
                 tradeService.getTrades(),
                 documentService.getDocuments(),
-                ledgerService.getRecentActivity(5)
+                ledgerService.getRecentActivity(20) // Increased from 5 to 20 entries
             ]);
 
             const completed = trades.filter(t => t.status === 'completed' || t.status === 'paid').length;
@@ -190,30 +191,32 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Activity Timeline - Placeholder for future implementation */}
+            {/* Activity Timeline - Scrollable */}
             <div className="mb-12">
                 <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
                     Recent Activity
                 </h2>
                 <GlassCard>
-                    {recentActivity.length > 0 ? (
-                        <LedgerTimeline entries={recentActivity.map(entry => ({
-                            id: entry.id,
-                            action: entry.action,
-                            actor: entry.actor?.name || (entry.actor_id ? `User #${entry.actor_id}` : 'System'),
-                            timestamp: entry.created_at,
-                            previousHash: entry.previous_hash || '',
-                            entryHash: entry.entry_hash || '',
-                            isValid: entry.metadata?.is_valid
-                        }))} />
-                    ) : (
-                        <div className="text-center py-12">
-                            <div className="text-6xl mb-4">📊</div>
-                            <p className="text-secondary text-lg">
-                                No recent activity found.
-                            </p>
-                        </div>
-                    )}
+                    <div className="max-h-96 overflow-y-auto pr-4">
+                        {recentActivity.length > 0 ? (
+                            <LedgerTimeline entries={recentActivity.map(entry => ({
+                                id: entry.id,
+                                action: entry.action,
+                                actor: entry.actor?.name || (entry.actor_id ? `User #${entry.actor_id}` : 'System'),
+                                timestamp: entry.created_at,
+                                previousHash: entry.previous_hash || '',
+                                entryHash: entry.entry_hash || '',
+                                isValid: entry.metadata?.is_valid
+                            }))} />
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="text-6xl mb-4">📊</div>
+                                <p className="text-secondary text-lg">
+                                    No recent activity found.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </GlassCard>
             </div>
 

@@ -2,6 +2,7 @@ export type UserRole = 'bank' | 'corporate' | 'auditor' | 'admin';
 
 export interface User {
     id: number;
+    user_code: string;
     name: string;
     email: string;
     role: UserRole;

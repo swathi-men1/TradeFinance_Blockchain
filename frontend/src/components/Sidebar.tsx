@@ -54,6 +54,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* Navigation Links */}
                 <nav className="sidebar-nav">
+                    {/* Dashboard - Available to all users */}
                     <Link
                         to="/dashboard"
                         className={`sidebar-link ${isActive('/dashboard') ? 'active' : ''}`}
@@ -63,6 +64,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span>Dashboard</span>
                     </Link>
 
+                    {/* Documents - Available to all users */}
                     <Link
                         to="/documents"
                         className={`sidebar-link ${isActive('/documents') ? 'active' : ''}`}
@@ -72,6 +74,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span>Documents</span>
                     </Link>
 
+                    {/* Upload Document - Corporate, Bank, and Admin only */}
+                    {(user.role === 'corporate' || user.role === 'bank' || user.role === 'admin') && (
+                        <Link
+                            to="/upload"
+                            className={`sidebar-link ${isActive('/upload') ? 'active' : ''}`}
+                            onClick={() => window.innerWidth < 1024 && onClose()}
+                        >
+                            <span className="sidebar-icon">📤</span>
+                            <span>Upload Document</span>
+                        </Link>
+                    )}
+
+                    {/* Trades - Available to all users */}
                     <Link
                         to="/trades"
                         className={`sidebar-link ${isActive('/trades') ? 'active' : ''}`}
@@ -81,7 +96,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span>Trades</span>
                     </Link>
 
-                    {user.role !== 'auditor' && (
+                    {/* Risk Score - Corporate and Bank only (not Auditor or Admin) */}
+                    {(user.role === 'corporate' || user.role === 'bank') && (
                         <Link
                             to="/risk-score"
                             className={`sidebar-link ${isActive('/risk-score') ? 'active' : ''}`}
@@ -92,6 +108,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </Link>
                     )}
 
+                    {/* Monitoring - Admin and Auditor only */}
                     {(user.role === 'admin' || user.role === 'auditor') && (
                         <Link
                             to="/monitoring"
