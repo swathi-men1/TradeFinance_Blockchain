@@ -5,9 +5,10 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies.auth import get_current_user
+from app.utils.auth import get_current_user
 from app.models.user import User
 from app.models.document import Document
+from app.core.minio_client import upload_file_to_minio
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -39,13 +40,22 @@ def upload_document(
     # -------------------- HASH --------------------
     sha256_hash = hashlib.sha256(file_bytes).hexdigest()
 
-    # -------------------- STORAGE KEY (MinIO/S3 placeholder) --------------------
+    # -------------------- STORAGE KEY --------------------
     s3_key = f"org_{org_id}/{uuid.uuid4()}_{original_filename}"
 
-    # -------------------- DOCUMENT TYPE (simple logic) --------------------
+    # 🔥 IMPORTANT — ACTUAL MINIO UPLOAD
+    try:
+        upload_file_to_minio(file_bytes, s3_key, mime_type)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload file to storage: {str(e)}"
+        )
+
+    # -------------------- DOCUMENT TYPE --------------------
     document_type = "INVOICE" if "invoice" in original_filename.lower() else "OTHER"
 
-    # -------------------- DB INSERT (MATCHES MODEL EXACTLY) --------------------
+    # -------------------- SAVE TO DATABASE --------------------
     document = Document(
         org_id=org_id,
         uploaded_by=current_user.id,

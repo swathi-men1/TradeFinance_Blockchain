@@ -14,24 +14,38 @@ router = APIRouter(
 )
 
 
+# ✅ CREATE TRADE
 @router.post("/")
 def create_trade(
+    buyer_id: int,
+    seller_id: int,
     amount: float,
     currency: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    actor_id = current_user.id
+    # Only BANK or ADMIN can create trade
+    if current_user.role.upper() not in ["BANK", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Validate users exist
+    buyer = db.query(User).filter(User.id == buyer_id).first()
+    seller = db.query(User).filter(User.id == seller_id).first()
+
+    if not buyer or not seller:
+        raise HTTPException(status_code=404, detail="Buyer or Seller not found")
 
     trade = TradeTransaction(
-        buyer_id=uuid.uuid4(),
-        seller_id=uuid.uuid4(),
+        id=uuid.uuid4(),
+        buyer_id=buyer_id,       # ✅ INTEGER
+        seller_id=seller_id,     # ✅ INTEGER
         amount=amount,
-        currency=currency
+        currency=currency,
+        status="pending"
     )
 
     db.add(trade)
-    db.flush()  # to get trade.id
+    db.flush()  # get trade.id
 
     ledger = LedgerEntry(
         entity_type="trade",
@@ -39,16 +53,25 @@ def create_trade(
         previous_hash=None,
         current_hash="TRADE_CREATED",
         action="CREATE",
-        actor_id=actor_id
+        actor_id=current_user.id
     )
 
     db.add(ledger)
     db.commit()
     db.refresh(trade)
 
-    return trade
+    return {
+    "trade_id": str(trade.id),
+    "buyer_id": trade.buyer_id,
+    "seller_id": trade.seller_id,
+    "amount": trade.amount,
+    "currency": trade.currency,
+    "status": trade.status
+}
 
 
+
+# ✅ UPDATE STATUS
 @router.patch("/{trade_id}/status")
 def update_trade_status(
     trade_id: uuid.UUID,
@@ -56,7 +79,6 @@ def update_trade_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    actor_id = current_user.id
 
     trade = db.query(TradeTransaction).filter(
         TradeTransaction.id == trade_id
@@ -72,9 +94,9 @@ def update_trade_status(
         entity_type="trade",
         entity_id=trade.id,
         previous_hash=None,
-        current_hash=f"STATUS_{status}",
+        current_hash=f"STATUS_{status.upper()}",
         action="STATUS_UPDATE",
-        actor_id=actor_id
+        actor_id=current_user.id
     )
 
     db.add(ledger)

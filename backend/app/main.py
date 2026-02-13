@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from app.database import engine, Base
+from app.core.minio_client import create_bucket_if_not_exists
 
 # -------------------- IMPORT MODELS --------------------
 from app.models import (
@@ -24,10 +25,15 @@ from app.routes.analytics import router as analytics_router
 from app.routes.export import router as export_router
 
 
-# -------------------- LIFESPAN (DB INIT) --------------------
+# -------------------- LIFESPAN --------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 🔹 Create DB tables
     Base.metadata.create_all(bind=engine)
+
+    # 🔹 Ensure MinIO bucket exists
+    create_bucket_if_not_exists()
+
     yield
 
 
@@ -49,10 +55,12 @@ app.include_router(risk_router)
 app.include_router(analytics_router)
 app.include_router(export_router)
 
+
 # -------------------- ROOT --------------------
 @app.get("/")
 def root():
     return {"status": "Backend running successfully"}
+
 
 # -------------------- DB CHECK --------------------
 @app.get("/db-check")
