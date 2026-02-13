@@ -3,6 +3,7 @@ from app.services.integrity_service import IntegrityService
 from app.db.session import SessionLocal
 from app.models.audit import AuditLog
 from datetime import datetime
+import traceback
 
 scheduler = BackgroundScheduler()
 
@@ -22,13 +23,16 @@ def verify_ledger_integrity():
         # For now, let's just print to stdout/logs.
         print(f"[{datetime.now()}] Integrity Check Finished: {results['valid_documents']} valid, {results['failed_documents']} failed.")
         
-        # If failures detected, log robustly
+        # If failures detected, log robustly (but don't crash)
         if results['failed_documents'] > 0:
-            print(f"CRITICAL: TAMPERING DETECTED! Details: {results['failure_details']}")
+            print(f"WARNING: TAMPERING DETECTED! Details: {results['failure_details']}")
             # Ideally trigger alert here
+            # NOTE: This is a warning, not a critical error that should crash the app
             
     except Exception as e:
-        print(f"Error in integrity verification job: {e}")
+        print(f"ERROR in integrity verification job: {e}")
+        traceback.print_exc()
+        # Continue running - don't crash the scheduler
     finally:
         db.close()
 
@@ -37,3 +41,5 @@ def start_scheduler():
     # Run every 5 minutes in dev, can be configured
     scheduler.add_job(verify_ledger_integrity, 'interval', minutes=5)
     scheduler.start()
+    print("Background scheduler started - integrity checks every 5 minutes")
+

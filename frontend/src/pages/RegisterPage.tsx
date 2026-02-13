@@ -25,6 +25,9 @@ const roleOptions = [
     }
 ];
 
+// Note: Role selection removed for security - users register as basic corporate
+// Admin will assign appropriate roles (Bank/Corporate/Auditor) after approval
+
 export default function RegisterPage() {
     const [formData, setFormData] = useState<UserCreate>({
         name: '',
@@ -54,9 +57,9 @@ export default function RegisterPage() {
             setLoading(true);
             await authService.register(formData);
             
-            // Show success message with user ID
+            // Show success message with user ID and approval notice
             const userId = generateUserId(formData.name);
-            alert(`Registration successful! Your User ID is: ${userId}\n\nPlease save this ID for future logins.\n\nRedirecting to login page...`);
+            alert(`Registration successful! Your User ID is: ${userId}\n\n⏳ Your account is now pending admin approval.\n📧 You will be notified once your account is activated.\n\nRedirecting to login page...`);
             
             // Navigate to login after a short delay
             setTimeout(() => {
@@ -92,6 +95,12 @@ export default function RegisterPage() {
                     <p className="text-secondary">
                         Join the blockchain trade finance platform
                     </p>
+                    <div className="mt-2 p-3 bg-warning bg-opacity-20 border border-warning border-opacity-30 rounded-lg">
+                        <p className="text-sm text-warning">
+                            ⚠️ <strong>Account Approval Required:</strong> All registrations require admin approval before access is granted. 
+                            Roles (Bank/Corporate/Auditor) will be assigned by administrators based on your organization profile.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Form Card */}
@@ -147,38 +156,6 @@ export default function RegisterPage() {
                                 placeholder="Acme Corporation"
                                 required
                             />
-                        </div>
-
-                        {/* Role Selection - Card Style */}
-                        <div>
-                            <label className="block text-sm font-medium text-white mb-3">
-                                Select Role
-                            </label>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                {roleOptions.map((role) => (
-                                    <button
-                                        key={role.value}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, role: role.value })}
-                                        className={`p-4 rounded-xl border-2 transition-all text-left ${formData.role === role.value
-                                                ? 'border-lime bg-lime bg-opacity-10'
-                                                : 'border-opacity-20 hover:border-lime hover:bg-opacity-5 hover:bg-lime'
-                                            }`}
-                                        style={{ borderColor: formData.role === role.value ? 'var(--accent-lime)' : 'rgba(191, 255, 0, 0.2)' }}
-                                    >
-                                        <div className="text-3xl mb-2">{role.icon}</div>
-                                        <div className={`font-semibold mb-1 ${formData.role === role.value ? 'text-lime' : 'text-white'}`}>
-                                            {role.label}
-                                        </div>
-                                        <div className="text-xs text-muted">
-                                            {role.description}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                            <p className="mt-3 text-xs text-warning">
-                                ⚠️ Note: Admin role cannot be self-registered. Admin accounts must be created by system administrators.
-                            </p>
                         </div>
 
                         {/* Password */}

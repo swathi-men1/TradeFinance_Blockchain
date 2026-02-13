@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.db.session import get_db
 from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
 from app.services.auth_service import AuthService
@@ -16,9 +17,21 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
+def login(credentials: UserLogin, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Login and receive JWT token"""
-    return AuthService.login_user(db, credentials)
+    return AuthService.login_user(db, credentials, background_tasks)
+
+
+@router.post("/logout", response_model=dict)
+def logout(current_user: User = Depends(get_current_user)):
+    """Logout user"""
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    
+    return {"message": "Logged out successfully"}
 
 
 @router.get("/me", response_model=UserResponse)

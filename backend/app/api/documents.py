@@ -78,6 +78,17 @@ def update_document(
     return DocumentService.update_document(db, current_user, document_id, update_data)
 
 
+@router.get("/{document_id}/presigned-url")
+def get_presigned_url(
+    document_id: int,
+    inline: bool = False,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get presigned URL for direct document access (FAST - recommended)"""
+    return DocumentService.get_document_presigned_url(db, current_user, document_id, inline)
+
+
 @router.get("/{document_id}/download")
 def download_document(
     document_id: int,
@@ -85,7 +96,7 @@ def download_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Download or view document file"""
+    """Download or view document file (LEGACY - slow, streams through backend)"""
     file_stream, filename, content_type = DocumentService.get_document_file(db, current_user, document_id)
     
     from fastapi.responses import StreamingResponse
@@ -97,3 +108,4 @@ def download_document(
         media_type=content_type,
         headers={"Content-Disposition": f'{disposition}; filename="{filename}"'}
     )
+

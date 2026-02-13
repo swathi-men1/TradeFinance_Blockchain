@@ -1,3 +1,5 @@
+import { formatDateTimeIST } from '../utils/dateFormat';
+
 interface LedgerEntry {
     id: number;
     action: string;
@@ -15,12 +17,14 @@ interface LedgerTimelineProps {
 export function LedgerTimeline({ entries }: LedgerTimelineProps) {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleString('en-US', {
+        return date.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            hour12: true
         });
     };
 

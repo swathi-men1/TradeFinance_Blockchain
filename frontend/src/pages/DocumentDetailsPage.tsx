@@ -7,6 +7,7 @@ import { ledgerService } from '../services/ledgerService';
 import { LedgerEntry } from '../types/ledger.types';
 import { LedgerTimeline } from '../components/LedgerTimeline';
 import { GlassCard } from '../components/GlassCard';
+import { formatDateShortIST } from '../utils/dateFormat';
 
 export default function DocumentDetailsPage() {
     const { id } = useParams();
@@ -220,10 +221,16 @@ export default function DocumentDetailsPage() {
                             </>
                         )}
                         {!isEditing && (
-                            <button onClick={handleDownload} className="btn-primary">
-                                <span>⬇️</span>
-                                <span>Download</span>
-                            </button>
+                            <>
+                                <button onClick={handleViewFile} className="btn-outline text-cyan-400 border-cyan-400 hover:bg-cyan-400 hover:text-black">
+                                    <span>👁️</span>
+                                    <span>View File</span>
+                                </button>
+                                <button onClick={handleDownload} className="btn-primary">
+                                    <span>⬇️</span>
+                                    <span>Download</span>
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -292,11 +299,7 @@ export default function DocumentDetailsPage() {
                             />
                         ) : (
                             <p className="text-white font-semibold">
-                                {new Date(document.issued_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
+                                {formatDateShortIST(document.issued_at)}
                             </p>
                         )}
                     </div>
@@ -304,11 +307,7 @@ export default function DocumentDetailsPage() {
                     <div>
                         <label className="text-muted text-sm block mb-1">Upload Date</label>
                         <p className="text-white font-semibold">
-                            {new Date(document.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}
+                            {formatDateShortIST(document.created_at)}
                         </p>
                     </div>
                 </div>
@@ -396,7 +395,7 @@ export default function DocumentDetailsPage() {
                         timestamp: entry.created_at,
                         previousHash: entry.previous_hash || '',
                         entryHash: entry.entry_hash || '',
-                        isValid: entry.metadata?.is_valid
+                        isValid: entry.entry_metadata?.is_valid
                     }))} />
                 ) : (
                     <div className="text-center py-12">

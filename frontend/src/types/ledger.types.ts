@@ -18,9 +18,11 @@ export type LedgerAction =
 export interface LedgerEntry {
   id: number;
   document_id: number | null;
-  action: LedgerAction;
+  action: string; // Changed from LedgerAction to string to match backend
   actor_id: number | null;
-  metadata: Record<string, any> | null;
+  actor_name?: string;
+  actor_role?: string;
+  entry_metadata: Record<string, any> | null; // Changed from metadata to entry_metadata
   created_at: string;
   previous_hash?: string | null;
   entry_hash?: string | null;

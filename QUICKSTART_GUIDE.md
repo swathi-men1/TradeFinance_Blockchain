@@ -54,7 +54,7 @@ Open `PRIVATE_CREDENTIALS.md` to view all test login credentials.
 
 ## 🌐 Step 3: Access the Application
 
-1. **Frontend**: http://localhost
+1. **Frontend**: http://localhost (New Landing Page with Architecture Overview)
 2. **Backend API**: http://localhost:8000
 3. **API Docs**: http://localhost:8000/docs (Swagger UI)
 4. **MinIO Console**: http://localhost:9001
@@ -65,7 +65,7 @@ Open `PRIVATE_CREDENTIALS.md` to view all test login credentials.
 
 ### Test 1: Register a New User (Corporate Role Only)
 
-1. Navigate to http://localhost/register
+1. Navigate to http://localhost/register (or click "Get Started" on Landing Page)
 2. Fill in the form:
    - Name: Test User
    - Email: test@example.com
@@ -80,7 +80,7 @@ Open `PRIVATE_CREDENTIALS.md` to view all test login credentials.
 
 ### Test 2: Login with Admin Account
 
-1. Navigate to http://localhost/login
+1. Navigate to http://localhost/login (or click "Log In" on Landing Page)
 2. Enter credentials:
    - Email: admin@tradefinance.com
    - Password: admin123!@#
@@ -123,7 +123,7 @@ curl -X POST \
 
 ---
 
-### Test 5: Verify Document Hash
+### Test 5: Verify Document Hash & Ledger
 
 ```bash
 # Verify document integrity (replace {id} with actual document ID)
@@ -153,12 +153,14 @@ curl -X POST \
 
 ### Test 7: Monitoring & Risk (Admin Only)
 
+Check the new Risk Scoring dashboard features:
+
 ```bash
 # Get System Stats including Risk Distribution
 curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   http://localhost:8000/api/v1/admin/system-stats
 
-# Check Ledger Consistency
+# Check Ledger Consistency and AI Verification
 curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   http://localhost:8000/api/v1/admin/verify-consistency
 ```

@@ -5,10 +5,12 @@ import { User, UserCreate, userService } from '../services/userService';
 
 export default function AdminUserManagement() {
     const [users, setUsers] = useState<User[]>([]);
+    const [pendingUsers, setPendingUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [showPendingOnly, setShowPendingOnly] = useState(false);
     const [currentUser, setCurrentUser] = useState<Partial<UserCreate> & { id?: number }>({
         name: '',
         email: '',
@@ -19,6 +21,7 @@ export default function AdminUserManagement() {
 
     useEffect(() => {
         loadUsers();
+        loadPendingUsers();
     }, []);
 
     const loadUsers = async () => {
@@ -34,13 +37,45 @@ export default function AdminUserManagement() {
         }
     };
 
+    const loadPendingUsers = async () => {
+        try {
+            const data = await userService.getPendingUsers();
+            setPendingUsers(data);
+        } catch (err) {
+            console.error('Failed to load pending users:', err);
+        }
+    };
+
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this user?')) return;
         try {
             await userService.deleteUser(id);
             setUsers(users.filter(u => u.id !== id));
+            setPendingUsers(pendingUsers.filter(u => u.id !== id));
         } catch (err) {
             alert('Failed to delete user');
+        }
+    };
+
+    const handleApprove = async (id: number) => {
+        try {
+            const approvedUser = await userService.approveUser(id);
+            setUsers([...users, approvedUser]);
+            setPendingUsers(pendingUsers.filter(u => u.id !== id));
+            alert('User approved successfully!');
+        } catch (err) {
+            alert('Failed to approve user');
+        }
+    };
+
+    const handleReject = async (id: number) => {
+        if (!confirm('Are you sure you want to reject this user registration? This will permanently delete the user.')) return;
+        try {
+            await userService.rejectUser(id);
+            setPendingUsers(pendingUsers.filter(u => u.id !== id));
+            alert('User registration rejected and deleted.');
+        } catch (err) {
+            alert('Failed to reject user');
         }
     };
 
@@ -89,13 +124,33 @@ export default function AdminUserManagement() {
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-2xl font-bold text-white">User Management</h3>
-                <button
-                    onClick={handleAdd}
-                    className="px-4 py-2 bg-lime text-primary font-bold rounded-lg hover:bg-opacity-90 transition-all"
-                >
-                    + Add User
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowPendingOnly(!showPendingOnly)}
+                        className={`px-4 py-2 font-bold rounded-lg transition-all ${
+                            showPendingOnly 
+                                ? 'bg-warning text-primary' 
+                                : 'bg-lime text-primary hover:bg-opacity-90'
+                        }`}
+                    >
+                        {showPendingOnly ? 'Show All Users' : `Pending Approvals (${pendingUsers.length})`}
+                    </button>
+                    <button
+                        onClick={handleAdd}
+                        className="px-4 py-2 bg-lime text-primary font-bold rounded-lg hover:bg-opacity-90 transition-all"
+                    >
+                        + Add User
+                    </button>
+                </div>
             </div>
+
+            {pendingUsers.length > 0 && !showPendingOnly && (
+                <div className="mb-6 p-4 bg-warning bg-opacity-20 border border-warning border-opacity-30 rounded-lg">
+                    <p className="text-warning font-semibold">
+                        ⚠️ You have {pendingUsers.length} pending user registration{pendingUsers.length > 1 ? 's' : ''} waiting for approval.
+                    </p>
+                </div>
+            )}
 
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
@@ -108,11 +163,12 @@ export default function AdminUserManagement() {
                                 <th className="p-3">Email</th>
                                 <th className="p-3">Role</th>
                                 <th className="p-3">Organization</th>
+                                <th className="p-3">Status</th>
                                 <th className="p-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map(user => (
+                            {(showPendingOnly ? pendingUsers : users).map(user => (
                                 <tr key={user.id} className="border-b border-light/10 hover:bg-light/5">
                                     <td className="p-3 font-semibold text-white">{user.name}</td>
                                     <td className="p-3 text-secondary">{user.email}</td>
@@ -123,12 +179,38 @@ export default function AdminUserManagement() {
                                     </td>
                                     <td className="p-3 text-secondary">{user.org_name}</td>
                                     <td className="p-3">
-                                        <button
-                                            onClick={() => handleEdit(user)}
-                                            className="text-blue-400 hover:text-blue-300 mr-3"
-                                        >
-                                            Edit
-                                        </button>
+                                        <span className={`text-xs uppercase px-2 py-1 rounded ${
+                                            user.is_active 
+                                                ? 'bg-success bg-opacity-20 text-success' 
+                                                : 'bg-warning bg-opacity-20 text-warning'
+                                        }`}>
+                                            {user.is_active ? 'Active' : 'Pending'}
+                                        </span>
+                                    </td>
+                                    <td className="p-3">
+                                        {!user.is_active ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleApprove(user.id)}
+                                                    className="text-green-400 hover:text-green-300 mr-3"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => handleReject(user.id)}
+                                                    className="text-red-400 hover:text-red-300 mr-3"
+                                                >
+                                                    Reject
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleEdit(user)}
+                                                className="text-blue-400 hover:text-blue-300 mr-3"
+                                            >
+                                                Edit
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => handleDelete(user.id)}
                                             className="text-red-400 hover:text-red-300"

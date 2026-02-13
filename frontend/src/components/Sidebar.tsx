@@ -108,8 +108,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </Link>
                     )}
 
-                    {/* Monitoring - Admin and Auditor only */}
-                    {(user.role === 'admin' || user.role === 'auditor') && (
+
+                    {/* Monitoring - Admin only */}
+                    {user.role === 'admin' && (
                         <Link
                             to="/monitoring"
                             className={`sidebar-link ${isActive('/monitoring') ? 'active' : ''}`}
@@ -117,6 +118,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         >
                             <span className="sidebar-icon">🔍</span>
                             <span>Monitoring</span>
+                        </Link>
+                    )}
+
+                    {/* Ledger Viewer - Admin and Auditor only */}
+                    {(user.role === 'admin' || user.role === 'auditor') && (
+                        <Link
+                            to="/ledger"
+                            className={`sidebar-link ${isActive('/ledger') ? 'active' : ''}`}
+                            onClick={() => window.innerWidth < 1024 && onClose()}
+                        >
+                            <span className="sidebar-icon">📋</span>
+                            <span>Immutable Ledger</span>
                         </Link>
                     )}
                 </nav>

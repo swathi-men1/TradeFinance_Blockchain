@@ -28,4 +28,29 @@ export const ledgerService = {
             metadata: entry.entry_metadata
         }));
     },
+
+    // New comprehensive methods for complete ledger viewing
+    getAllEntries: async (): Promise<LedgerEntry[]> => {
+        const response = await apiClient.get('/admin/ledger/all');
+        return response.data.map((entry: any) => ({
+            ...entry,
+            metadata: entry.entry_metadata
+        }));
+    },
+
+    getDocumentTimeline: async (documentId: number): Promise<LedgerEntry[]> => {
+        const response = await apiClient.get(`/admin/ledger/document/${documentId}`);
+        return response.data.map((entry: any) => ({
+            ...entry,
+            metadata: entry.entry_metadata
+        }));
+    },
+
+    getUserActivity: async (userId: number): Promise<LedgerEntry[]> => {
+        const response = await apiClient.get(`/admin/ledger/user/${userId}`);
+        return response.data.map((entry: any) => ({
+            ...entry,
+            metadata: entry.entry_metadata
+        }));
+    }
 };

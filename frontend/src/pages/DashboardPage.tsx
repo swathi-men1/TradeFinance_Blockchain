@@ -9,9 +9,6 @@ import { StatCard } from '../components/StatCard';
 import { GlassCard } from '../components/GlassCard';
 import { tradeService } from '../services/tradeService';
 import { documentService } from '../services/documentService';
-import { ledgerService } from '../services/ledgerService';
-import { LedgerTimeline } from '../components/LedgerTimeline';
-import { LedgerEntry } from '../types/ledger.types';
 
 
 export default function DashboardPage() {
@@ -22,7 +19,6 @@ export default function DashboardPage() {
         pendingTrades: 0,
         activeTrades: 0
     });
-    const [recentActivity, setRecentActivity] = useState<LedgerEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,10 +29,9 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
         try {
-            const [trades, documents, activity] = await Promise.all([
+            const [trades, documents] = await Promise.all([
                 tradeService.getTrades(),
-                documentService.getDocuments(),
-                ledgerService.getRecentActivity(20) // Increased from 5 to 20 entries
+                documentService.getDocuments()
             ]);
 
             const completed = trades.filter(t => t.status === 'completed' || t.status === 'paid').length;
@@ -49,7 +44,6 @@ export default function DashboardPage() {
                 pendingTrades: pending,
                 activeTrades: active
             });
-            setRecentActivity(activity);
         } catch (error) {
             console.error('Failed to fetch dashboard data', error);
         } finally {
@@ -191,35 +185,6 @@ export default function DashboardPage() {
                         </Link>
                     )}
                 </div>
-            </div>
-
-            {/* Activity Timeline - Scrollable */}
-            <div className="mb-12">
-                <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    Recent Activity
-                </h2>
-                <GlassCard>
-                    <div className="max-h-96 overflow-y-auto pr-4">
-                        {recentActivity.length > 0 ? (
-                            <LedgerTimeline entries={recentActivity.map(entry => ({
-                                id: entry.id,
-                                action: entry.action,
-                                actor: entry.actor?.name || (entry.actor_id ? `User #${entry.actor_id}` : 'System'),
-                                timestamp: entry.created_at,
-                                previousHash: entry.previous_hash || '',
-                                entryHash: entry.entry_hash || '',
-                                isValid: entry.metadata?.is_valid
-                            }))} />
-                        ) : (
-                            <div className="text-center py-12">
-                                <div className="text-6xl mb-4">📊</div>
-                                <p className="text-secondary text-lg">
-                                    No recent activity found.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </GlassCard>
             </div>
 
             {/* Role-Specific Access Info */}

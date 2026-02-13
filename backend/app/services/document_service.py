@@ -87,6 +87,23 @@ class DocumentService:
         db.commit()
         db.refresh(new_document)
         
+        # Create ledger entry for document upload
+        LedgerService.create_entry(
+            db=db,
+            document_id=new_document.id,
+            action=LedgerAction.DOCUMENT_UPLOADED,
+            actor_id=current_user.id,
+            entry_metadata={
+                "document_id": new_document.id,
+                "doc_number": new_document.doc_number,
+                "doc_type": new_document.doc_type.value,
+                "file_name": file.filename,
+                "file_size": len(file_content),
+                "document_hash": document_hash,
+                "s3_key": s3_key
+            }
+        )
+        
         # Create initial ledger entry (ISSUED)
         # Create initial ledger entry (ISSUED)
         LedgerService.create_entry(
@@ -272,6 +289,20 @@ class DocumentService:
                 detail="Only admins can delete documents"
             )
             
+        # Create ledger entry for document deletion BEFORE actual deletion
+        LedgerService.create_entry(
+            db=db,
+            document_id=document.id,
+            action=LedgerAction.DOCUMENT_DELETED,
+            actor_id=current_user.id,
+            entry_metadata={
+                "document_id": document.id,
+                "doc_number": document.doc_number,
+                "doc_type": document.doc_type.value,
+                "file_url": document.file_url
+            }
+        )
+        
         db.delete(document)
         db.commit()
 
@@ -299,6 +330,19 @@ class DocumentService:
         db.commit()
         db.refresh(document)
         
+        # Create ledger entry for document update
+        LedgerService.create_entry(
+            db=db,
+            document_id=document.id,
+            action=LedgerAction.DOCUMENT_UPDATED,
+            actor_id=current_user.id,
+            entry_metadata={
+                "document_id": document.id,
+                "doc_number": document.doc_number,
+                "changes": changes
+            }
+        )
+        
         # Create Ledger Entry
         LedgerService.create_entry(
             db=db,
@@ -310,8 +354,64 @@ class DocumentService:
         
         return document
     @staticmethod
+    def get_document_presigned_url(db: Session, current_user: User, document_id: int, inline: bool = False) -> dict:
+        """Generate presigned URL for direct S3 access (MUCH faster than streaming)"""
+        document = DocumentService.get_document_by_id(db, current_user, document_id)
+        
+        if document.file_url.startswith("pending:"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File is pending upload to storage"
+            )
+        
+        # Extract filename
+        import os
+        basename = os.path.basename(document.file_url)
+        if '_' in basename:
+            filename = basename.split('_', 1)[1]
+        else:
+            filename = basename
+        
+        # Generate presigned URL (valid for 1 hour)
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=settings.S3_ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+        
+        try:
+            disposition = "inline" if inline else "attachment"
+            presigned_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': settings.S3_BUCKET_NAME,
+                    'Key': document.file_url,
+                    'ResponseContentDisposition': f'{disposition}; filename="{filename}"'
+                },
+                ExpiresIn=3600  # URL valid for 1 hour
+            )
+
+            # Replace internal endpoint with public endpoint if set
+            if settings.S3_PUBLIC_ENDPOINT_URL and settings.S3_ENDPOINT_URL:
+                presigned_url = presigned_url.replace(settings.S3_ENDPOINT_URL, settings.S3_PUBLIC_ENDPOINT_URL)
+            
+            return {
+                "url": presigned_url,
+                "filename": filename,
+                "expires_in": 3600
+            }
+        except Exception as e:
+            print(f"Presigned URL Error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to generate download URL"
+            )
+    
+    @staticmethod
     def get_document_file(db: Session, current_user: User, document_id: int):
-        """Get document file stream and filename"""
+        """Get document file stream and filename (LEGACY - use presigned URL instead)"""
         document = DocumentService.get_document_by_id(db, current_user, document_id)
         
         if document.file_url.startswith("pending:"):

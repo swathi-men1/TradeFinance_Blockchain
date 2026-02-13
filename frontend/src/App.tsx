@@ -18,6 +18,7 @@ import CreateTradePage from './pages/CreateTradePage';
 import TradeDetailsPage from './pages/TradeDetailsPage';
 import RiskScorePage from './pages/RiskScorePage';
 import MonitoringPage from './pages/MonitoringPage';
+import LedgerViewer from './components/LedgerViewer';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -133,6 +134,16 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <MonitoringPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Ledger Viewer routes - Admin and Auditor only */}
+                <Route
+                    path="/ledger"
+                    element={
+                        <ProtectedRoute>
+                            <LedgerViewer />
                         </ProtectedRoute>
                     }
                 />

@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, List
 from app.db.session import get_db
 from app.models.user import User, UserRole
-from app.models.ledger import IntegrityReport
+from app.models.ledger import IntegrityReport, LedgerAction
 from app.schemas.user import UserResponse, UserAdminCreate, UserUpdate
 from app.api.deps import get_current_user
 from app.services.integrity_service import IntegrityService
+from app.services.ledger_service import LedgerService
 from app.core.security import hash_password
 from app.utils.user_utils import generate_user_code
 
@@ -125,6 +126,188 @@ def update_user(
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.get("/users/pending", response_model=List[UserResponse])
+def list_pending_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List all pending user approvals (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return db.query(User).filter(User.is_active == False).all()
+
+
+@router.post("/users/{user_id}/approve", response_model=UserResponse)
+def approve_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Approve a user registration (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.is_active:
+        raise HTTPException(status_code=400, detail="User is already approved")
+    
+    user.is_active = True
+    db.commit()
+    db.refresh(user)
+    
+    # Create ledger entry for user approval
+    LedgerService.create_entry(
+        db=db,
+        document_id=None,
+        action=LedgerAction.USER_APPROVED,
+        actor_id=current_user.id,
+        entry_metadata={
+            "approved_user_id": user.id,
+            "approved_user_email": user.email,
+            "approved_user_name": user.name,
+            "approved_user_role": user.role.value,
+            "approved_by": current_user.email
+        }
+    )
+    
+    return user
+
+
+@router.post("/users/{user_id}/reject")
+def reject_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Reject a user registration (Admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.is_active:
+        raise HTTPException(status_code=400, detail="Cannot reject an approved user")
+    
+    # Create ledger entry for user rejection BEFORE deletion
+    LedgerService.create_entry(
+        db=db,
+        document_id=None,
+        action=LedgerAction.USER_REJECTED,
+        actor_id=current_user.id,
+        entry_metadata={
+            "rejected_user_id": user.id,
+            "rejected_user_email": user.email,
+            "rejected_user_name": user.name,
+            "rejected_user_role": user.role.value,
+            "rejected_by": current_user.email
+        }
+    )
+    
+    # Delete the user entirely
+    db.delete(user)
+    db.commit()
+    return {"message": "User registration rejected and deleted successfully"}
+
+
+@router.get("/ledger/all", response_model=List[Dict[str, Any]])
+def get_all_ledger_entries(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all ledger entries (Admin/Auditor only)"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.AUDITOR]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    from app.models.ledger import LedgerEntry
+    entries = db.query(LedgerEntry).order_by(LedgerEntry.created_at.desc()).all()
+    
+    result = []
+    for entry in entries:
+        result.append({
+            "id": entry.id,
+            "action": entry.action.value,
+            "actor_id": entry.actor_id,
+            "actor_name": entry.actor.name if entry.actor else "System",
+            "actor_role": entry.actor.role.value if entry.actor else "System",
+            "document_id": entry.document_id,
+            "entry_metadata": entry.entry_metadata,
+            "previous_hash": entry.previous_hash,
+            "entry_hash": entry.entry_hash,
+            "created_at": entry.created_at.isoformat()
+        })
+    
+    return result
+
+
+@router.get("/ledger/document/{document_id}", response_model=List[Dict[str, Any]])
+def get_document_ledger(
+    document_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get ledger entries for a specific document (Admin/Auditor only)"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.AUDITOR]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    from app.services.ledger_service import LedgerService
+    entries = LedgerService.get_document_timeline(db, document_id)
+    
+    result = []
+    for entry in entries:
+        result.append({
+            "id": entry.id,
+            "action": entry.action.value,
+            "actor_id": entry.actor_id,
+            "actor_name": entry.actor.name if entry.actor else "System",
+            "actor_role": entry.actor.role.value if entry.actor else "System",
+            "document_id": entry.document_id,
+            "entry_metadata": entry.entry_metadata,
+            "previous_hash": entry.previous_hash,
+            "entry_hash": entry.entry_hash,
+            "created_at": entry.created_at.isoformat()
+        })
+    
+    return result
+
+
+@router.get("/ledger/user/{user_id}", response_model=List[Dict[str, Any]])
+def get_user_ledger(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get ledger entries for a specific user (Admin/Auditor only)"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.AUDITOR]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    from app.models.ledger import LedgerEntry
+    entries = db.query(LedgerEntry).filter(
+        LedgerEntry.actor_id == user_id
+    ).order_by(LedgerEntry.created_at.desc()).all()
+    
+    result = []
+    for entry in entries:
+        result.append({
+            "id": entry.id,
+            "action": entry.action.value,
+            "actor_id": entry.actor_id,
+            "actor_name": entry.actor.name if entry.actor else "System",
+            "actor_role": entry.actor.role.value if entry.actor else "System",
+            "document_id": entry.document_id,
+            "entry_metadata": entry.entry_metadata,
+            "previous_hash": entry.previous_hash,
+            "entry_hash": entry.entry_hash,
+            "created_at": entry.created_at.isoformat()
+        })
+    
+    return result
 
 
 @router.delete("/users/{user_id}")

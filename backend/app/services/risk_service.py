@@ -9,6 +9,7 @@ from app.models.risk import RiskScore
 from app.core.risk_rules import RiskRules
 from app.core.external_risk_mock import ExternalRiskMock
 from app.services.audit_service import AuditService
+from app.services.ledger_service import LedgerService
 from datetime import datetime
 
 
@@ -287,7 +288,20 @@ class RiskService:
             target_type="System",
             target_id=0
         )
-            
+        
+        # Create ledger entry for bulk risk recalculation
+        LedgerService.create_entry(
+            db=db,
+            document_id=None,
+            action=LedgerAction.RISK_SCORE_RECALCULATED,
+            actor_id=admin_id,
+            entry_metadata={
+                "bulk_operation": True,
+                "users_processed": count,
+                "trigger_source": "admin_bulk_recalculation"
+            }
+        )
+        
         return count
 
     # ================== QUERY METHODS ==================

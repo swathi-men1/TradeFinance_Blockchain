@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { formatDateShortIST } from '../utils/dateFormat';
 
 interface DocumentCardProps {
     id: number;
@@ -29,11 +30,7 @@ export function DocumentCard({
     };
 
     const config = statusConfig[status];
-    const formattedDate = new Date(uploadedAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+    const formattedDate = formatDateShortIST(uploadedAt);
 
     return (
         <div className="relative group/card">

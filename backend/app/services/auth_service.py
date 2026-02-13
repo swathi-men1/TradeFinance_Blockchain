@@ -1,9 +1,12 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserLogin, Token
 from app.core.security import hash_password, verify_password, create_access_token
 from app.utils.user_utils import generate_user_code
+from app.services.ledger_service import LedgerService
+from app.models.ledger import LedgerAction
 
 
 class AuthService:
@@ -29,17 +32,34 @@ class AuthService:
             email=user_data.email,
             password=hashed_password,
             role=UserRole.CORPORATE,  # Force default role, block admin self-reg
-            org_name=user_data.org_name
+            org_name=user_data.org_name,
+            is_active=False  # Require admin approval
         )
         
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
         
+        # Create ledger entry for user registration
+        LedgerService.create_entry(
+            db=db,
+            document_id=None,
+            action=LedgerAction.USER_REGISTERED,
+            actor_id=new_user.id,
+            entry_metadata={
+                "user_email": new_user.email,
+                "user_name": new_user.name,
+                "user_role": new_user.role.value,
+                "org_name": new_user.org_name,
+                "user_code": new_user.user_code,
+                "is_active": new_user.is_active
+            }
+        )
+        
         return new_user
     
     @staticmethod
-    def login_user(db: Session, credentials: UserLogin) -> Token:
+    def login_user(db: Session, credentials: UserLogin, background_tasks: BackgroundTasks) -> Token:
         """Login user and return JWT token"""
         # Find user by email
         user = db.query(User).filter(User.email == credentials.email).first()
@@ -58,13 +78,24 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
+        # Check if user is active (approved by admin)
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Your account is pending admin approval. Please contact an administrator.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
         # Create JWT token
         token_data = {
-            "user_id": user.id,
-            "email": user.email,
+            "sub": user.email,
+            "user_id": user.id,  # Required by get_current_user in deps.py
+            "name": user.name,
             "role": user.role.value,
-            "org_name": user.org_name
         }
         access_token = create_access_token(data=token_data)
         
-        return Token(access_token=access_token)
+        return {"access_token": access_token, "token_type": "bearer"}
+    
+
+

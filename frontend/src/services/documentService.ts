@@ -33,7 +33,39 @@ export const documentService = {
         await apiClient.delete(`/documents/${id}`);
     },
 
+
     downloadDocument: async (id: number): Promise<void> => {
+        // Use presigned URL for MUCH faster downloads
+        const response = await apiClient.get(`/documents/${id}/presigned-url`, {
+            params: { inline: false }
+        });
+
+        const { url, filename } = response.data;
+
+        // Direct download from S3 (instant!)
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename);
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+    },
+
+    viewDocument: async (id: number): Promise<void> => {
+        // Use presigned URL for MUCH faster viewing
+        const response = await apiClient.get(`/documents/${id}/presigned-url`, {
+            params: { inline: true }
+        });
+
+        const { url } = response.data;
+
+        // Open directly from S3 (instant!)
+        window.open(url, '_blank');
+    },
+
+    // LEGACY streaming methods (kept for backwards compatibility)
+    downloadDocumentLegacy: async (id: number): Promise<void> => {
         const response = await apiClient.get(`/documents/${id}/download`, {
             responseType: 'blob',
         });
@@ -66,7 +98,8 @@ export const documentService = {
         link.parentNode?.removeChild(link);
         window.URL.revokeObjectURL(url);
     },
-    viewDocument: async (id: number): Promise<void> => {
+
+    viewDocumentLegacy: async (id: number): Promise<void> => {
         const response = await apiClient.get(`/documents/${id}/download?inline=true`, {
             responseType: 'blob',
         });
