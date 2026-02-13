@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { tradeService } from '../services/tradeService';
+import { documentService } from '../services/documentService';
 import { ledgerService } from '../services/ledgerService';
 import { GlassCard } from './GlassCard';
 import { Trade, TradeCreate, TradeStatus } from '../types/trade.types';
+import { Document, DocumentType } from '../types/document.types';
 import { formatTimestamp, formatCurrency } from '../utils';
 
 interface AdminTradeManagementProps {
@@ -17,6 +19,9 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [availableDocuments, setAvailableDocuments] = useState<Document[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [formData, setFormData] = useState<TradeCreate>({
     buyer_id: 0,
     seller_id: 0,
@@ -46,21 +51,6 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
     try {
       const newTrade = await tradeService.createTrade(formData);
 
-      // Record admin action in ledger
-      await ledgerService.createLedgerEntry({
-        action: 'TRADE_CREATED',
-        actor_id: user?.id || 0,
-        metadata: {
-          trade_id: newTrade.id,
-          buyer_id: formData.buyer_id,
-          seller_id: formData.seller_id,
-          amount: formData.amount,
-          currency: formData.currency,
-          admin_name: user?.name
-        }
-      });
-
-      setTrades(prev => [newTrade, ...prev]);
       setShowCreateModal(false);
       resetForm();
       onTradeUpdate?.();
@@ -72,17 +62,6 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
   const handleUpdateTrade = async (tradeId: number, updates: Partial<Trade>) => {
     try {
       await tradeService.updateTrade(tradeId, updates);
-
-      // Record admin action in ledger
-      await ledgerService.createLedgerEntry({
-        action: 'TRADE_UPDATED',
-        actor_id: user?.id || 0,
-        metadata: {
-          trade_id: tradeId,
-          updates,
-          admin_name: user?.name
-        }
-      });
 
       setTrades(prev => prev.map(trade =>
         trade.id === tradeId ? { ...trade, ...updates } : trade
@@ -102,17 +81,6 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
 
     try {
       const tradeToDelete = trades.find(t => t.id === tradeId);
-
-      // Record admin action in ledger before deletion
-      await ledgerService.createLedgerEntry({
-        action: 'TRADE_DELETED',
-        actor_id: user?.id || 0,
-        metadata: {
-          trade_id: tradeId,
-          trade_details: tradeToDelete,
-          admin_name: user?.name
-        }
-      });
 
       await tradeService.deleteTrade(tradeId);
       setTrades(prev => prev.filter(trade => trade.id !== tradeId));
@@ -140,6 +108,64 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
       currency: trade.currency
     });
     setShowEditModal(true);
+  };
+
+  const openDocumentModal = async (trade: Trade) => {
+    setSelectedTrade(trade);
+    setShowDocumentModal(true);
+    
+    try {
+      const documents = await documentService.getDocuments();
+      setAvailableDocuments(documents);
+      
+      // Get currently linked documents
+      const tradeDocuments = await tradeService.getTradeDocuments(trade.id);
+      setSelectedDocuments(tradeDocuments);
+    } catch (error) {
+      console.error('Failed to load documents:', error);
+    }
+  };
+
+  const handleDocumentToggle = (documentId: number) => {
+    setSelectedDocuments(prev => {
+      const docToAdd = availableDocuments.find(doc => doc.id === documentId);
+      if (docToAdd) {
+        return prev.some(doc => doc.id === documentId)
+          ? prev.filter(doc => doc.id !== documentId)
+          : [...prev, docToAdd];
+      }
+      return prev;
+    });
+  };
+
+  const handleLinkDocuments = async () => {
+    if (!selectedTrade) return;
+
+    try {
+      // Get current documents
+      const currentDocs = await tradeService.getTradeDocuments(selectedTrade.id);
+      const currentDocIds = currentDocs.map(doc => doc.id);
+
+      // Unlink documents that were deselected
+      for (const doc of currentDocs) {
+        if (!selectedDocuments.some(selected => selected.id === doc.id)) {
+          await tradeService.unlinkDocumentFromTrade(selectedTrade.id, doc.id);
+        }
+      }
+
+      // Link newly selected documents
+      for (const doc of selectedDocuments) {
+        if (!currentDocIds.includes(doc.id)) {
+          await tradeService.linkDocumentToTrade(selectedTrade.id, doc.id);
+        }
+      }
+
+      setShowDocumentModal(false);
+      setSelectedDocuments([]);
+      onTradeUpdate?.();
+    } catch (error) {
+      console.error('Failed to link documents:', error);
+    }
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -236,6 +262,13 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
                           title="Edit Trade"
                         >
                           ✏️
+                        </button>
+                        <button
+                          onClick={() => openDocumentModal(trade)}
+                          className="btn-info text-sm px-3 py-1"
+                          title="Manage Documents"
+                        >
+                          📎
                         </button>
                         <button
                           onClick={() => handleDeleteTrade(trade.id)}
@@ -429,13 +462,75 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
                   buyer_id: formData.buyer_id,
                   seller_id: formData.seller_id,
                   amount: formData.amount.toString(),
-                  status: selectedTrade.status
+                  currency: formData.currency
                 })}
                 className="btn-primary"
                 disabled={!formData.buyer_id || !formData.seller_id || formData.amount <= 0}
               >
                 Update Trade
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Management Modal */}
+      {showDocumentModal && selectedTrade && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">Manage Documents - Trade #{selectedTrade.id}</h3>
+              <button
+                onClick={() => setShowDocumentModal(false)}
+                className="text-secondary hover:text-primary text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="form-section">
+              <h4 className="text-lg font-semibold mb-4">Available Documents</h4>
+              {availableDocuments.length === 0 ? (
+                <p className="text-secondary">No documents available. Upload documents first.</p>
+              ) : (
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {availableDocuments.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedDocuments.some(selected => selected.id === doc.id)}
+                          onChange={() => handleDocumentToggle(doc.id)}
+                          className="w-4 h-4"
+                        />
+                        <div>
+                          <div className="font-medium">{doc.doc_number}</div>
+                          <div className="text-sm text-primary">
+                            {doc.doc_type} • {doc.owner_name || `User ${doc.owner_id}`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="form-section">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleLinkDocuments}
+                  className="btn-primary"
+                >
+                  save ({selectedDocuments.length})
+                </button>
+                <button
+                  onClick={() => setShowDocumentModal(false)}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

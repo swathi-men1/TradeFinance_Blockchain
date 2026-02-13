@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import RiskScoreWidget from '../components/RiskScoreWidget';
 import AdminStatsDashboard from '../components/AdminStatsDashboard';
 import AdminUserManagement from '../components/AdminUserManagement';
+import AdminTradeManagement from '../components/AdminTradeManagement';
 import { StatCard } from '../components/StatCard';
 import { GlassCard } from '../components/GlassCard';
 import { tradeService } from '../services/tradeService';
@@ -99,6 +100,7 @@ export default function DashboardPage() {
                 <div className="mb-8 space-y-8">
                     <AdminStatsDashboard />
                     <AdminUserManagement />
+                    <AdminTradeManagement />
                 </div>
             ) : (
                 /* Stats Grid for Corporate, Bank, Auditor */

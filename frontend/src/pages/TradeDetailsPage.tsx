@@ -6,6 +6,7 @@ import { documentService } from '../services/documentService';
 import { Trade, TradeStatus } from '../types/trade.types';
 import { Document } from '../types/document.types';
 import { GlassCard } from '../components/GlassCard';
+import AdminTradeManagement from '../components/AdminTradeManagement';
 
 const statusConfig = {
     pending: { color: 'warning', icon: '⏳', label: 'Pending' },
@@ -183,7 +184,8 @@ export default function TradeDetailsPage() {
     const config = statusConfig[trade.status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
-        <div className="fade-in max-w-6xl">
+        <>
+            <div className="fade-in max-w-6xl">
             {/* Header */}
             <div className="mb-8">
                 <button
@@ -555,5 +557,13 @@ export default function TradeDetailsPage() {
                 </div>
             )}
         </div>
+
+        {/* Admin Trade Management Section */}
+        {user?.role === 'admin' && (
+            <div className="mt-8">
+                <AdminTradeManagement />
+            </div>
+        )}
+        </>
     );
 }

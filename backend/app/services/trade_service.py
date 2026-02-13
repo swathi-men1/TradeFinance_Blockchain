@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, delete
 from typing import List
-from app.models.trade import TradeTransaction, TradeStatus
+from app.models.trade import TradeTransaction, TradeStatus, trade_documents
 from app.models.user import User, UserRole
 from app.models.document import Document
 from app.models.ledger import LedgerEntry, LedgerAction
@@ -291,3 +291,225 @@ class TradeService:
         db.commit()
         
         return trade
+    
+    @staticmethod
+    def update_trade_details(
+        db: Session,
+        current_user: User,
+        trade_id: int,
+        trade_updates: TradeCreate
+    ) -> TradeTransaction:
+        """Update trade details (Admin only)"""
+        
+        # Only admin can update trade details
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admin users can update trade details"
+            )
+        
+        trade = TradeService.get_trade_by_id(db, current_user, trade_id)
+        
+        # Store old values for audit
+        old_values = {
+            "buyer_id": trade.buyer_id,
+            "seller_id": trade.seller_id,
+            "amount": str(trade.amount),
+            "currency": trade.currency
+        }
+        
+        # Validate new buyer exists
+        if trade_updates.buyer_id != trade.buyer_id:
+            buyer = db.query(User).filter(User.id == trade_updates.buyer_id).first()
+            if not buyer:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Buyer with ID {trade_updates.buyer_id} not found"
+                )
+            
+            # Validate buyer role
+            if buyer.role not in [UserRole.CORPORATE, UserRole.BANK]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Buyer must be either Corporate or Bank user"
+                )
+        
+        # Validate new seller exists
+        if trade_updates.seller_id != trade.seller_id:
+            seller = db.query(User).filter(User.id == trade_updates.seller_id).first()
+            if not seller:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Seller with ID {trade_updates.seller_id} not found"
+                )
+            
+            # Validate seller role
+            if seller.role not in [UserRole.CORPORATE, UserRole.BANK]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Seller must be either Corporate or Bank user"
+                )
+        
+        # Buyer and seller must be different
+        if trade_updates.buyer_id == trade_updates.seller_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Buyer and seller cannot be the same user"
+            )
+        
+        # Update trade details
+        trade.buyer_id = trade_updates.buyer_id
+        trade.seller_id = trade_updates.seller_id
+        trade.amount = trade_updates.amount
+        trade.currency = trade_updates.currency.upper()
+        
+        db.commit()
+        db.refresh(trade)
+        
+        # Create ledger entry
+        LedgerService.create_entry(
+            db=db,
+            document_id=None,
+            action=LedgerAction.TRADE_UPDATED,
+            actor_id=current_user.id,
+            entry_metadata={
+                "trade_id": trade.id,
+                "old_values": old_values,
+                "new_values": {
+                    "buyer_id": trade.buyer_id,
+                    "seller_id": trade.seller_id,
+                    "amount": str(trade.amount),
+                    "currency": trade.currency
+                },
+                "admin_name": current_user.name
+            }
+        )
+        
+        # Audit log
+        audit_log = AuditLog(
+            admin_id=current_user.id,
+            action="UPDATE_TRADE_DETAILS",
+            target_type="TradeTransaction",
+            target_id=trade.id
+        )
+        db.add(audit_log)
+        db.commit()
+        
+        return trade
+    
+    @staticmethod
+    def delete_trade(
+        db: Session,
+        current_user: User,
+        trade_id: int
+    ) -> None:
+        """Delete a trade (Admin only)"""
+        
+        # Only admin can delete trades
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admin users can delete trades"
+            )
+        
+        trade = TradeService.get_trade_by_id(db, current_user, trade_id)
+        
+        # Store trade details for audit
+        trade_details = {
+            "id": trade.id,
+            "buyer_id": trade.buyer_id,
+            "seller_id": trade.seller_id,
+            "amount": str(trade.amount),
+            "currency": trade.currency,
+            "status": trade.status.value,
+            "created_at": trade.created_at.isoformat()
+        }
+        
+        # Create ledger entry before deletion
+        LedgerService.create_entry(
+            db=db,
+            document_id=None,
+            action=LedgerAction.TRADE_DELETED,
+            actor_id=current_user.id,
+            entry_metadata={
+                "trade_details": trade_details,
+                "admin_name": current_user.name
+            }
+        )
+        
+        # Audit log
+        audit_log = AuditLog(
+            admin_id=current_user.id,
+            action="DELETE_TRADE",
+            target_type="TradeTransaction",
+            target_id=trade.id
+        )
+        db.add(audit_log)
+        
+        # Delete the trade (cascade will handle document links)
+        db.delete(trade)
+        db.commit()
+
+    @staticmethod
+    def unlink_document_from_trade(
+        db: Session,
+        current_user: User,
+        trade_id: int,
+        document_id: int
+    ) -> None:
+        """Unlink a document from a trade"""
+        
+        # Get the trade
+        trade = TradeService.get_trade_by_id(db, current_user, trade_id)
+        
+        # Get the document
+        document = db.query(Document).filter(Document.id == document_id).first()
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Document with ID {document_id} not found"
+            )
+        
+        # Check if document is linked to trade
+        trade_document_link = db.query(trade_documents).filter(
+            trade_documents.c.trade_id == trade_id,
+            trade_documents.c.document_id == document_id
+        ).first()
+        
+        if not trade_document_link:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document is not linked to this trade"
+            )
+        
+        # Remove the link
+        db.execute(
+            trade_documents.delete()
+            .where(trade_documents.c.trade_id == trade_id)
+            .where(trade_documents.c.document_id == document_id)
+        )
+        db.commit()
+        
+        # Create ledger entry
+        LedgerService.create_entry(
+            db=db,
+            document_id=document_id,
+            action=LedgerAction.DOCUMENT_UNLINKED_FROM_TRADE,
+            actor_id=current_user.id,
+            entry_metadata={
+                "trade_id": trade_id,
+                "document_type": document.doc_type,
+                "document_number": document.doc_number,
+                "admin_name": current_user.name
+            }
+        )
+        
+        # Audit log
+        audit_log = AuditLog(
+            admin_id=current_user.id if current_user.role == UserRole.ADMIN else None,
+            action="UNLINK_DOCUMENT_FROM_TRADE",
+            target_type="TradeTransaction",
+            target_id=trade_id
+        )
+        db.add(audit_log)
+        db.commit()

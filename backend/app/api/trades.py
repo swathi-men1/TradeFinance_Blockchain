@@ -64,6 +64,41 @@ def get_trade(
     return TradeService.get_trade_by_id(db, current_user, trade_id)
 
 
+@router.put("/{trade_id}", response_model=TradeResponse)
+def update_trade(
+    trade_id: int,
+    trade_updates: TradeCreate,
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
+    db: Session = Depends(get_db)
+):
+    """
+    Update trade details (Admin only).
+    
+    Only admin users can update trade details like buyer_id, seller_id, amount, and currency.
+    For status updates, use the /{trade_id}/status endpoint.
+    
+    **ADMIN** can update any trade details
+    **OTHER ROLES** cannot update trade details (use status endpoint instead)
+    """
+    return TradeService.update_trade_details(db, current_user, trade_id, trade_updates)
+
+
+@router.delete("/{trade_id}")
+def delete_trade(
+    trade_id: int,
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a trade (Admin only).
+    
+    **ADMIN** can delete any trade
+    **OTHER ROLES** cannot delete trades
+    """
+    TradeService.delete_trade(db, current_user, trade_id)
+    return {"message": "Trade deleted successfully"}
+
+
 @router.put("/{trade_id}/status", response_model=TradeResponse)
 def update_trade_status(
     trade_id: int,
@@ -120,3 +155,21 @@ def get_trade_documents(
     """
     trade = TradeService.get_trade_by_id(db, current_user, trade_id)
     return trade.documents
+
+
+@router.delete("/{trade_id}/documents/{document_id}")
+def unlink_document_from_trade(
+    trade_id: int,
+    document_id: int,
+    current_user: User = Depends(require_roles([UserRole.CORPORATE, UserRole.BANK, UserRole.ADMIN])),
+    db: Session = Depends(get_db)
+):
+    """
+    Unlink a document from a trade.
+    
+    Requirements:
+    - User must have access to both the trade and the document
+    - **AUDITOR** cannot unlink documents (read-only)
+    """
+    TradeService.unlink_document_from_trade(db, current_user, trade_id, document_id)
+    return {"message": "Document unlinked from trade successfully"}

@@ -11,6 +11,9 @@ export const formatTimestamp = (timestamp: string | Date): string => {
     return 'Invalid Date';
   }
 
+  // Get user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -18,6 +21,7 @@ export const formatTimestamp = (timestamp: string | Date): string => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    timeZone: userTimeZone,
     timeZoneName: 'short',
     hour12: true
   }).format(date);
@@ -33,10 +37,14 @@ export const formatDate = (timestamp: string | Date): string => {
     return 'Invalid Date';
   }
 
+  // Get user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
+    timeZone: userTimeZone,
     hour12: false
   }).format(date);
 };
@@ -51,10 +59,14 @@ export const formatTime = (timestamp: string | Date): string => {
     return 'Invalid Date';
   }
 
+  // Get user's timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   return new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    timeZone: userTimeZone,
     hour12: true
   }).format(date);
 };
