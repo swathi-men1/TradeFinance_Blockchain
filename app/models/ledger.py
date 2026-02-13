@@ -1,12 +1,17 @@
-from datetime import datetime
 from pydantic import BaseModel
+from typing import Optional
 
 class LedgerEntry(BaseModel):
-    ledger_id: str
-    document_id: str
-    document_hash: str
+    document_id: Optional[int] = None
+    trade_id: Optional[int] = None
+    doc_hash: Optional[str] = None
     action: str
-    performed_by: str
+    username: str
     role: str
-    timestamp: datetime
-    previous_hash: str | None
+    related_user: Optional[str] = None
+    timestamp: str
+    previous_hash: Optional[str] = None
+    current_hash: str
+
+
+ledger_db = []

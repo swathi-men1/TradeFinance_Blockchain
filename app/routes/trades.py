@@ -1,26 +1,63 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+
 from app.routes.auth import require_role
 from app.services.trade_service import create_trade
+from app.services.risk_service import calculate_user_risk
 
-router = APIRouter(prefix="/trades", tags=["Trades"])
+
+# --------------------------------------------------
+# Router Configuration
+# --------------------------------------------------
+router = APIRouter(
+    prefix="/trades",
+    tags=["Trades"]
+)
 
 
-# ✅ Request body schema (VERY IMPORTANT)
+# --------------------------------------------------
+# Request Schema
+# --------------------------------------------------
 class TradeCreate(BaseModel):
     seller: str
     document_id: int
     amount: float
 
 
-@router.post("/create")
-@router.post("/create")
-def create_trade_endpoint(data: dict, user=Depends(require_role("BUYER"))):
-    ...
+# --------------------------------------------------
+# Create Trade Endpoint
+# --------------------------------------------------
+@router.post(
+    "/create",
+    operation_id="create_trade",   # ✅ prevents duplicate OpenAPI warning
+    status_code=status.HTTP_200_OK
+)
+def create_trade_endpoint(
+    data: TradeCreate,
+    user: dict = Depends(require_role("BUYER"))
+):
+    """
+    Create a new trade between buyer and seller.
+    Only BUYER role is allowed.
+    """
 
+    # Extract username from JWT payload
     username = user.get("sub")
 
     if not username:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token"
+        )
 
-    return create_trade(data.dict(), username)
+    # Create trade
+    trade = create_trade(
+        data=data.model_dump(),
+        buyer=username
+    )
+
+    # Recalculate risk for both parties
+    calculate_user_risk(username)
+    calculate_user_risk(data.seller)
+
+    return trade

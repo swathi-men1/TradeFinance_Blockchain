@@ -1,19 +1,11 @@
 from fastapi import APIRouter
-from app.services.trade_service import trades_db
+from app.services.risk_service import calculate_user_risk
 
 router = APIRouter(prefix="/risk", tags=["Risk"])
 
-@router.get("/{trade_id}")
-def calculate_risk(trade_id: int):
-    trade = next((t for t in trades_db if t["trade_id"] == trade_id), None)
-
-    if not trade:
-        return {"error": "Trade not found"}
-
-    risk_score = "LOW" if trade["amount"] < 100000 else "HIGH"
-
-    return {
-        "trade_id": trade_id,
-        "amount": trade["amount"],
-        "risk_score": risk_score
-    }
+@router.get("/user/{username}")
+def get_user_risk(username: str):
+    """
+    Calculates risk for a Corporate User (Buyer/Seller)
+    """
+    return calculate_user_risk(username)

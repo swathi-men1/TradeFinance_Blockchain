@@ -49,7 +49,9 @@ fake_users_db = {
 # ------------------------------------------------------------------
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # Truncate the plain password to 72 characters
+    truncated_password = plain_password[:72]
+    return pwd_context.verify(truncated_password, hashed_password)
 
 
 def authenticate_user(username: str, password: str):
@@ -208,7 +210,9 @@ fake_users_db = {
 # ------------------------------------------------------------------
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # Truncate the plain password to 72 characters
+    truncated_password = plain_password[:72]
+    return pwd_context.verify(truncated_password, hashed_password)
 
 
 def authenticate_user(username: str, password: str):
