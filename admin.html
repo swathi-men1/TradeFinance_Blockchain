@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+
+<body>
+
+<!-- 🔐 ROLE CHECK (FIRST THING) -->
+<script>
+const role = localStorage.getItem("role");
+
+if (role !== "admin") {
+    window.location.href = "login.html";
+}
+</script>
+
+<h1>Admin Dashboard</h1>
+
+<div class="cards">
+    <div class="card">
+        <h3>Total Active Users</h3>
+        <p id="activeUsers">-</p>
+    </div>
+
+    <div class="card">
+        <h3>Tamper Attempts</h3>
+        <p id="tamperCount">-</p>
+    </div>
+</div>
+
+<h2>All Users</h2>
+<table class="trades-table" id="usersTable">
+    <tr>
+        <th>Username</th>
+        <th>Role</th>
+    </tr>
+</table>
+
+<!-- 🔗 ADMIN JS -->
+<script src="admin.js"></script>
+
+</body>
+</html>
