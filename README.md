@@ -7,6 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat&logo=TypeScript)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg?style=flat&logo=PostgreSQL)](https://www.postgresql.org)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=flat&logo=Docker)](https://www.docker.com)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://semver.org)
 
 ---
 
