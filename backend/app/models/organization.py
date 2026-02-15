@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP, func, Boolean
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 import enum
 
 class OrganizationStatus(str, enum.Enum):

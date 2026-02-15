@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey, TIMESTAMP, func, Table
-from app.db.base import Base
+from app.db.base_class import Base
 
 # Association table for Trade-Document many-to-many relationship
 trade_documents = Table(

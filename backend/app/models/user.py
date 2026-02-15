@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP, func, Boolean
-from app.db.base import Base
+from app.db.base_class import Base
 import enum
 import random
 

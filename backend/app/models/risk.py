@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, Text, ForeignKey, TIMESTAMP, func, CheckConstraint, String
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class RiskScore(Base):

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Numeric, Enum, ForeignKey, TIMESTAMP, func, Table
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 import enum
 
 # Association table for Trade-Document many-to-many relationship
