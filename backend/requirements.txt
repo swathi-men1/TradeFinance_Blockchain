@@ -32,3 +32,6 @@ httpx==0.26.0
 
 # Task Scheduling
 APScheduler==3.10.4
+
+# PDF Generation
+reportlab==4.0.9

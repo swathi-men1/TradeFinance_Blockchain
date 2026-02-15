@@ -1,10 +1,24 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import AdminOrgManagement from '../components/AdminOrgManagement';
+import AdminAuditLogs from '../components/AdminAuditLogs';
+
+// ... (existing imports, but replace_file_content works on chunks. I will do 2 chunks or one big replace if imports are close)
+
+// Actually, I can't easily insert imports AND change render in one `replace_file_content` block if they are far apart.
+// I'll do it in two steps or use multi_replace.
+
+// Let's use multi_replace or just use write_to_file if I am replacing a lot. 
+// DashboardPage is small enough to read, but `replace_file_content` is safer for preserving other parts.
+// I will use `replace_file_content` for the imports first, then the render.
+
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import RiskScoreWidget from '../components/RiskScoreWidget';
 import AdminStatsDashboard from '../components/AdminStatsDashboard';
-import AdminUserManagement from '../components/AdminUserManagement';
+import AdminUserManagement from '../components/AdminUserManagementSimple';
 import AdminTradeManagement from '../components/AdminTradeManagement';
+import BankDashboard from '../components/BankDashboard';
+import CorporateDashboard from '../components/CorporateDashboard';
 import { StatCard } from '../components/StatCard';
 import { GlassCard } from '../components/GlassCard';
 import { tradeService } from '../services/tradeService';
@@ -59,6 +73,8 @@ export default function DashboardPage() {
     const isDashboardCorporateOrBank = user.role === 'corporate' || user.role === 'bank';
     const isDashboardAuditor = user.role === 'auditor';
     const isDashboardAdmin = user.role === 'admin';
+    const isDashboardBank = user.role === 'bank';
+    const isDashboardCorporate = user.role === 'corporate';
 
     return (
         <div className="fade-in">
@@ -82,22 +98,36 @@ export default function DashboardPage() {
                 </div>
             </GlassCard>
 
-            {/* Risk Score Widget - Corporate & Bank Only */}
-            {isDashboardCorporateOrBank && (
+            {/* Risk Score Widget - Corporate & Bank Only - Keep general widget for convenience or fallback */}
+            {isDashboardCorporateOrBank && !isDashboardCorporate && (
                 <div className="mb-8">
                     <RiskScoreWidget />
                 </div>
             )}
+
+            {/* For Corporate, we use the integrated dashboard risk view, so hidden here unless desired */}
+            {/* Actually, the prompt says "Risk Insight Viewer" module. CorporateDashboard includes it. */}
 
             {/* Admin Dashboard */}
             {isDashboardAdmin ? (
                 <div className="mb-8 space-y-8">
                     <AdminStatsDashboard />
                     <AdminUserManagement />
+                    <AdminAuditLogs />
                     <AdminTradeManagement />
                 </div>
+            ) : isDashboardBank ? (
+                /* Bank Dashboard */
+                <div className="mb-8">
+                    <BankDashboard />
+                </div>
+            ) : isDashboardCorporate ? (
+                /* Corporate Dashboard */
+                <div className="mb-8">
+                    <CorporateDashboard />
+                </div>
             ) : (
-                /* Stats Grid for Corporate, Bank, Auditor */
+                /* Stats Grid for Auditor (and fallback) */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     <StatCard
                         icon="📄"
@@ -170,8 +200,8 @@ export default function DashboardPage() {
                         </GlassCard>
                     </Link>
 
-                    {/* Create Trade - Corporate & Bank Only */}
-                    {isDashboardCorporateOrBank && (
+                    {/* Create Trade - Bank Only (Corporate cannot create) */}
+                    {isDashboardBank && (
                         <Link to="/trades/create" className="block group">
                             <GlassCard>
                                 <div className="text-5xl mb-4">➕</div>
@@ -204,9 +234,9 @@ export default function DashboardPage() {
                     {user.role === 'bank' && (
                         <>
                             <p>✅ Upload and manage financial documents</p>
-                            <p>✅ Create and manage trade transactions</p>
-                            <p>✅ Verify and approve documents</p>
-                            <p>✅ Monitor risk scores and compliance</p>
+                            <p>✅ Create and monitor trade transactions</p>
+                            <p>✅ Manage lifecycle events</p>
+                            <p>✅ Monitor counterparty risk</p>
                         </>
                     )}
                     {user.role === 'auditor' && (

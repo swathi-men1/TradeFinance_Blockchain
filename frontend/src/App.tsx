@@ -19,6 +19,18 @@ import TradeDetailsPage from './pages/TradeDetailsPage';
 import RiskScorePage from './pages/RiskScorePage';
 import MonitoringPage from './pages/MonitoringPage';
 import LedgerViewer from './components/LedgerViewer';
+import AuditorDashboardPage from './pages/AuditorDashboardPage';
+import AuditorDocumentVerificationPage from './pages/AuditorDocumentVerificationPage';
+import AuditorAlertsPage from './pages/AuditorAlertsPage';
+import AuditorReportsPage from './pages/AuditorReportsPage';
+import AuditorLedgerPage from './pages/AuditorLedgerPage';
+import AuditorTradesPage from './pages/AuditorTradesPage';
+import AuditorRiskPage from './pages/AuditorRiskPage';
+// Admin Pages
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import OrganizationManagementPage from './pages/admin/OrganizationManagementPage';
+import AuditLogPage from './pages/admin/AuditLogPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -132,8 +144,45 @@ function AppRoutes() {
                 <Route
                     path="/monitoring"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={['admin']}>
                             <MonitoringPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Admin Dashboard Routes */}
+                <Route
+                    path="/admin/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminDashboardPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/users"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <UserManagementPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/orgs"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <OrganizationManagementPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/audit"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AuditLogPage />
                         </ProtectedRoute>
                     }
                 />
@@ -144,6 +193,73 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <LedgerViewer />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Auditor Dashboard route */}
+                <Route
+                    path="/auditor"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorDashboardPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Auditor Document Verification route */}
+                <Route
+                    path="/auditor/documents"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorDocumentVerificationPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Auditor Alerts route */}
+                <Route
+                    path="/auditor/alerts"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorAlertsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Auditor Reports route */}
+                <Route
+                    path="/auditor/reports"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorReportsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/auditor/ledger"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorLedgerPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/auditor/trades"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorTradesPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/auditor/risk"
+                    element={
+                        <ProtectedRoute>
+                            <AuditorRiskPage />
                         </ProtectedRoute>
                     }
                 />

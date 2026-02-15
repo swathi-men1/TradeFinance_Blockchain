@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { GlassCard } from './GlassCard';
 import { ledgerService } from '../services/ledgerService';
+import { useAuth } from '../context/AuthContext';
 import { LedgerEntry } from '../types/ledger.types';
 
 export default function LedgerViewer() {
+  const { user } = useAuth();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +18,20 @@ export default function LedgerViewer() {
   const loadLedgerEntries = async () => {
     try {
       setLoading(true);
-      const data = await ledgerService.getAllEntries();
+      let data;
+      
+      // Use appropriate endpoint based on user role
+      if (user?.role === 'admin' || user?.role === 'auditor') {
+        // Admin and Auditor can see all entries
+        data = await ledgerService.getAllEntries();
+      } else if (user?.role === 'bank' || user?.role === 'corporate') {
+        // Bank and Corporate users see their own activity
+        data = await ledgerService.getUserActivity(user.id);
+      } else {
+        // Fallback to recent activity
+        data = await ledgerService.getRecentActivity(100);
+      }
+      
       setEntries(data);
     } catch (err) {
       setError('Failed to load ledger entries');

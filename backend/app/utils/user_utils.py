@@ -5,21 +5,23 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 
 
-def generate_user_code(name: str, db: Session) -> str:
+def generate_user_code(org_name: str, db: Session) -> str:
     """
     Generate a unique 6-character user code.
-    Format: First 3 letters of name (uppercase) + 3 random digits
-    Example: "John Doe" -> "JOH847"
+    Format: First 3 letters of organization name (uppercase) + 3 random digits
+    Example: "Global Trade Inc" -> "GLO847"
     
     Args:
-        name: User's full name
+        org_name: User's organization name
         db: Database session to check for uniqueness
         
     Returns:
         str: Unique 6-character user code
     """
-    # Extract first 3 letters from name (remove spaces, get first 3 chars)
-    name_clean = ''.join(char for char in name if char.isalpha())
+    # Extract first 3 letters from org name (remove spaces, get first 3 chars)
+    name_clean = ''.join(char for char in org_name if char.isalpha())
+    if not name_clean:
+        name_clean = "ORG" # Fallback if org name has no letters
     name_prefix = name_clean[:3].upper().ljust(3, 'X')  # Pad with X if name is shorter
     
     # Generate unique code

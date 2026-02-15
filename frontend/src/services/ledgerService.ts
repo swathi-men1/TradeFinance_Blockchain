@@ -34,7 +34,9 @@ export const ledgerService = {
         const response = await apiClient.get('/admin/ledger/all');
         return response.data.map((entry: any) => ({
             ...entry,
-            metadata: entry.entry_metadata
+            metadata: entry.entry_metadata,
+            actor_name: entry.actor?.name || 'Unknown',
+            actor_role: entry.actor?.role || 'Unknown'
         }));
     },
 
@@ -42,7 +44,9 @@ export const ledgerService = {
         const response = await apiClient.get(`/admin/ledger/document/${documentId}`);
         return response.data.map((entry: any) => ({
             ...entry,
-            metadata: entry.entry_metadata
+            metadata: entry.entry_metadata,
+            actor_name: entry.actor?.name || 'Unknown',
+            actor_role: entry.actor?.role || 'Unknown'
         }));
     },
 
@@ -50,7 +54,9 @@ export const ledgerService = {
         const response = await apiClient.get(`/admin/ledger/user/${userId}`);
         return response.data.map((entry: any) => ({
             ...entry,
-            metadata: entry.entry_metadata
+            metadata: entry.entry_metadata,
+            actor_name: entry.actor?.name || 'Unknown',
+            actor_role: entry.actor?.role || 'Unknown'
         }));
     }
 };

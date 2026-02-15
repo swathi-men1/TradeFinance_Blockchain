@@ -22,6 +22,14 @@ async def upload_document(
     db: Session = Depends(get_db)
 ):
     """Upload a trade finance document"""
+    # RESTRICTION: Corporate users cannot upload LOC
+    if current_user.role == UserRole.CORPORATE and doc_type == DocumentType.LOC:
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Corporate users are not allowed to submit Letters of Credit (LOC). This is a Bank function."
+        )
+
     return await DocumentService.upload_document(
         db, current_user, file, doc_type, doc_number, issued_at
     )

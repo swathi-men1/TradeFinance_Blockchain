@@ -46,7 +46,7 @@ class LedgerEntry(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=True)
-    action = Column(Enum(LedgerAction), nullable=False)
+    action = Column(Enum(LedgerAction, name='ledger_action'), nullable=False)
     actor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     entry_metadata = Column("metadata", JSONB, nullable=True)
     previous_hash = Column(String(64), nullable=True)

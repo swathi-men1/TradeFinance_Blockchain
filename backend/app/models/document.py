@@ -18,7 +18,7 @@ class Document(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    doc_type = Column(Enum(DocumentType), nullable=False)
+    doc_type = Column(Enum(DocumentType, name='document_type'), nullable=False)
     doc_number = Column(String(100), nullable=False)
     file_url = Column(String(500), nullable=False)
     hash = Column(String(64), nullable=False)  # SHA-256

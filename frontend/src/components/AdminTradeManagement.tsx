@@ -22,10 +22,17 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [availableDocuments, setAvailableDocuments] = useState<Document[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [formData, setFormData] = useState<TradeCreate>({
-    buyer_id: 0,
-    seller_id: 0,
-    amount: 0,
+  interface TradeFormState {
+    buyer_id: string;
+    seller_id: string;
+    amount: string;
+    currency: string;
+  }
+
+  const [formData, setFormData] = useState<TradeFormState>({
+    buyer_id: '',
+    seller_id: '',
+    amount: '',
     currency: 'USD'
   });
 
@@ -49,7 +56,14 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
 
   const handleCreateTrade = async () => {
     try {
-      const newTrade = await tradeService.createTrade(formData);
+      const payload: TradeCreate = {
+        buyer_id: parseInt(formData.buyer_id) || 0,
+        seller_id: parseInt(formData.seller_id) || 0,
+        amount: parseFloat(formData.amount) || 0,
+        currency: formData.currency
+      };
+
+      const newTrade = await tradeService.createTrade(payload);
 
       setShowCreateModal(false);
       resetForm();
@@ -61,7 +75,16 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
 
   const handleUpdateTrade = async (tradeId: number, updates: Partial<Trade>) => {
     try {
+      // 1. Update details
       await tradeService.updateTrade(tradeId, updates);
+
+      // 2. Update status if changed and present
+      if (updates.status) {
+        const currentTrade = trades.find(t => t.id === tradeId);
+        if (currentTrade && currentTrade.status !== updates.status) {
+          await tradeService.updateTradeStatus(tradeId, updates.status as TradeStatus);
+        }
+      }
 
       setTrades(prev => prev.map(trade =>
         trade.id === tradeId ? { ...trade, ...updates } : trade
@@ -92,9 +115,9 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
 
   const resetForm = () => {
     setFormData({
-      buyer_id: 0,
-      seller_id: 0,
-      amount: 0,
+      buyer_id: '',
+      seller_id: '',
+      amount: '',
       currency: 'USD'
     });
   };
@@ -102,9 +125,9 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
   const openEditModal = (trade: Trade) => {
     setSelectedTrade(trade);
     setFormData({
-      buyer_id: trade.buyer_id,
-      seller_id: trade.seller_id,
-      amount: parseFloat(trade.amount),
+      buyer_id: trade.buyer_id.toString(),
+      seller_id: trade.seller_id.toString(),
+      amount: trade.amount.toString(),
       currency: trade.currency
     });
     setShowEditModal(true);
@@ -113,11 +136,11 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
   const openDocumentModal = async (trade: Trade) => {
     setSelectedTrade(trade);
     setShowDocumentModal(true);
-    
+
     try {
       const documents = await documentService.getDocuments();
       setAvailableDocuments(documents);
-      
+
       // Get currently linked documents
       const tradeDocuments = await tradeService.getTradeDocuments(trade.id);
       setSelectedDocuments(tradeDocuments);
@@ -182,8 +205,7 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'buyer_id' || name === 'seller_id' ? parseInt(value) || 0 :
-        name === 'amount' ? parseFloat(value) || 0 : value
+      [name]: value
     }));
   };
 
@@ -311,7 +333,7 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
             <div className="form-section">
               <label className="form-label">Buyer ID</label>
               <input
-                type="number"
+                type="text"
                 className="input-field"
                 value={formData.buyer_id}
                 onChange={handleInputChange}
@@ -324,7 +346,7 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
             <div className="form-section">
               <label className="form-label">Seller ID</label>
               <input
-                type="number"
+                type="text"
                 className="input-field"
                 value={formData.seller_id}
                 onChange={handleInputChange}
@@ -338,14 +360,12 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
               <div className="form-section">
                 <label className="form-label">Amount</label>
                 <input
-                  type="number"
+                  type="text"
                   className="input-field"
                   value={formData.amount}
                   onChange={handleInputChange}
                   name="amount"
                   placeholder="0.00"
-                  min="0"
-                  step="0.01"
                   required
                 />
               </div>
@@ -373,7 +393,7 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
               <button
                 onClick={handleCreateTrade}
                 className="btn-primary"
-                disabled={!formData.buyer_id || !formData.seller_id || formData.amount <= 0}
+                disabled={!formData.buyer_id || !formData.seller_id || !formData.amount}
               >
                 Create Trade
               </button>
@@ -399,10 +419,10 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
             <div className="form-section">
               <label className="form-label">Buyer ID</label>
               <input
-                type="number"
+                type="text"
                 className="input-field"
                 value={formData.buyer_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, buyer_id: parseInt(e.target.value) || 0 }))}
+                onChange={handleInputChange}
                 placeholder="Enter buyer ID"
                 required
               />
@@ -411,10 +431,10 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
             <div className="form-section">
               <label className="form-label">Seller ID</label>
               <input
-                type="number"
+                type="text"
                 className="input-field"
                 value={formData.seller_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, seller_id: parseInt(e.target.value) || 0 }))}
+                onChange={handleInputChange}
                 placeholder="Enter seller ID"
                 required
               />
@@ -424,13 +444,11 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
               <div className="form-section">
                 <label className="form-label">Amount</label>
                 <input
-                  type="number"
+                  type="text"
                   className="input-field"
                   value={formData.amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                  onChange={handleInputChange}
                   placeholder="0.00"
-                  min="0"
-                  step="0.01"
                   required
                 />
               </div>
@@ -445,7 +463,8 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="paid">Paid</option>
+                  <option value="disputed">Disputed</option>
                 </select>
               </div>
             </div>
@@ -459,13 +478,14 @@ export default function AdminTradeManagement({ onTradeUpdate }: AdminTradeManage
               </button>
               <button
                 onClick={() => handleUpdateTrade(selectedTrade.id, {
-                  buyer_id: formData.buyer_id,
-                  seller_id: formData.seller_id,
-                  amount: formData.amount.toString(),
-                  currency: formData.currency
+                  buyer_id: parseInt(formData.buyer_id) || 0,
+                  seller_id: parseInt(formData.seller_id) || 0,
+                  amount: formData.amount,
+                  currency: formData.currency,
+                  status: selectedTrade.status
                 })}
                 className="btn-primary"
-                disabled={!formData.buyer_id || !formData.seller_id || formData.amount <= 0}
+                disabled={!formData.buyer_id || !formData.seller_id || !formData.amount}
               >
                 Update Trade
               </button>

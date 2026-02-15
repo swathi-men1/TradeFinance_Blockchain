@@ -270,13 +270,14 @@ export default function DocumentDetailsPage() {
                                 className="input-field w-full"
                                 value={editForm.doc_type}
                                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditForm({ ...editForm, doc_type: e.target.value as any })}
+                                style={{ color: 'white' }}
                             >
-                                <option value="LOC">Letter of Credit</option>
-                                <option value="INVOICE">Commercial Invoice</option>
-                                <option value="BILL_OF_LADING">Bill of Lading</option>
-                                <option value="PO">Purchase Order</option>
-                                <option value="COO">Certificate of Origin</option>
-                                <option value="INSURANCE_CERT">Insurance Certificate</option>
+                                <option value="LOC" style={{ color: '#1a1a2e' }}>💰 Letter of Credit</option>
+                                <option value="INVOICE" style={{ color: '#1a1a2e' }}>🧾 Commercial Invoice</option>
+                                <option value="BILL_OF_LADING" style={{ color: '#1a1a2e' }}>📄 Bill of Lading</option>
+                                <option value="PO" style={{ color: '#1a1a2e' }}>📋 Purchase Order</option>
+                                <option value="COO" style={{ color: '#1a1a2e' }}>✅ Certificate of Origin</option>
+                                <option value="INSURANCE_CERT" style={{ color: '#1a1a2e' }}>🛡️ Insurance Certificate</option>
                             </select>
                         ) : (
                             <p className="text-white font-semibold">{formatDocType(document.doc_type)}</p>

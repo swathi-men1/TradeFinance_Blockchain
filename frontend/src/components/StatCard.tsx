@@ -4,11 +4,12 @@ interface StatCardProps {
     icon?: string;
     trend?: 'up' | 'down';
     trendValue?: string;
+    className?: string;
 }
 
-export function StatCard({ value, label, icon, trend, trendValue }: StatCardProps) {
+export function StatCard({ value, label, icon, trend, trendValue, className = '' }: StatCardProps) {
     return (
-        <div className="stat-card">
+        <div className={`stat-card ${className}`}>
             {icon && (
                 <div className="text-4xl mb-3 opacity-80">
                     {icon}

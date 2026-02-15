@@ -30,7 +30,7 @@ class TradeTransaction(Base):
     amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)
     status = Column(
-        Enum(TradeStatus, values_callable=lambda x: [e.value for e in x]),
+        Enum(TradeStatus, name='trade_status', values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=TradeStatus.PENDING.value
     )

@@ -28,12 +28,20 @@ wheels/
 .installed.cfg
 *.egg
 
+# Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+
 # Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+dist/
+build/
 
 # IDE
 .vscode/
@@ -45,6 +53,9 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+.Desktop
+.VolumeIcon.icns
+Icon?
 
 # Logs
 *.log
@@ -62,9 +73,16 @@ secrets.md
 *.secret
 *.key
 *.pem
+*.pfx
+.ssh/
 
 # Docker
 docker-compose.override.yml
+.dockerignore
+
+# Agent internal files (do not commit session data)
+.agent/
+.agent
 
 # Alembic
 alembic/versions/*.pyc

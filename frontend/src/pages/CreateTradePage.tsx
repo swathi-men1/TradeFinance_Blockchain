@@ -158,13 +158,12 @@ export default function CreateTradePage() {
                             Buyer User ID *
                         </label>
                         <input
-                            type="number"
+                            type="text"
                             value={buyerId}
                             onChange={(e) => setBuyerId(e.target.value)}
                             className="input-field"
                             placeholder={user?.role !== 'admin' ? `Enter ${user?.id} (your ID) or partner's ID` : 'Enter buyer user ID'}
                             required
-                            min="1"
                         />
                         <p className="mt-2 text-xs text-muted">
                             {user?.role === 'admin'
@@ -179,13 +178,12 @@ export default function CreateTradePage() {
                             Seller User ID *
                         </label>
                         <input
-                            type="number"
+                            type="text"
                             value={sellerId}
                             onChange={(e) => setSellerId(e.target.value)}
                             className="input-field"
                             placeholder={user?.role !== 'admin' ? `Enter ${user?.id} (your ID) or partner's ID` : 'Enter seller user ID'}
                             required
-                            min="1"
                         />
                         <p className="mt-2 text-xs text-muted">
                             {user?.role === 'admin'

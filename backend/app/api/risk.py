@@ -135,6 +135,9 @@ def get_all_risk_scores(
     return [
         RiskScoreResponse(
             user_id=score.user_id,
+            user_name=score.user.name if score.user else "Unknown",
+            user_role=score.user.role.value if score.user and hasattr(score.user.role, 'value') else (str(score.user.role) if score.user else None),
+            organization=score.user.org_name if score.user else None,
             score=score.score,
             category=score.category,
             rationale=score.rationale,
@@ -166,6 +169,9 @@ def get_high_risk_users(
     return [
         RiskScoreResponse(
             user_id=score.user_id,
+            user_name=score.user.name if score.user else "Unknown",
+            user_role=score.user.role.value if score.user and hasattr(score.user.role, 'value') else (str(score.user.role) if score.user else None),
+            organization=score.user.org_name if score.user else None,
             score=score.score,
             category=score.category,
             rationale=score.rationale,

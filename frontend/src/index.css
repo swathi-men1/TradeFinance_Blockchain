@@ -331,15 +331,15 @@ h6 {
 /* ===== INPUT FIELDS ===== */
 .input-field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
-  padding: 1rem 1.5rem;
-  color: var(--text-primary);
-  font-family: var(--font-body);
+  border-radius: 8px;
+  padding: 12px 16px;
   font-size: 0.95rem;
-  font-weight: 500;
   transition: all 0.3s ease;
+  color: white;
+  font-family: var(--font-body);
+  font-weight: 500;
   backdrop-filter: blur(10px);
   text-align: left;
   line-height: 1.6;
@@ -364,7 +364,6 @@ textarea.input-field {
   resize: vertical;
   min-height: 120px;
   line-height: 1.6;
-  line-height: 1.5;
 }
 
 select.input-field {
@@ -374,7 +373,20 @@ select.input-field {
   background-repeat: no-repeat;
   background-position: right 1.5rem center;
   padding-right: 3rem;
-  color: var(--text-primary);
+  color: white;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+select {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+select option {
+  background-color: black !important;
+  color: white !important;
 }
 
 /* Form Labels and Helper Text */
@@ -1467,4 +1479,52 @@ tbody tr:hover {
 .data-table td.centered,
 .data-table th.centered {
   text-align: center;
+}
+
+/* ===== CUSTOM SCROLLBAR UTILITY ===== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05); /* very light transparent */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(132, 204, 22, 0.5); /* lime-500/50 */
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(132, 204, 22, 0.8); /* lime-500/80 */
+}
+
+/* Firefox support */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(132, 204, 22, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+/* Spinner Animation for small inline spinners */
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spinner 1s ease-in-out infinite;
+}
+
+/* Fade In Animation */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -22,6 +22,7 @@ export interface LedgerEntry {
   actor_id: number | null;
   actor_name?: string;
   actor_role?: string;
+  actor_code?: string;
   entry_metadata: Record<string, any> | null; // Changed from metadata to entry_metadata
   created_at: string;
   previous_hash?: string | null;

@@ -6,6 +6,7 @@ export interface User {
     email: string;
     role: string;
     org_name?: string;
+    user_code?: string;
 }
 
 export interface Trade {

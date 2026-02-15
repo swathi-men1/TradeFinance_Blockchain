@@ -98,8 +98,8 @@ export default function TradeDetailsPage() {
     };
 
     const handleDocumentToggle = (documentId: number) => {
-        setSelectedDocuments(prev => 
-            prev.includes(documentId) 
+        setSelectedDocuments(prev =>
+            prev.includes(documentId)
                 ? prev.filter(id => id !== documentId)
                 : [...prev, documentId]
         );
@@ -186,384 +186,395 @@ export default function TradeDetailsPage() {
     return (
         <>
             <div className="fade-in max-w-6xl">
-            {/* Header */}
-            <div className="mb-8">
-                <button
-                    onClick={() => navigate('/trades')}
-                    className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
-                >
-                    <span>←</span>
-                    <span>Back to Trades</span>
-                </button>
+                {/* Header */}
+                <div className="mb-8">
+                    <button
+                        onClick={() => navigate('/trades')}
+                        className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
+                    >
+                        <span>←</span>
+                        <span>Back to Trades</span>
+                    </button>
 
-                <div className="flex flex-col md:flex-row items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            Trade #{trade.id}
-                        </h1>
-                        <p className="text-secondary">
-                            Created {formatDate(trade.created_at)}
-                        </p>
-                    </div>
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                        <div>
+                            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                Trade #{trade.id}
+                            </h1>
+                            <p className="text-secondary">
+                                Created {formatDate(trade.created_at)}
+                            </p>
+                        </div>
 
-                    <div className={`status-badge status-${config.color}`}>
-                        <span>{config.icon}</span>
-                        <span>{config.label}</span>
+                        <div className={`status-badge status-${config.color}`}>
+                            <span>{config.icon}</span>
+                            <span>{config.label}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="alert alert-error mb-6">
-                    <span className="text-2xl">⚠️</span>
-                    <span>{error}</span>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Trade Details Card */}
-                <GlassCard>
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        <span>💼</span>
-                        <span>Trade Details</span>
-                    </h2>
-
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                            <span className="text-muted">Amount</span>
-                            <span className="text-2xl font-bold text-lime">
-                                {formatAmount(trade.amount, trade.currency)}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                            <span className="text-muted">Buyer</span>
-                            <div className="text-right">
-                                <p className="text-white font-semibold">{trade.buyer?.name || 'Unknown'}</p>
-                                <p className="text-secondary text-sm">ID: #{trade.buyer_id}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                            <span className="text-muted">Seller</span>
-                            <div className="text-right">
-                                <p className="text-white font-semibold">{trade.seller?.name || 'Unknown'}</p>
-                                <p className="text-secondary text-sm">ID: #{trade.seller_id}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                            <span className="text-muted">Currency</span>
-                            <span className="text-white font-semibold">{trade.currency}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-3">
-                            <span className="text-muted">Last Updated</span>
-                            <span className="text-secondary text-sm">{formatDate(trade.updated_at)}</span>
-                        </div>
+                {/* Error Message */}
+                {error && (
+                    <div className="alert alert-error mb-6">
+                        <span className="text-2xl">⚠️</span>
+                        <span>{error}</span>
                     </div>
-                </GlassCard>
+                )}
 
-                {/* Status Management Card */}
-                {canUpdateStatus && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    {/* Trade Details Card */}
                     <GlassCard>
                         <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            <span>🔄</span>
-                            <span>Update Status</span>
+                            <span>💼</span>
+                            <span>Trade Details</span>
                         </h2>
 
-                        {!showStatusUpdate ? (
-                            <button
-                                onClick={() => setShowStatusUpdate(true)}
-                                className="btn-primary w-full"
-                            >
-                                <span>🔄</span>
-                                <span>Change Status</span>
-                            </button>
-                        ) : (
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
-                                    <select
-                                        value={selectedStatus}
-                                        onChange={(e) => setSelectedStatus(e.target.value)}
-                                        className="input-field"
-                                    >
-                                        <option value="">Choose status...</option>
-                                        {nextStatuses[trade.status].map((status) => {
-                                            const cfg = statusConfig[status as keyof typeof statusConfig];
-                                            return (
-                                                <option key={status} value={status}>
-                                                    {cfg.icon} {cfg.label}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                                <span className="text-muted">Amount</span>
+                                <span className="text-2xl font-bold text-lime">
+                                    {formatAmount(trade.amount, trade.currency)}
+                                </span>
+                            </div>
 
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => {
-                                            setShowStatusUpdate(false);
-                                            setSelectedStatus('');
-                                        }}
-                                        className="btn-secondary flex-1"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleStatusUpdate}
-                                        disabled={!selectedStatus || updatingStatus}
-                                        className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {updatingStatus ? (
-                                            <span className="flex items-center justify-center gap-2">
-                                                <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
-                                                Updating...
-                                            </span>
+                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                                <span className="text-muted">Buyer</span>
+                                <div className="text-right">
+                                    <p className="text-white font-semibold">{trade.buyer?.name || 'Unknown'}</p>
+                                    <p className="text-secondary text-sm">
+                                        {trade.buyer?.user_code ? (
+                                            <span className="font-mono text-lime">{trade.buyer.user_code}</span>
                                         ) : (
-                                            'Update'
+                                            `ID: #${trade.buyer_id}`
                                         )}
-                                    </button>
+                                    </p>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Status Lifecycle Timeline */}
-                        <div className="mt-8 pt-8 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                            <h3 className="text-sm font-semibold text-white mb-4">Trade Lifecycle</h3>
-                            <div className="space-y-2">
-                                {Object.entries(statusConfig).map(([key, cfg], index) => {
-                                    const isCurrentStatus = trade.status === key;
-                                    const isPastStatus = Object.keys(statusConfig).indexOf(trade.status) > index;
+                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                                <span className="text-muted">Seller</span>
+                                <div className="text-right">
+                                    <p className="text-white font-semibold">{trade.seller?.name || 'Unknown'}</p>
+                                    <p className="text-secondary text-sm">
+                                        {trade.seller?.user_code ? (
+                                            <span className="font-mono text-lime">{trade.seller.user_code}</span>
+                                        ) : (
+                                            `ID: #${trade.seller_id}`
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
 
-                                    return (
-                                        <div
-                                            key={key}
-                                            className={`flex items-center gap-3 p-2 rounded-lg transition-all ${isCurrentStatus ? 'bg-lime bg-opacity-10' : ''
-                                                }`}
-                                        >
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentStatus ? 'bg-lime text-primary' :
-                                                isPastStatus ? 'bg-success bg-opacity-20 text-success' :
-                                                    'bg-secondary bg-opacity-20 text-muted'
-                                                }`}>
-                                                {isPastStatus ? '✓' : cfg.icon}
-                                            </div>
-                                            <span className={`text-sm ${isCurrentStatus ? 'text-lime font-semibold' :
-                                                isPastStatus ? 'text-success' :
-                                                    'text-muted'
-                                                }`}>
-                                                {cfg.label}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                                <span className="text-muted">Currency</span>
+                                <span className="text-white font-semibold">{trade.currency}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3">
+                                <span className="text-muted">Last Updated</span>
+                                <span className="text-secondary text-sm">{formatDate(trade.updated_at)}</span>
                             </div>
                         </div>
                     </GlassCard>
-                )}
-            </div>
 
-            {/* Linked Documents */}
-            <GlassCard>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        <span>📎</span>
-                        <span>Linked Documents</span>
-                    </h2>
-                    
-                    {/* Admin Document Management */}
-                    {user?.role === 'admin' && (
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowDocumentManagement(true);
-                                    loadAllDocuments();
-                                }}
-                                className="btn-secondary text-sm"
-                            >
-                                <span>📎</span>
-                                <span>Manage Documents</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
+                    {/* Status Management Card */}
+                    {canUpdateStatus && (
+                        <GlassCard>
+                            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                <span>🔄</span>
+                                <span>Update Status</span>
+                            </h2>
 
-                {documents.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-4">📄</div>
-                        <p className="text-secondary">No documents linked to this trade yet</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {documents.map((doc) => (
-                            <div
-                                key={doc.id}
-                                className="glass-card-flat group hover:border-lime transition-all relative"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <div
-                                            onClick={() => navigate(`/documents/${doc.id}`)}
-                                            className="cursor-pointer group"
+                            {!showStatusUpdate ? (
+                                <button
+                                    onClick={() => setShowStatusUpdate(true)}
+                                    className="btn-primary w-full"
+                                >
+                                    <span>🔄</span>
+                                    <span>Change Status</span>
+                                </button>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
+                                        <select
+                                            value={selectedStatus}
+                                            onChange={(e) => setSelectedStatus(e.target.value)}
+                                            className="input-field"
                                         >
-                                            <p className="font-semibold text-white group-hover:text-lime transition-colors">
-                                                {doc.doc_number}
-                                            </p>
-                                            <p className="text-sm text-secondary">
-                                                {doc.doc_type.replace(/_/g, ' ')}
-                                            </p>
-                                        </div>
-                                        <div className="text-xs text-secondary mt-1">
-                                            {doc.owner_name} • {formatDate(doc.uploaded_at || doc.created_at)}
-                                        </div>
+                                            <option value="">Choose status...</option>
+                                            {nextStatuses[trade.status].map((status) => {
+                                                const cfg = statusConfig[status as keyof typeof statusConfig];
+                                                return (
+                                                    <option key={status} value={status}>
+                                                        {cfg.icon} {cfg.label}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-secondary group-hover:text-lime transition-colors text-xl cursor-pointer"
-                                              onClick={() => navigate(`/documents/${doc.id}`)}>→</span>
-                                        {user?.role === 'admin' && (
-                                            <button
-                                                onClick={() => handleRemoveDocument(doc.id)}
-                                                className="text-red-400 hover:text-red-300 transition-colors text-lg"
-                                                title="Remove document from trade"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
+
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowStatusUpdate(false);
+                                                setSelectedStatus('');
+                                            }}
+                                            className="btn-secondary flex-1"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleStatusUpdate}
+                                            disabled={!selectedStatus || updatingStatus}
+                                            className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {updatingStatus ? (
+                                                <span className="flex items-center justify-center gap-2">
+                                                    <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                                    Updating...
+                                                </span>
+                                            ) : (
+                                                'Update'
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </GlassCard>
+                            )}
 
-            {/* Admin Document Management Modal */}
-            {showDocumentManagement && user?.role === 'admin' && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="glass-card max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-white">Manage Trade Documents</h3>
-                            <button
-                                onClick={() => {
-                                    setShowDocumentManagement(false);
-                                    setSelectedDocuments([]);
-                                }}
-                                className="text-secondary hover:text-white text-2xl"
-                            >
-                                ×
-                            </button>
-                        </div>
+                            {/* Status Lifecycle Timeline */}
+                            <div className="mt-8 pt-8 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
+                                <h3 className="text-sm font-semibold text-white mb-4">Trade Lifecycle</h3>
+                                <div className="space-y-2">
+                                    {Object.entries(statusConfig).map(([key, cfg], index) => {
+                                        const isCurrentStatus = trade.status === key;
+                                        const isPastStatus = Object.keys(statusConfig).indexOf(trade.status) > index;
 
-                        {loadingAllDocuments ? (
-                            <div className="text-center py-12">
-                                <div className="spinner spinner-small mx-auto mb-4"></div>
-                                <p className="text-secondary">Loading documents...</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="text-sm text-secondary mb-4">
-                                    Select documents to attach to this trade
-                                </div>
-                                
-                                <div className="max-h-60 overflow-y-auto space-y-2">
-                                    {allDocuments.map((doc) => {
-                                        const isLinked = documents.some(d => d.id === doc.id);
-                                        const isSelected = selectedDocuments.includes(doc.id);
-                                        
                                         return (
                                             <div
-                                                key={doc.id}
-                                                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                                    isLinked 
-                                                        ? 'opacity-50 cursor-not-allowed' 
-                                                        : 'hover:bg-opacity-10'
-                                                }`}
-                                                style={{ 
-                                                    borderColor: isSelected 
-                                                        ? 'var(--accent-neon-purple)' 
-                                                        : 'rgba(255, 255, 255, 0.1)',
-                                                    backgroundColor: isSelected 
-                                                        ? 'rgba(184, 38, 255, 0.1)' 
-                                                        : 'transparent'
-                                                }}
-                                                onClick={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                key={key}
+                                                className={`flex items-center gap-3 p-2 rounded-lg transition-all ${isCurrentStatus ? 'bg-lime bg-opacity-10' : ''
+                                                    }`}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isSelected}
-                                                    disabled={isLinked}
-                                                    onChange={() => !isLinked && handleDocumentToggle(doc.id)}
-                                                    className="w-4 h-4 rounded"
-                                                    style={{ accentColor: 'var(--accent-neon-purple)' }}
-                                                />
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-white font-medium">{doc.doc_type}</span>
-                                                        <span className="text-xs text-muted">#{doc.id}</span>
-                                                        {isLinked && (
-                                                            <span className="text-xs text-success">✓ Linked</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xs text-secondary mt-1">
-                                                        {doc.doc_number} • {doc.owner_name}
-                                                    </div>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentStatus ? 'bg-lime text-primary' :
+                                                    isPastStatus ? 'bg-success bg-opacity-20 text-success' :
+                                                        'bg-secondary bg-opacity-20 text-muted'
+                                                    }`}>
+                                                    {isPastStatus ? '✓' : cfg.icon}
                                                 </div>
-                                                <div className="text-xs">
-                                                    <span className={`badge ${doc.status === 'verified' ? 'badge-success' : 'badge-warning'}`}>
-                                                        {doc.status}
-                                                    </span>
-                                                </div>
+                                                <span className={`text-sm ${isCurrentStatus ? 'text-lime font-semibold' :
+                                                    isPastStatus ? 'text-success' :
+                                                        'text-muted'
+                                                    }`}>
+                                                    {cfg.label}
+                                                </span>
                                             </div>
                                         );
                                     })}
                                 </div>
+                            </div>
+                        </GlassCard>
+                    )}
+                </div>
 
-                                {selectedDocuments.length > 0 && (
-                                    <div className="pt-4 border-t border-opacity-20" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                                        <p className="text-sm text-secondary mb-4">
-                                            <span className="text-neon-purple font-medium">{selectedDocuments.length}</span> document(s) selected
-                                        </p>
-                                        <div className="flex gap-3">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedDocuments([]);
-                                                }}
-                                                className="btn-secondary flex-1"
-                                            >
-                                                Clear Selection
-                                            </button>
-                                            <button
-                                                onClick={handleAttachDocuments}
-                                                disabled={updatingDocuments}
-                                                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {updatingDocuments ? (
-                                                    <span className="flex items-center justify-center gap-2">
-                                                        <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
-                                                        Attaching...
-                                                    </span>
-                                                ) : (
-                                                    <span>Attach Documents</span>
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                {/* Linked Documents */}
+                <GlassCard>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <span>📎</span>
+                            <span>Linked Documents</span>
+                        </h2>
+
+                        {/* Admin Document Management */}
+                        {user?.role === 'admin' && (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowDocumentManagement(true);
+                                        loadAllDocuments();
+                                    }}
+                                    className="btn-secondary text-sm"
+                                >
+                                    <span>📎</span>
+                                    <span>Manage Documents</span>
+                                </button>
                             </div>
                         )}
                     </div>
+
+                    {documents.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">📄</div>
+                            <p className="text-secondary">No documents linked to this trade yet</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {documents.map((doc) => (
+                                <div
+                                    key={doc.id}
+                                    className="glass-card-flat group hover:border-lime transition-all relative"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                            <div
+                                                onClick={() => navigate(`/documents/${doc.id}`)}
+                                                className="cursor-pointer group"
+                                            >
+                                                <p className="font-semibold text-white group-hover:text-lime transition-colors">
+                                                    {doc.doc_number}
+                                                </p>
+                                                <p className="text-sm text-secondary">
+                                                    {doc.doc_type.replace(/_/g, ' ')}
+                                                </p>
+                                            </div>
+                                            <div className="text-xs text-secondary mt-1">
+                                                {doc.owner_name} • {formatDate(doc.uploaded_at || doc.created_at)}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-secondary group-hover:text-lime transition-colors text-xl cursor-pointer"
+                                                onClick={() => navigate(`/documents/${doc.id}`)}>→</span>
+                                            {user?.role === 'admin' && (
+                                                <button
+                                                    onClick={() => handleRemoveDocument(doc.id)}
+                                                    className="text-red-400 hover:text-red-300 transition-colors text-lg"
+                                                    title="Remove document from trade"
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </GlassCard>
+
+                {/* Admin Document Management Modal */}
+                {showDocumentManagement && user?.role === 'admin' && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="glass-card max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-white">Manage Trade Documents</h3>
+                                <button
+                                    onClick={() => {
+                                        setShowDocumentManagement(false);
+                                        setSelectedDocuments([]);
+                                    }}
+                                    className="text-secondary hover:text-white text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            {loadingAllDocuments ? (
+                                <div className="text-center py-12">
+                                    <div className="spinner spinner-small mx-auto mb-4"></div>
+                                    <p className="text-secondary">Loading documents...</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="text-sm text-secondary mb-4">
+                                        Select documents to attach to this trade
+                                    </div>
+
+                                    <div className="max-h-60 overflow-y-auto space-y-2">
+                                        {allDocuments.map((doc) => {
+                                            const isLinked = documents.some(d => d.id === doc.id);
+                                            const isSelected = selectedDocuments.includes(doc.id);
+
+                                            return (
+                                                <div
+                                                    key={doc.id}
+                                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isLinked
+                                                            ? 'opacity-50 cursor-not-allowed'
+                                                            : 'hover:bg-opacity-10'
+                                                        }`}
+                                                    style={{
+                                                        borderColor: isSelected
+                                                            ? 'var(--accent-neon-purple)'
+                                                            : 'rgba(255, 255, 255, 0.1)',
+                                                        backgroundColor: isSelected
+                                                            ? 'rgba(184, 38, 255, 0.1)'
+                                                            : 'transparent'
+                                                    }}
+                                                    onClick={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        disabled={isLinked}
+                                                        onChange={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                        className="w-4 h-4 rounded"
+                                                        style={{ accentColor: 'var(--accent-neon-purple)' }}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-white font-medium">{doc.doc_type}</span>
+                                                            <span className="text-xs text-muted">#{doc.id}</span>
+                                                            {isLinked && (
+                                                                <span className="text-xs text-success">✓ Linked</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-xs text-secondary mt-1">
+                                                            {doc.doc_number} • {doc.owner_name}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-xs">
+                                                        <span className={`badge ${doc.status === 'verified' ? 'badge-success' : 'badge-warning'}`}>
+                                                            {doc.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {selectedDocuments.length > 0 && (
+                                        <div className="pt-4 border-t border-opacity-20" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                                            <p className="text-sm text-secondary mb-4">
+                                                <span className="text-neon-purple font-medium">{selectedDocuments.length}</span> document(s) selected
+                                            </p>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedDocuments([]);
+                                                    }}
+                                                    className="btn-secondary flex-1"
+                                                >
+                                                    Clear Selection
+                                                </button>
+                                                <button
+                                                    onClick={handleAttachDocuments}
+                                                    disabled={updatingDocuments}
+                                                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {updatingDocuments ? (
+                                                        <span className="flex items-center justify-center gap-2">
+                                                            <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                                            Attaching...
+                                                        </span>
+                                                    ) : (
+                                                        <span>Attach Documents</span>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Admin Trade Management Section */}
+            {user?.role === 'admin' && (
+                <div className="mt-8">
+                    <AdminTradeManagement />
                 </div>
             )}
-        </div>
-
-        {/* Admin Trade Management Section */}
-        {user?.role === 'admin' && (
-            <div className="mt-8">
-                <AdminTradeManagement />
-            </div>
-        )}
         </>
     );
 }

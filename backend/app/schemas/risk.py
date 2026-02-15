@@ -16,6 +16,9 @@ class RiskScoreResponse(BaseModel):
     - last_updated: Timestamp of calculation
     """
     user_id: int
+    user_name: Optional[str] = None
+    user_role: Optional[str] = None
+    organization: Optional[str] = None
     score: float
     category: str  # LOW, MEDIUM, HIGH
     rationale: str

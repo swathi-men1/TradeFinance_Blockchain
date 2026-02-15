@@ -132,6 +132,62 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             <span>Immutable Ledger</span>
                         </Link>
                     )}
+
+                    {/* Admin Section - Admin only */}
+                    {user.role === 'admin' && (
+                        <>
+                            <div className="px-4 py-2 text-xs font-semibold text-secondary uppercase tracking-wider mt-4">
+                                Administration
+                            </div>
+                            <Link
+                                to="/admin/dashboard"
+                                className={`sidebar-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
+                                onClick={() => window.innerWidth < 1024 && onClose()}
+                            >
+                                <span className="sidebar-icon">⚡</span>
+                                <span>Overview</span>
+                            </Link>
+
+                            <Link
+                                to="/admin/users"
+                                className={`sidebar-link ${isActive('/admin/users') ? 'active' : ''}`}
+                                onClick={() => window.innerWidth < 1024 && onClose()}
+                            >
+                                <span className="sidebar-icon">👥</span>
+                                <span>Users</span>
+                            </Link>
+
+                            <Link
+                                to="/admin/orgs"
+                                className={`sidebar-link ${isActive('/admin/orgs') ? 'active' : ''}`}
+                                onClick={() => window.innerWidth < 1024 && onClose()}
+                            >
+                                <span className="sidebar-icon">🏢</span>
+                                <span>Organizations</span>
+                            </Link>
+
+                            <Link
+                                to="/admin/audit"
+                                className={`sidebar-link ${isActive('/admin/audit') ? 'active' : ''}`}
+                                onClick={() => window.innerWidth < 1024 && onClose()}
+                            >
+                                <span className="sidebar-icon">📜</span>
+                                <span>Audit Logs</span>
+                            </Link>
+                        </>
+                    )}
+
+                    {/* Auditor Dashboard - Auditor only */}
+                    {user.role === 'auditor' && (
+                        <Link
+                            to="/auditor"
+                            className={`sidebar-link ${isActive('/auditor') ? 'active' : ''}`}
+                            onClick={() => window.innerWidth < 1024 && onClose()}
+                        >
+                            <span className="sidebar-icon">🔍</span>
+                            <span>Auditor Console</span>
+                        </Link>
+                    )}
                 </nav>
 
                 {/* User Info & Logout */}

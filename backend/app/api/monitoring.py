@@ -140,4 +140,59 @@ def get_risk_summary(
         else:
             risk_dist["CRITICAL"] += 1
             
-    return risk_dist
+@router.get("/integrity-report")
+def get_integrity_report(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Check blockchain integrity (Hash Chain Verification).
+    Admin Only.
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admins can view integrity report"
+        )
+        
+    # Group entries by document_id
+    # In a real blockchain, we'd verify cryptographic signatures too.
+    # Here we verify the linked list structure: Entry[i].prev_hash == Entry[i-1].hash
+    
+    docs = db.query(Document).all()
+    total_docs = len(docs)
+    valid_docs = 0
+    failed_docs = 0
+    
+    for doc in docs:
+        entries = db.query(LedgerEntry).filter(
+            LedgerEntry.document_id == doc.id
+        ).order_by(LedgerEntry.id).all()
+        
+        if not entries:
+            # No entries -> No chain -> Valid (empty)
+            valid_docs += 1
+            continue
+            
+        # Check chain
+        is_valid = True
+        for i in range(1, len(entries)):
+            prev_entry = entries[i-1]
+            curr_entry = entries[i]
+            
+            # If previous_hash doesn't match the actual hash of the previous entry
+            if curr_entry.previous_hash != prev_entry.entry_hash:
+                is_valid = False
+                break
+        
+        if is_valid:
+            valid_docs += 1
+        else:
+            failed_docs += 1
+            
+    return {
+        "total_documents": total_docs,
+        "valid_documents": valid_docs,
+        "failed_documents": failed_docs
+    }
+

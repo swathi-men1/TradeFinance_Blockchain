@@ -15,3 +15,16 @@ class AuditLog(Base):
     
     # Relationships
     admin = relationship("User", backref="audit_actions")
+    
+    @staticmethod
+    def log_action(db, admin_id, action, target_type, target_id):
+        """Helper method to create an audit log entry"""
+        audit_log = AuditLog(
+            admin_id=admin_id,
+            action=action,
+            target_type=target_type,
+            target_id=target_id
+        )
+        db.add(audit_log)
+        db.commit()
+        return audit_log

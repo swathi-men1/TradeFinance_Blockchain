@@ -22,7 +22,7 @@ class AuthService:
             )
         
         # Generate unique user code
-        user_code = generate_user_code(user_data.name, db)
+        user_code = generate_user_code(user_data.org_name, db)
         
         # Create new user
         hashed_password = hash_password(user_data.password)

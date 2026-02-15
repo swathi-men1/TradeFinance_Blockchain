@@ -7,5 +7,6 @@ trade_documents = Table(
     Base.metadata,
     Column('trade_id', Integer, ForeignKey('trade_transactions.id', ondelete='CASCADE'), primary_key=True),
     Column('document_id', Integer, ForeignKey('documents.id', ondelete='CASCADE'), primary_key=True),
-    Column('linked_at', TIMESTAMP, server_default=func.now(), nullable=False)
+    Column('linked_at', TIMESTAMP, server_default=func.now(), nullable=False),
+    extend_existing=True
 )

@@ -20,14 +20,15 @@ router = APIRouter(prefix="/trades", tags=["Trade Transactions"])
 @router.post("", response_model=TradeResponse, status_code=201)
 def create_trade(
     trade_data: TradeCreate,
-    current_user: User = Depends(require_roles([UserRole.CORPORATE, UserRole.BANK, UserRole.ADMIN])),
+    current_user: User = Depends(require_roles([UserRole.BANK, UserRole.ADMIN])),
     db: Session = Depends(get_db)
 ):
     """
     Create a new trade transaction.
     
-    - **CORPORATE** and **BANK** users can create trades where they are buyer or seller
+    - **BANK** users can create trades where they are buyer or seller
     - **ADMIN** can create any trade
+    - **CORPORATE** cannot create trades (can only participate in trades created by Bank)
     - **AUDITOR** cannot create trades (read-only)
     """
     return TradeService.create_trade(db, current_user, trade_data)

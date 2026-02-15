@@ -33,6 +33,11 @@ class TradeService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Buyer with ID {trade_data.buyer_id} not found"
             )
+        if not buyer.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Buyer {buyer.name} is inactive and cannot participate in trades"
+            )
         
         # Validate seller exists
         seller = db.query(User).filter(User.id == trade_data.seller_id).first()
@@ -40,6 +45,11 @@ class TradeService:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Seller with ID {trade_data.seller_id} not found"
+            )
+        if not seller.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Seller {seller.name} is inactive and cannot participate in trades"
             )
         
         # Buyer and seller must be different
@@ -78,7 +88,6 @@ class TradeService:
         db.commit()
         db.refresh(new_trade)
         
-        # Create ledger entry
         # Create ledger entry
         LedgerService.create_entry(
             db=db,
@@ -185,8 +194,8 @@ class TradeService:
                 detail=f"Invalid status transition from {old_status.value} to {new_status.value}"
             )
         
-        # Update status
-        trade.status = new_status
+        # --- FIXED HERE: Use .value to save string to DB ---
+        trade.status = new_status.value
         db.commit()
         db.refresh(trade)
         
@@ -196,7 +205,6 @@ class TradeService:
         else:
             ledger_action = LedgerAction.TRADE_STATUS_UPDATED
         
-        # Create ledger entry
         # Create ledger entry
         LedgerService.create_entry(
             db=db,
@@ -266,7 +274,6 @@ class TradeService:
         db.commit()
         db.refresh(trade)
         
-        # Create ledger entry
         # Create ledger entry
         LedgerService.create_entry(
             db=db,
@@ -498,7 +505,7 @@ class TradeService:
             actor_id=current_user.id,
             entry_metadata={
                 "trade_id": trade_id,
-                "document_type": document.doc_type,
+                "document_type": document.doc_type.value,  # Added .value here for safety too
                 "document_number": document.doc_number,
                 "admin_name": current_user.name
             }
