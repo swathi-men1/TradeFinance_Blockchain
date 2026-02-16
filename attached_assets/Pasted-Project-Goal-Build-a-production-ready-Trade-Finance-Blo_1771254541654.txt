@@ -1,0 +1,41 @@
+Project Goal: Build a production-ready Trade Finance Blockchain Explorer with a full-stack architecture: React.js + Tailwind CSS (Frontend), FastAPI (Backend), and PostgreSQL (Database). This is a time-sensitive research project.
+
+1. Core Tech Stack & Requirements:
+
+Backend: FastAPI with SQLAlchemy ORM and JWT (access + refresh tokens).
+
+Auth: Multi-role system for 'Bank User', 'Auditor', and 'Admin'.
+
+Frontend: Modern, responsive dashboard using Tailwind CSS with a "Royal Blue Prestige" color palette (Deep Navy #0A1A3C, Royal Blue #143A75, and Luminous Tech Cyan #00E8FF for highlights).
+
+2. Exact Database Schema to Implement:
+
+Users: id (PK), name, email (Unique), password, role (bank, corporate, auditor, admin), org_name.
+
+Documents: id (PK), owner_id (FK), doc_type (LOC, INVOICE, BILL_OF_LADING, PO), doc_number, file_url, hash (SHA-256), issued_at.
+
+LedgerEntries: id (PK), document_id (FK), action (ISSUED, AMENDED, SHIPPED, VERIFIED, PAID), actor_id (FK), metadata (JSONB).
+
+TradeTransactions: id (PK), buyer_id (FK), seller_id (FK), amount, currency, status.
+
+RiskScores: id (PK), user_id (FK), score (0-100), rationale (Text).
+
+3. Key Functional Modules:
+
+Module A (Auth): Secure login and role-based dashboard access.
+
+Module B (Documents): Upload interface that automatically generates a SHA-256 hash for every document and saves it for audit trails.
+
+Module C (Ledger): An interactive "Ledger View" timeline that shows the history of a trade artifact.
+
+Module D/E (Analytics): A dashboard with charts showing trade flow and risk scores. Mock external data from WTO/BIS for these visualizations.
+
+4. Deployment Configuration:
+
+Configure the app to use Replit's internal PostgreSQL (powered by Neon).
+
+Ensure the frontend is responsive for mobile and desktop.
+
+Implement a basic scheduled job (or background task) that simulates a document integrity check.
+
+Initial Task: Start by setting up the folder structure, the database migrations, and the authentication system. Show me the login page and the main dashboard shell first.
