@@ -773,12 +773,12 @@ class AuditorService:
             elements.append(Spacer(1, 12))
             
             doc_data = [["Doc #", "Verified At", "Valid", "Flagged"]]
-            for doc in report['document_verifications'][:20]: # Limit for PDF readability
+            for doc_ver in report['document_verifications'][:20]: # Limit for PDF readability
                 doc_data.append([
-                    doc['doc_number'],
-                    str(doc['verified_at'])[:19],
-                    "Yes" if doc['is_valid'] else "NO",
-                    "Yes" if doc['flagged'] else "No"
+                    doc_ver['doc_number'],
+                    str(doc_ver['verified_at'])[:19],
+                    "Yes" if doc_ver['is_valid'] else "NO",
+                    "Yes" if doc_ver['flagged'] else "No"
                 ])
             
             t_docs = Table(doc_data, colWidths=[100, 150, 60, 60])
