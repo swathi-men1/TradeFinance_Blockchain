@@ -1,7 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // === TABLE DEFINITIONS ===
 
@@ -12,25 +12,27 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   role: text("role", { enum: ["bank", "corporate", "auditor", "admin"] }).notNull(),
   orgName: text("org_name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
   ownerId: integer("owner_id").notNull(),
-  docType: text("doc_type", { enum: ["LOC", "INVOICE", "BILL_OF_LADING", "PO"] }).notNull(),
+  docType: text("doc_type", { enum: ["LOC", "INVOICE", "BILL_OF_LADING", "PO", "COO", "INSURANCE_CERT"] }).notNull(),
   docNumber: text("doc_number").notNull(),
   fileUrl: text("file_url").notNull(),
   hash: text("hash").notNull(), // SHA-256
-  issuedAt: timestamp("issued_at").defaultNow().notNull(),
+  issuedAt: timestamp("issued_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const ledgerEntries = pgTable("ledger_entries", {
   id: serial("id").primaryKey(),
   documentId: integer("document_id").notNull(),
-  action: text("action", { enum: ["ISSUED", "AMENDED", "SHIPPED", "VERIFIED", "PAID"] }).notNull(),
+  action: text("action", { enum: ["ISSUED", "AMENDED", "SHIPPED", "RECEIVED", "PAID", "CANCELLED", "VERIFIED"] }).notNull(),
   actorId: integer("actor_id").notNull(),
   metadata: jsonb("metadata"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const tradeTransactions = pgTable("trade_transactions", {
@@ -38,17 +40,34 @@ export const tradeTransactions = pgTable("trade_transactions", {
   buyerId: integer("buyer_id").notNull(),
   sellerId: integer("seller_id").notNull(),
   amount: numeric("amount").notNull(),
-  currency: text("currency").notNull(),
-  status: text("status", { enum: ["PENDING", "COMPLETED", "FAILED"] }).default("PENDING").notNull(),
+  currency: text("currency").notNull(), // CHAR(3)
+  status: text("status", { enum: ["pending", "in_progress", "completed", "disputed"] }).default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const riskScores = pgTable("risk_scores", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
-  score: integer("score").notNull(), // 0-100
+  score: numeric("score").notNull(), // 0-100
   rationale: text("rationale").notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull(),
+  action: text("action").notNull(),
+  targetType: text("target_type").notNull(),
+  targetId: integer("target_id").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+// Separate session table for connect-pg-simple
+export const session = pgTable("session", {
+  sid: text("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
 });
 
 // === RELATIONS ===
@@ -59,6 +78,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   buyerTransactions: many(tradeTransactions, { relationName: "buyer" }),
   sellerTransactions: many(tradeTransactions, { relationName: "seller" }),
   riskScores: many(riskScores),
+  auditLogs: many(auditLogs),
 }));
 
 export const documentsRelations = relations(documents, ({ one, many }) => ({
@@ -100,13 +120,21 @@ export const riskScoresRelations = relations(riskScores, ({ one }) => ({
   }),
 }));
 
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  admin: one(users, {
+    fields: [auditLogs.adminId],
+    references: [users.id],
+  }),
+}));
+
 // === SCHEMAS ===
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true });
-export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, issuedAt: true });
-export const insertLedgerEntrySchema = createInsertSchema(ledgerEntries).omit({ id: true, timestamp: true });
-export const insertTradeTransactionSchema = createInsertSchema(tradeTransactions).omit({ id: true, createdAt: true });
-export const insertRiskScoreSchema = createInsertSchema(riskScores).omit({ id: true, updatedAt: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true });
+export const insertLedgerEntrySchema = createInsertSchema(ledgerEntries).omit({ id: true, createdAt: true });
+export const insertTradeTransactionSchema = createInsertSchema(tradeTransactions).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertRiskScoreSchema = createInsertSchema(riskScores).omit({ id: true, lastUpdated: true });
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true, timestamp: true });
 
 // === TYPES ===
 
@@ -125,8 +153,11 @@ export type InsertTradeTransaction = z.infer<typeof insertTradeTransactionSchema
 export type RiskScore = typeof riskScores.$inferSelect;
 export type InsertRiskScore = z.infer<typeof insertRiskScoreSchema>;
 
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 
-// === API CONTRACT (Moved from routes.ts to fix frontend import error) ===
+
+// === API CONTRACT ===
 
 // Error Schemas
 export const errorSchemas = {
@@ -196,7 +227,7 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/documents' as const,
-      input: insertDocumentSchema.omit({ ownerId: true }), // ownerId comes from session
+      input: insertDocumentSchema.omit({ ownerId: true }),
       responses: {
         201: z.custom<Document>(),
         400: errorSchemas.validation,

@@ -46,7 +46,7 @@ export async function registerRoutes(
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy({ usernameField: 'username' }, async (username, password, done) => {
       try {
         const user = await storage.getUserByUsername(username);
         if (!user) return done(null, false);
@@ -70,8 +70,15 @@ export async function registerRoutes(
   });
 
   // === AUTH ROUTES ===
-  app.post(api.auth.login.path, passport.authenticate("local"), (req, res) => {
-    res.json(req.user);
+  app.post(api.auth.login.path, (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) return next(err);
+      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        res.json(user);
+      });
+    })(req, res, next);
   });
 
   app.post(api.auth.logout.path, (req, res, next) => {
@@ -110,17 +117,12 @@ export async function registerRoutes(
 
   // === APP ROUTES ===
 
-  // Middleware to check auth
   const requireAuth = (req: any, res: any, next: any) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     next();
   };
 
   app.get(api.documents.list.path, requireAuth, async (req, res) => {
-    // If bank/admin, see all? Or strict ownership?
-    // For this explorer, let's assume transparency for Demo, or owner-based.
-    // Spec says "Trade Finance Blockchain Explorer" -> implies visibility.
-    // But let's restrict to owner for now unless role is auditor/admin.
     const user = req.user as any;
     if (user.role === 'auditor' || user.role === 'admin' || user.role === 'bank') {
        const docs = await storage.getDocuments();
@@ -138,9 +140,9 @@ export async function registerRoutes(
       const doc = await storage.createDocument({
         ...input,
         ownerId: user.id,
+        issuedAt: new Date(input.issuedAt),
       });
       
-      // Auto-create initial ledger entry
       await storage.createLedgerEntry({
         documentId: doc.id,
         action: "ISSUED",
@@ -184,11 +186,11 @@ export async function registerRoutes(
     const scores = await storage.getRiskScores();
     
     const totalVolume = txs.reduce((sum, tx) => sum + Number(tx.amount), 0);
-    const riskAlerts = scores.filter(s => s.score > 70).length;
+    const riskAlerts = scores.filter(s => Number(s.score) > 70).length;
 
     res.json({
       totalVolume: `$${totalVolume.toLocaleString()}`,
-      activeTrades: txs.filter(t => t.status === 'PENDING').length,
+      activeTrades: txs.filter(t => t.status === 'pending').length,
       riskAlerts,
     });
   });
@@ -204,7 +206,6 @@ async function seedDatabase() {
   if (!existingUsers) {
     const password = await hashPassword("password123");
     
-    // Create Users
     const admin = await storage.createUser({
       name: "Admin User",
       email: "admin@bank.com",
@@ -229,16 +230,15 @@ async function seedDatabase() {
       orgName: "Export Ltd",
     });
 
-    // Create Documents
     const doc1 = await storage.createDocument({
       ownerId: corpUser.id,
       docType: "BILL_OF_LADING",
       docNumber: "BL-2024-001",
       fileUrl: "https://example.com/bl.pdf",
       hash: "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+      issuedAt: new Date(),
     });
 
-    // Create Ledger Entries
     await storage.createLedgerEntry({
       documentId: doc1.id,
       action: "ISSUED",
@@ -253,26 +253,18 @@ async function seedDatabase() {
       metadata: { note: "Bank verification complete" },
     });
 
-    // Create Transactions
     await storage.createTransaction({
-      buyerId: admin.id, // Bank acting as intermediary or buyer for demo
+      buyerId: admin.id,
       sellerId: corpUser.id,
       amount: "50000",
       currency: "USD",
-      status: "PENDING",
+      status: "pending",
     });
 
-    // Create Risk Scores
     await storage.createRiskScore({
       userId: corpUser.id,
-      score: 15,
+      score: "15",
       rationale: "Low risk, established history",
-    });
-
-    await storage.createRiskScore({
-      userId: auditor.id, // Just demo data
-      score: 5,
-      rationale: "Internal auditor",
     });
   }
 }

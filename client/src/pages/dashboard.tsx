@@ -1,7 +1,7 @@
 import { useStats, useRiskScores, useTransactions } from "@/hooks/use-analytics";
 import { LayoutShell } from "@/components/layout-shell";
 import { StatCard } from "@/components/stat-card";
-import { Activity, AlertTriangle, DollarSign, FileCheck } from "lucide-react";
+import { Activity, AlertTriangle, DollarSign, FileCheck, FileText } from "lucide-react";
 import { 
   AreaChart, 
   Area, 
