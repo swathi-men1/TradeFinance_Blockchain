@@ -67,12 +67,12 @@ export default function TransactionsPage() {
                       <TableCell>
                         <Badge 
                           variant={
-                            tx.status === "COMPLETED" ? "default" : 
-                            tx.status === "PENDING" ? "secondary" : "destructive"
+                            tx.status === "completed" ? "default" : 
+                            tx.status === "pending" ? "secondary" : "destructive"
                           }
                           className={
-                            tx.status === "COMPLETED" ? "bg-green-100 text-green-700 hover:bg-green-200" :
-                            tx.status === "PENDING" ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200" : ""
+                            tx.status === "completed" ? "bg-green-100 text-green-700 hover:bg-green-200" :
+                            tx.status === "pending" ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200" : ""
                           }
                         >
                           {tx.status}

@@ -21,7 +21,7 @@ export function useAuth() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: Pick<InsertUser, "username" | "password">) => {
+    mutationFn: async (credentials: { username: string; password: string }) => {
       const res = await fetch(api.auth.login.path, {
         method: api.auth.login.method,
         headers: { "Content-Type": "application/json" },

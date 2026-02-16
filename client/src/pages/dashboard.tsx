@@ -69,11 +69,11 @@ export default function Dashboard() {
             />
             <StatCard 
               title="Risk Alerts" 
-              value={stats?.riskAlerts || 0} 
+              value={stats?.riskAlerts ?? 0} 
               icon={AlertTriangle}
-              trend={stats?.riskAlerts > 0 ? "down" : "neutral"}
+              trend={(stats?.riskAlerts ?? 0) > 0 ? "down" : "neutral"}
               trendValue="Low"
-              className={stats?.riskAlerts > 0 ? "border-red-500/30 bg-red-50/50" : ""}
+              className={(stats?.riskAlerts ?? 0) > 0 ? "border-red-500/30 bg-red-50/50" : ""}
             />
             <StatCard 
               title="Verified Docs" 

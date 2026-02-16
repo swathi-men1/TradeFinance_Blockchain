@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, FileText, Download, Eye, ShieldCheck } from "lucide-react";
+import { Plus, Search, FileText, Download, Eye, ShieldCheck, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -39,9 +39,10 @@ async function sha256(message: string) {
 }
 
 const docFormSchema = z.object({
-  docType: z.enum(["LOC", "INVOICE", "BILL_OF_LADING", "PO"]),
+  docType: z.enum(["LOC", "INVOICE", "BILL_OF_LADING", "PO", "COO", "INSURANCE_CERT"]),
   docNumber: z.string().min(1, "Document number is required"),
   fileUrl: z.string().url("Must be a valid URL"), // In real app, this would be file upload
+  issuedAt: z.string().min(1, "Issued date is required"),
 });
 
 export default function DocumentsPage() {
@@ -56,6 +57,7 @@ export default function DocumentsPage() {
       docType: "INVOICE",
       docNumber: "",
       fileUrl: "https://example.com/document.pdf",
+      issuedAt: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -121,6 +123,8 @@ export default function DocumentsPage() {
                           <SelectItem value="LOC">Letter of Credit</SelectItem>
                           <SelectItem value="BILL_OF_LADING">Bill of Lading</SelectItem>
                           <SelectItem value="PO">Purchase Order</SelectItem>
+                          <SelectItem value="COO">Certificate of Origin</SelectItem>
+                          <SelectItem value="INSURANCE_CERT">Insurance Certificate</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -150,6 +154,20 @@ export default function DocumentsPage() {
                       <FormLabel>File URL (Simulated)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="issuedAt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Issued Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -26,7 +26,8 @@ export default function RiskPage() {
             <div className="col-span-full text-center">Loading risk profiles...</div>
           ) : (
             riskScores?.map((risk) => {
-              const level = getRiskLevel(risk.score);
+              const scoreNum = Number(risk.score);
+              const level = getRiskLevel(scoreNum);
               return (
                 <Card key={risk.id} className="hover:shadow-lg transition-all duration-300">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -36,11 +37,11 @@ export default function RiskPage() {
                     <Shield className={`h-4 w-4 ${level.color}`} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{risk.score}/100</div>
+                    <div className="text-2xl font-bold">{scoreNum}/100</div>
                     <p className={`text-xs ${level.color} font-medium mb-4`}>
                       {level.label}
                     </p>
-                    <Progress value={risk.score} className={`h-2 ${level.bg}`} />
+                    <Progress value={scoreNum} className={`h-2 ${level.bg}`} />
                     
                     <div className="mt-4 text-sm text-muted-foreground bg-muted p-3 rounded-md">
                       <p className="font-medium text-foreground mb-1">AI Rationale:</p>
