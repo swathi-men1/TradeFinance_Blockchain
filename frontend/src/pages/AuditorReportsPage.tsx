@@ -66,11 +66,46 @@ export default function AuditorReportsPage() {
   }, []);
 
   const loadReports = async () => {
-    // In a real app with persistent reports, we would fetch the list here.
-    // For now, we'll just keep the initial state empty or mock if needed.
-    // To show "something" initially, we can leave the mock data or removed it.
-    // Let's keep a mock report for demonstration, but properly typed.
-    setLoading(false);
+    try {
+      setLoading(true);
+
+      // Default to last 30 days
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
+
+      // Set default date range in UI
+      setDateRange({
+        start: startStr,
+        end: endStr
+      });
+
+      // Generate initial System Overview report
+      const reportData = await auditorService.generateAuditReport({
+        report_type: 'audit_summary',
+        start_date: startStr,
+        end_date: endStr
+      });
+
+      const newReport: ExtendedAuditReport = {
+        ...reportData,
+        report_type: 'audit_summary',
+        filterParams: {
+          start_date: startStr,
+          end_date: endStr
+        }
+      };
+
+      setReports([newReport]);
+    } catch (error) {
+      console.error("Failed to load initial report", error);
+      // We don't show a visible error on initial load to avoid annoyance if backend is waking up
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGenerateReport = async () => {
@@ -312,7 +347,7 @@ export default function AuditorReportsPage() {
                       Generated: {new Date(report.generated_at).toLocaleString()}
                     </p>
                     <p className="text-xs text-muted">
-                      Period: {report.summary ? 'System Overview' : 'Custom Report'}
+                      Period: {(report as any).filterParams?.start_date} to {(report as any).filterParams?.end_date}
                     </p>
                   </div>
                 </div>

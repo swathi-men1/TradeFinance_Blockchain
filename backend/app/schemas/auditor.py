@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, date  # <--- Added 'date'
 from app.models.compliance_alert import AlertType, AlertStatus, Severity
 from app.models.ledger import LedgerAction
 
@@ -128,8 +128,9 @@ class ReportType(str):
 
 
 class ReportFilter(BaseModel):
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    # CHANGED: datetime -> date to accept "YYYY-MM-DD" from frontend
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     document_id: Optional[int] = None
     trade_id: Optional[int] = None
     user_id: Optional[int] = None

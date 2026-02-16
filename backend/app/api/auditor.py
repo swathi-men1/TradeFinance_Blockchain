@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 from app.db.session import get_db
 from app.api.deps import get_current_user, require_roles
 from app.models.user import User, UserRole
@@ -329,8 +329,9 @@ def detect_suspicious_patterns(
 # Compliance Reporting Endpoints
 @router.get("/reports", response_model=ReportResponse)
 def generate_audit_report(
-    start_date: Optional[datetime] = Query(None, description="Report start date"),
-    end_date: Optional[datetime] = Query(None, description="Report end date"),
+    report_type: Optional[str] = Query(None, description="Type of report to generate"),
+    start_date: Optional[date] = Query(None, description="Report start date (YYYY-MM-DD)"),
+    end_date: Optional[date] = Query(None, description="Report end date (YYYY-MM-DD)"),
     document_id: Optional[int] = Query(None, description="Filter by specific document"),
     trade_id: Optional[int] = Query(None, description="Filter by specific trade"),
     user_id: Optional[int] = Query(None, description="Filter by specific user"),
@@ -350,6 +351,7 @@ def generate_audit_report(
     - Optional entity filtering (document, trade, user)
     """
     filters = {
+        "report_type": report_type,
         "start_date": start_date,
         "end_date": end_date,
         "document_id": document_id,
