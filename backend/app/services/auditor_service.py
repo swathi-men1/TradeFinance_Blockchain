@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, date
 import boto3
 from io import StringIO
 import csv
@@ -523,14 +523,22 @@ class AuditorService:
         alert_query = db.query(ComplianceAlert)
 
         if filters.get('start_date'):
-            doc_query = doc_query.filter(Document.created_at >= filters['start_date'])
-            trade_query = trade_query.filter(TradeTransaction.created_at >= filters['start_date'])
-            alert_query = alert_query.filter(ComplianceAlert.detected_at >= filters['start_date'])
+            start_date = filters['start_date']
+            if isinstance(start_date, date) and not isinstance(start_date, datetime):
+                start_date = datetime.combine(start_date, datetime.min.time())
+            
+            doc_query = doc_query.filter(Document.created_at >= start_date)
+            trade_query = trade_query.filter(TradeTransaction.created_at >= start_date)
+            alert_query = alert_query.filter(ComplianceAlert.detected_at >= start_date)
 
         if filters.get('end_date'):
-            doc_query = doc_query.filter(Document.created_at <= filters['end_date'])
-            trade_query = trade_query.filter(TradeTransaction.created_at <= filters['end_date'])
-            alert_query = alert_query.filter(ComplianceAlert.detected_at <= filters['end_date'])
+            end_date = filters['end_date']
+            if isinstance(end_date, date) and not isinstance(end_date, datetime):
+                end_date = datetime.combine(end_date, datetime.max.time())
+                
+            doc_query = doc_query.filter(Document.created_at <= end_date)
+            trade_query = trade_query.filter(TradeTransaction.created_at <= end_date)
+            alert_query = alert_query.filter(ComplianceAlert.detected_at <= end_date)
 
         # Calculate summary statistics
         total_documents = doc_query.count()
@@ -782,11 +790,14 @@ class AuditorService:
             ]))
             elements.append(t_docs)
 
+
         # Build PDF
         try:
             doc.build(elements)
             pdf_value = buffer.getvalue()
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {
                 "content": str(e).encode(),
                 "filename": "error.txt",
@@ -795,9 +806,12 @@ class AuditorService:
         finally:
             buffer.close()
 
+        # Handle None report_type gracefully
+        safe_report_type = report_type or "audit"
+        
         return {
             "content": pdf_value,
-            "filename": f"{report_type}_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf",
+            "filename": f"{safe_report_type}_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf",
             "format": "PDF"
         }
 
