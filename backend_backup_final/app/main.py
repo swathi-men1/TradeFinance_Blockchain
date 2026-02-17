@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import hashlib
 import os
 
@@ -21,8 +21,9 @@ from .utils import log_action
 app = FastAPI(title="Trade Finance Blockchain Explorer")
 
 # -------------------------
-# CORS
+# CORS CONFIG
 # -------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,12 +32,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# -------------------------
+# HEALTH CHECK (REPLIT NEEDS THIS FAST)
+# -------------------------
+
+
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
 
 # -------------------------
-# INTEGRITY JOB
+# LEDGER INTEGRITY CHECK JOB
 # -------------------------
+
+
 def verify_ledger_integrity():
     db: Session = SessionLocal()
+
     try:
         entries = db.query(LedgerEntry).order_by(
             LedgerEntry.created_at.asc()).all()
@@ -65,6 +78,9 @@ def verify_ledger_integrity():
 
             previous_hash = entry.current_hash
 
+    except Exception:
+        pass
+
     finally:
         db.close()
 
@@ -72,6 +88,8 @@ def verify_ledger_integrity():
 # -------------------------
 # STARTUP
 # -------------------------
+
+
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
@@ -82,31 +100,36 @@ def startup():
 
 
 # -------------------------
-# INCLUDE API ROUTES
+# API ROUTERS
 # -------------------------
-app.include_router(auth_routes.router, prefix="/api")
-app.include_router(document_routes.router, prefix="/api")
-app.include_router(ledger_routes.router, prefix="/api")
-app.include_router(transaction_routes.router, prefix="/api")
-app.include_router(analytics_routes.router, prefix="/api")
+
+app.include_router(auth_routes.router)
+app.include_router(document_routes.router)
+app.include_router(ledger_routes.router)
+app.include_router(transaction_routes.router)
+app.include_router(analytics_routes.router)
 
 # -------------------------
-# SERVE REACT BUILD
+# SERVE REACT BUILD UNDER /app
 # -------------------------
-FRONTEND_DIR = "client/dist"
+
+FRONTEND_DIR = "/home/runner/workspace/client/dist"
 
 if os.path.exists(FRONTEND_DIR):
 
+    # Static assets
     app.mount(
         "/assets",
         StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")),
         name="assets",
     )
 
-    @app.get("/")
-    async def serve_root():
+    # React entry point
+    @app.get("/app")
+    async def serve_app():
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
+    # React router fallback
+    @app.get("/app/{full_path:path}")
+    async def serve_app_routes(full_path: str):
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))

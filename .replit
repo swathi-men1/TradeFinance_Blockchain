@@ -2,17 +2,11 @@ modules = ["nodejs-20", "postgresql-16", "python-3.11", "web"]
 
 run = "uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
 
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+
 [nix]
 channel = "stable-24_05"
 
-[[ports]]
-localPort = 5175
-externalPort = 3000
-
-[[ports]]
-localPort = 8000
-externalPort = 80
-
 [deployment]
-deploymentTarget = "cloudrun"
-run = ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"]
+deploymentTarget = "autoscale"
+run = ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

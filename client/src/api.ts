@@ -1,5 +1,44 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Helper to attach JWT automatically
+function getAuthHeaders() {
+  const token = localStorage.getItem("access_token");
+
+  return token
+    ? {
+        Authorization: `Bearer ${token}`,
+      }
+    : {};
+}
+
+export async function apiRequest(
+  url: string,
+  method: string,
+  body?: any,
+  isFormData = false,
+) {
+  const headers: any = {
+    ...getAuthHeaders(),
+  };
+
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || "Request failed");
+  }
+
+  return response.json();
+}
+
 export const api = {
   auth: {
     login: { path: `${BASE_URL}/auth/login`, method: "POST" },
@@ -23,8 +62,9 @@ export const api = {
   },
 
   analytics: {
-    stats: { path: `${BASE_URL}/analytics/stats`, method: "GET" },
-    riskScores: { path: `${BASE_URL}/analytics/ri`, method: "GET" },
-    losk-scoresgs: { path: `${BASE_URL}/analytics/logs`, method: "GET" },
-  },
+  stats: { path: `${BASE_URL}/analytics/stats`, method: "GET" },
+  riskScores: { path: `${BASE_URL}/analytics/ri`,sk-scores method: "GET" },
+  logs: { path: `${BASE_URL}/analytics/logs`, method: "GET" },
+},
+
 };
