@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type Document, type InsertDocument, type LedgerEntry } from "@shared/schema";
+import {
+  api,
+  buildUrl,
+  type Document,
+  type InsertDocument,
+  type LedgerEntry,
+} from "../api";
 import { useToast } from "@/hooks/use-toast";
 
 export function useDocuments() {
@@ -37,16 +43,23 @@ export function useCreateDocument() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(doc),
       });
-      
+
       if (!res.ok) throw new Error("Failed to create document");
       return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.documents.list.path] });
-      toast({ title: "Document Uploaded", description: "Successfully added to the blockchain ledger" });
+      toast({
+        title: "Document Uploaded",
+        description: "Successfully added to the blockchain ledger",
+      });
     },
     onError: (err) => {
-      toast({ variant: "destructive", title: "Upload Failed", description: err.message });
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: err.message,
+      });
     },
   });
 }

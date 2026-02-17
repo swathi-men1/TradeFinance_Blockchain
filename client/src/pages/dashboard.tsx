@@ -55,7 +55,7 @@ export default function Dashboard() {
           <>
             <StatCard 
               title="Total Volume" 
-              value={stats?.totalVolume || "$0.00"} 
+              value={stats?.totalVolume.replace('$', 'Rs. ') || "Rs. 0.00"} 
               icon={DollarSign}
               trend="up"
               trendValue="+12%"

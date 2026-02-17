@@ -59,9 +59,9 @@ export default function TransactionsPage() {
                       <TableCell>Buyer #{tx.buyerId}</TableCell>
                       <TableCell>Seller #{tx.sellerId}</TableCell>
                       <TableCell className="font-bold">
-                        {new Intl.NumberFormat('en-US', { 
+                        {new Intl.NumberFormat('en-IN', { 
                           style: 'currency', 
-                          currency: tx.currency 
+                          currency: 'INR' 
                         }).format(Number(tx.amount))}
                       </TableCell>
                       <TableCell>
