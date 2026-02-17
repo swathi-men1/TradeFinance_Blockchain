@@ -33,6 +33,16 @@ app.add_middleware(
 )
 
 # -------------------------
+# HEALTH CHECK (REPLIT NEEDS THIS FAST)
+# -------------------------
+
+
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
+
+# -------------------------
 # LEDGER INTEGRITY CHECK JOB
 # -------------------------
 
@@ -100,26 +110,26 @@ app.include_router(transaction_routes.router)
 app.include_router(analytics_routes.router)
 
 # -------------------------
-# SERVE REACT BUILD
+# SERVE REACT BUILD UNDER /app
 # -------------------------
 
 FRONTEND_DIR = "/home/runner/workspace/client/dist"
 
 if os.path.exists(FRONTEND_DIR):
 
-    # Serve static assets
+    # Static assets
     app.mount(
         "/assets",
         StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")),
         name="assets",
     )
 
-    # Serve React root
-    @app.get("/")
-    async def serve_root():
+    # React entry point
+    @app.get("/app")
+    async def serve_app():
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-    # Serve React for all other routes
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
+    # React router fallback
+    @app.get("/app/{full_path:path}")
+    async def serve_app_routes(full_path: str):
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
