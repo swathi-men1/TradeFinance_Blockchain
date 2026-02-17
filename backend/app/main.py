@@ -76,10 +76,6 @@ def verify_ledger_integrity():
 def startup():
     Base.metadata.create_all(bind=engine)
 
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(verify_ledger_integrity, "interval", minutes=5)
-    scheduler.start()
-
 
 # -------------------------
 # INCLUDE API ROUTES
