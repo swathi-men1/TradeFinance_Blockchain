@@ -1,0 +1,20 @@
+TRADE FINANCE INVOICE
+
+Invoice No: INV-001
+Date: 28-Jan-2026
+
+Exporter: ABC Exports Pvt Ltd
+Importer: XYZ Imports LLC
+
+Goods Description:
+Electronic Components
+
+Quantity: 100 units
+Unit Price: $50
+Total Amount: $5000
+
+Payment Terms:
+Letter of Credit (LC)
+
+This document is generated for testing
+the Trade Finance Blockchain system.

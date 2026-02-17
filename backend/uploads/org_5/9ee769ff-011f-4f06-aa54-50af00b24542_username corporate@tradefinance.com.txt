@@ -1,0 +1,49 @@
+username: corporate@tradefinance.com
+password: Corporate@123
+
+
+username: admin@tradefinance.com
+password: Admin@123
+
+organization 
+{
+  "name": "TradeFinance Corp",
+  "org_type": "corporate"
+}
+
+"C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d tradefinance
+ minio.exe server D:\minio-data --console-address ":9001"
+
+http://127.0.0.1:9001
+
+
+{
+  "email": "corporate@abcexport.com",
+  "password": "Corp@123",
+  "org_id": 5
+}
+
+{
+  "email": "bank@globaltradebank.com",
+  "password": "Bank@123",
+  "org_id": 6
+}
+
+{
+  "email": "auditor@compliancegroup.com",
+  "password": "Audit@123",
+  "org_id": 7
+}
+
+{
+  "email": "admin@tradefinance.com",
+  "password": "Admin@123",
+  "org_id": 1
+}
+
+SELECT * FROM organizations;
+SELECT id, email, role, org_id FROM users;
+
+
+
+

@@ -1,0 +1,20 @@
+Ledger ID,Entity Type,Entity ID,Action,Previous Hash,Current Hash,Actor ID,Created At,Exported By
+573c5017-4927-4b2e-905d-4eae6c890631,trade,9690e06b-168b-4cad-a589-1b7c707a47f0,CREATE,,TRADE_CREATED,7,2026-02-12 19:23:47.904886,auditor@compliancegroup.com
+6f7f8171-5f57-4a6c-9018-51f934aed2d8,trade,9690e06b-168b-4cad-a589-1b7c707a47f0,STATUS_UPDATE,,STATUS_yet to be checked,7,2026-02-12 19:24:25.314930,auditor@compliancegroup.com
+bc7a1909-ed30-4386-8067-f66f0b8bb3f1,trade,9690e06b-168b-4cad-a589-1b7c707a47f0,STATUS_UPDATE,,STATUS_approved,7,2026-02-12 19:24:54.275854,auditor@compliancegroup.com
+32f560bc-b6ba-4152-af32-f3a5b01b8af1,trade,6780f452-2749-4140-a816-ba8a4c51e0a3,CREATE,,TRADE_CREATED,5,2026-02-12 22:09:01.693321,auditor@compliancegroup.com
+f1bd2e6b-afd9-41ad-8901-c9b10b51b18a,trade,6780f452-2749-4140-a816-ba8a4c51e0a3,STATUS_UPDATE,,STATUS_APPROVED,5,2026-02-12 22:09:35.290668,auditor@compliancegroup.com
+218df9e7-1ab4-49f8-9d7d-d76a3aca7ec1,trade,6b2486af-c1f9-44b2-9dd9-42395d9fc4c9,CREATE,,TRADE_CREATED,5,2026-02-12 22:26:04.208412,auditor@compliancegroup.com
+54ca2ace-7a74-48f6-ab62-50c7e788cb01,trade,6b2486af-c1f9-44b2-9dd9-42395d9fc4c9,STATUS_UPDATE,,STATUS_APPROVED,5,2026-02-12 22:26:33.761164,auditor@compliancegroup.com
+7efbef99-a451-4915-bacb-f7904b010967,trade,1cf7dd51-c325-4495-a689-e8f0931c2df7,CREATE,,TRADE_CREATED,5,2026-02-12 22:49:48.884651,auditor@compliancegroup.com
+a80066d7-7492-4bb6-a32d-5d77c0719f70,trade,1cf7dd51-c325-4495-a689-e8f0931c2df7,STATUS_UPDATE,,STATUS_TAMPERED,5,2026-02-12 22:50:12.924828,auditor@compliancegroup.com
+915bb167-6998-415b-a18e-0fdfde525431,document,3c2c1af8-6c4a-4cf6-bede-669ed294ebc7,verify,STATUS_TAMPERED,VERIFY_VALID,11,2026-02-15 11:38:28.563106,auditor@compliancegroup.com
+16349f2e-6f2b-45d8-bbb9-13c15e46571e,document,7109417a-ce2c-443a-988d-07d4361b1590,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:30.747082,auditor@compliancegroup.com
+fff457a7-6b76-4e66-81c4-ef82f415e096,document,e371debf-1dbb-4b10-a251-0e23ac1ab78b,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:33.793743,auditor@compliancegroup.com
+ffdc0b90-fab4-4d93-98a1-9839ab3bd850,document,f831fcd8-a2b1-4c0a-a80b-d5976ea39efb,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:35.240501,auditor@compliancegroup.com
+0c623f38-991e-4b4e-923a-9090f2e75916,document,dcbbe4a0-e786-4b73-ad9e-e9e296768630,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:41.636894,auditor@compliancegroup.com
+717e2197-d775-455b-9c87-3b55473f7830,document,32fd09d6-4297-46c4-86ac-f323c3ddc9c8,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:43.274641,auditor@compliancegroup.com
+2ea6f2f0-5525-4482-b466-1320cb8e4ad0,document,6c832c8e-18c4-439b-822d-57ddf7ea49d4,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:49.129793,auditor@compliancegroup.com
+461654a7-a4cf-4210-8433-e799beae5c16,document,3f8a04fc-0093-4f57-a83b-7a2c70d09ca6,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:50.180360,auditor@compliancegroup.com
+fbaa9775-6b5b-421f-934b-ae79f2d73626,document,3f8a04fc-0093-4f57-a83b-7a2c70d09ca6,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:54.316243,auditor@compliancegroup.com
+4a7736f5-1766-42be-af7a-aa9171bd7207,document,3f8a04fc-0093-4f57-a83b-7a2c70d09ca6,verify,VERIFY_VALID,VERIFY_VALID,11,2026-02-15 11:38:55.410033,auditor@compliancegroup.com
