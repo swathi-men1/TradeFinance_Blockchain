@@ -1,56 +1,42 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
-import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/auth";
-import Dashboard from "@/pages/dashboard";
-import DocumentsPage from "@/pages/documents";
-import TransactionsPage from "@/pages/transactions";
-import RiskPage from "@/pages/risk";
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { user, isLoading } = useAuth();
+const queryClient = new QueryClient();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0A1A3C]">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-      </div>
-    );
+type ProtectedProps = {
+  children: React.ReactNode;
+};
+
+function ProtectedRoute({ children }: ProtectedProps) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
 
-  if (!user) {
-    return <AuthPage />;
-  }
-
-  return <Component />;
-}
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
-      <Route path="/documents" component={() => <ProtectedRoute component={DocumentsPage} />} />
-      <Route path="/transactions" component={() => <ProtectedRoute component={TransactionsPage} />} />
-      <Route path="/risk" component={() => <ProtectedRoute component={RiskPage} />} />
-      <Route component={NotFound} />
-    </Switch>
-  );
+  return <>{children}</>;
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
