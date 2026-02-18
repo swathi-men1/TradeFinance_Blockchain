@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5em;
+        }
+
+        .navbar button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .navbar button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #f0f4ff;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.pending { background: #fff3cd; color: #856404; }
+        .badge.accepted { background: #d4edda; color: #155724; }
+        .badge.rejected { background: #f8d7da; color: #721c24; }
+        .badge.tampered { background: #f8d7da; color: #721c24; }
+        .badge.verified { background: #d4edda; color: #155724; }
+        .badge.low { background: #d4edda; color: #155724; }
+        .badge.medium { background: #fff3cd; color: #856404; }
+        .badge.high { background: #f8d7da; color: #721c24; }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button.secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏦 Trade Finance - Corporate Dashboard</h1>
+        <div>
+            <span id="userEmail" style="margin-right: 20px;"></span>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Documents</h3>
+                <div class="value" id="totalDocs">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Verification</h3>
+                <div class="value" id="pendingDocs">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Risk Score</h3>
+                <div class="value" id="riskScore">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Risk Level</h3>
+                <div class="value" id="riskLevel">LOW</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Upload Document</h2>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <h3>📁 Click to upload or drag and drop</h3>
+                <p>PDF, Word, Excel, Images (Max 16MB)</p>
+                <input type="file" id="fileInput" onchange="uploadFile()">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>My Documents</h2>
+            <div id="documentsContainer">
+                <div class="empty-state">
+                    <h3>No documents uploaded yet</h3>
+                    <p>Upload your first document to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        const token = localStorage.getItem('token');
+        const email = localStorage.getItem('email');
+
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        document.getElementById('userEmail').textContent = email;
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_URL}/upload-document`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Document uploaded successfully!', 'success');
+                    fileInput.value = '';
+                    loadDocuments();
+                    loadRiskScore();
+                } else {
+                    showAlert(data.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch(`${API_URL}/my-documents`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const documents = await response.json();
+
+                const container = document.getElementById('documentsContainer');
+                
+                if (documents.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No documents uploaded yet</h3>
+                            <p>Upload your first document to get started</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Upload Date</th>
+                                    <th>Status</th>
+                                    <th>Integrity</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${documents.map(doc => `
+                                    <tr>
+                                        <td>${doc.filename}</td>
+                                        <td>${new Date(doc.upload_date).toLocaleDateString()}</td>
+                                        <td><span class="badge ${doc.status.toLowerCase()}">${doc.status}</span></td>
+                                        <td><span class="badge ${doc.is_tampered ? 'tampered' : 'verified'}">${doc.is_tampered ? 'TAMPERED' : 'VERIFIED'}</span></td>
+                                        <td>${(doc.file_size / 1024).toFixed(2)} KB</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="secondary" onclick="viewDocument(${doc.id})">View</button>
+                                                <button class="danger" onclick="deleteDocument(${doc.id})">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                // Update stats
+                document.getElementById('totalDocs').textContent = documents.length;
+                document.getElementById('pendingDocs').textContent = documents.filter(d => d.status === 'PENDING').length;
+            } catch (error) {
+                showAlert('Failed to load documents', 'error');
+            }
+        }
+
+        async function loadRiskScore() {
+            try {
+                const response = await fetch(`${API_URL}/users/${email}/risk-score`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('riskScore').textContent = data.risk_score.toFixed(2);
+                    document.getElementById('riskLevel').textContent = data.risk_level;
+                    document.getElementById('riskLevel').className = `value badge ${data.risk_level.toLowerCase()}`;
+                }
+            } catch (error) {
+                console.error('Failed to load risk score');
+            }
+        }
+
+        function viewDocument(docId) {
+            window.open(`${API_URL}/documents/${docId}/preview`, '_blank');
+        }
+
+        async function deleteDocument(docId) {
+            if (!confirm('Are you sure you want to delete this document?')) return;
+
+            const reason = prompt('Please provide a reason for deletion:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`${API_URL}/documents/${docId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Document deleted successfully', 'success');
+                    loadDocuments();
+                    loadRiskScore();
+                } else {
+                    showAlert(data.error || 'Delete failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Load data on page load
+        loadDocuments();
+        loadRiskScore();
+    </script>
+</body>
+</html>

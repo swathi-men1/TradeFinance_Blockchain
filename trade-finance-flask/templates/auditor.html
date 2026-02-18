@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar h1 { font-size: 1.5em; }
+        .navbar button { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
+        .navbar button:hover { background: white; color: #667eea; }
+        .container { max-width: 1600px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card h2 { margin-bottom: 20px; color: #333; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f8f9fa; font-weight: 600; color: #333; }
+        tr:hover { background: #f8f9fa; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .badge.pending { background: #fff3cd; color: #856404; }
+        .badge.accepted { background: #d4edda; color: #155724; }
+        .badge.rejected { background: #f8d7da; color: #721c24; }
+        .badge.tampered { background: #f8d7da; color: #721c24; }
+        .badge.verified { background: #d4edda; color: #155724; }
+        button.secondary { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .alert.error { background: #f8d7da; color: #721c24; }
+        .alert.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🔍 Trade Finance - Auditor Dashboard (Read-Only)</h1>
+        <div>
+            <span id="userEmail" style="margin-right: 20px;"></span>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+        <div class="card">
+            <h2>All Documents (Read-Only Access)</h2>
+            <div id="documentsContainer">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        const token = localStorage.getItem('token');
+        const email = localStorage.getItem('email');
+
+        if (!token) window.location.href = '/';
+        document.getElementById('userEmail').textContent = email;
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch(`${API_URL}/documents`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const documents = await response.json();
+                const container = document.getElementById('documentsContainer');
+                
+                container.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Uploaded By</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                                <th>Integrity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${documents.map(doc => `
+                                <tr>
+                                    <td>${doc.filename}</td>
+                                    <td>${doc.uploaded_by}</td>
+                                    <td>${new Date(doc.upload_date).toLocaleDateString()}</td>
+                                    <td><span class="badge ${doc.status.toLowerCase()}">${doc.status}</span></td>
+                                    <td><span class="badge ${doc.is_tampered ? 'tampered' : 'verified'}">${doc.is_tampered ? 'TAMPERED' : 'VERIFIED'}</span></td>
+                                    <td>
+                                        <button class="secondary" onclick="viewDocument(${doc.id})">View</button>
+                                        <button class="secondary" onclick="viewLedger(${doc.id})">Ledger</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById('alert').textContent = 'Failed to load documents';
+                document.getElementById('alert').className = 'alert error show';
+            }
+        }
+
+        function viewDocument(docId) {
+            window.open(`${API_URL}/documents/${docId}/preview`, '_blank');
+        }
+
+        async function viewLedger(docId) {
+            try {
+                const response = await fetch(`${API_URL}/documents/${docId}/ledger`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const ledger = await response.json();
+                alert(JSON.stringify(ledger, null, 2));
+            } catch (error) {
+                alert('Failed to load ledger');
+            }
+        }
+
+        loadDocuments();
+    </script>
+</body>
+</html>
