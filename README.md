@@ -1,242 +1,280 @@
-# Trade Finance Document Verification & Risk Scoring System
+# Trade Finance Document Management System
 
 ## Overview
 
-This project is a **Trade Finance Document Management System** designed to ensure secure handling of trade-related documents through:
+Trade Finance Document Management System is a secure web application designed to manage trade-related documents such as Letters of Credit, Bills of Lading, Commercial Invoices, and Export/Import documents.
 
-- Hash-based integrity verification (Tamper Detection)
-- Ledger-based audit logging
-- Rule-based user risk scoring
+The system ensures secure handling of documents through:
 
-The system supports multiple roles such as **Corporate**, **Bank**, **Auditor**, and **Admin**, ensuring proper access control, transparency, and compliance readiness.
+- SHA-256 based tamper detection
+- Ledger-based audit trail logging
+- Soft delete with quarantine storage
+- Rule-based risk scoring (0–100)
+- Role-based access control (Corporate / Bank / Auditor / Admin)
+
+This project was developed under the Infosys Springboard Internship Program and deployed as a fully operational web application.
+
+---
+
+## Developer Information
+
+Developer: M.V. Ramya  
+Program: Infosys Springboard Internship  
+Timeline: December 2025 – February 2026 (8 Weeks)  
+Status: Production Deployed and Operational  
+Email: mvramya2003@gmail.com
+
+---
+
+## Live Application
+
+Live URL: https://trade-finance-flask.onrender.com
+
+---
+
+## Problem Statement
+
+Trade finance involves high-value international transactions that rely heavily on document authenticity. Traditional systems often lack strong tamper detection mechanisms, transparent audit trails, and automated risk monitoring.
+
+This system aims to solve these problems using cryptographic hashing, audit ledger tracking, and automated risk scoring.
 
 ---
 
 ## Objectives
 
-- Enable secure upload and management of trade finance documents
+- Secure upload and management of trade finance documents
 - Detect tampering using SHA-256 hash verification
-- Maintain a complete audit trail of all critical operations using ledger logs
-- Implement soft deletion using quarantine storage instead of permanent deletion
-- Calculate user risk score (0–100) using backend rule-based logic
-- Support role-based access control (RBAC) for secure workflows
-
----
-
-## Roles & Access Control
-
-### Corporate User
-
-- Upload trade finance documents
-- View uploaded documents and their verification status
-- Delete only their own documents (soft delete)
-- View personal risk score details
-
-### Bank User
-
-- View all active trade documents
-- Update document verification status (**PENDING / ACCEPTED / REJECTED**)
-- View ledger history for any document
-- Soft delete documents when required
-
-### Auditor
-
-- Read-only role
-- View all active documents
-- Verify document integrity status
-- View ledger history for audit purposes
-
-### Admin
-
-- View all documents including deleted ones
-- Restore soft deleted documents from quarantine
-- Monitor users and system-level activity
-
----
-
-## Key Features
-
-### 1. Authentication & Authorization
-
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Protected endpoints secured using Bearer token authentication
-
----
-
-### 2. Document Upload & Storage
-
-- Corporate users upload documents using `/upload-document`
-- Files are stored in the `uploads/` directory
-- Duplicate uploads are prevented using SHA-256 hash comparison
-
----
-
-### 3. Document Integrity Verification (Tamper Detection)
-
-- SHA-256 hash is generated during upload and stored in the database
-- During retrieval, the system recalculates hash from disk file
-- If mismatch is detected, the document is flagged as **tampered**
-
----
-
-### 4. Ledger Logging (Audit Trail)
-
-Every major action is recorded in the **LedgerEntry** table, including:
-
-- Document upload
-- Status update
-- Soft deletion
-- Restore operation
-
-Each ledger log contains:
-
-- Action performed
-- Actor email
-- Timestamp
-- Event metadata
-
----
-
-### 5. Soft Delete + Quarantine Mechanism
-
-Instead of permanent deletion:
-
-- Document is marked as deleted (`is_deleted = True`)
-- File is moved to the `quarantine/` folder
-- Metadata is stored:
-  - `deleted_by`
-  - `deleted_at`
-  - `delete_reason`
-
-This ensures audit compliance and supports restoration.
-
----
-
-### 6. Restore Functionality
-
-Admin / Bank users can restore deleted documents:
-
-- File is moved back to `uploads/`
-- Document becomes active again
-- Ledger entry is created for the restore action
-
----
-
-### 7. Rule-Based Risk Scoring (0–100)
-
-Risk scoring is calculated for users (primarily Corporate users).  
-This is a **rule-based system**, not machine learning.
-
-#### Risk Score Components
-
-| Category              | Weight |
-| --------------------- | ------ |
-| Document Integrity    | 40%    |
-| Ledger Activity       | 30%    |
-| Transaction Behavior  | 20%    |
-| External Country Risk | 10%    |
-
-#### Risk Levels
-
-- **LOW**: 0 – 30
-- **MEDIUM**: 31 – 70
-- **HIGH**: 71 – 100
-
-#### Risk Score Fields Stored in Users Table
-
-- `risk_score`
-- `risk_level`
-- `risk_reason`
-- `risk_updated_at`
-
-#### Risk Score Recalculation Triggers
-
-Risk score is recalculated automatically when:
-
-- A document is uploaded
-- A document is deleted (soft delete)
-- A document is restored
-- Bank updates document status
-- A transaction is created/updated
+- Maintain a permanent audit ledger of critical actions
+- Implement soft deletion using quarantine storage
+- Provide rule-based risk scoring for users
+- Ensure secure access using JWT and role-based access control
+- Support deployment-ready architecture with PostgreSQL
 
 ---
 
 ## Technology Stack
 
-- **Backend:** FastAPI (Python)
-- **Database:** PostgreSQL
-- **ORM:** SQLAlchemy
-- **Authentication:** JWT (OAuth2PasswordBearer)
-- **Frontend:** HTML, CSS, JavaScript
-- **Hashing Algorithm:** SHA-256
+Backend: Flask (Python)  
+Database: PostgreSQL (Production), SQLite (Development)  
+ORM: SQLAlchemy  
+Authentication: JWT  
+Hash Algorithm: SHA-256  
+Frontend: HTML, CSS, JavaScript  
+Deployment: Render  
+Production Server: Gunicorn
+
+---
+
+## Security Implementation
+
+Password Security:
+
+- Passwords are stored using PBKDF2 hashing
+- 260,000 iterations with random salt
+
+Authentication:
+
+- JWT token-based authentication
+- Token expiration enforced (24 hours)
+
+Authorization:
+
+- Role-based access control is implemented at backend level
+- Data is filtered based on user role and ownership
+
+---
+
+## User Roles
+
+Corporate User:
+
+- Upload documents
+- View their own uploaded documents
+- Soft delete only their own documents
+- View personal risk score
+
+Bank User:
+
+- View all documents
+- Verify and update document status (PENDING, ACCEPTED, REJECTED)
+- View ledger history
+- Soft delete documents with reason
+
+Auditor:
+
+- Read-only access
+- View all documents
+- View integrity verification results
+- View ledger history
+
+Admin:
+
+- View all documents including deleted documents
+- Restore quarantined documents
+- Monitor system activity
+
+---
+
+## Key Features
+
+1. Document Upload and Storage
+
+- Corporate users upload documents via /upload-document
+- Files are stored in uploads/
+- Duplicate uploads are prevented using SHA-256 hash comparison
+
+2. SHA-256 Tamper Detection
+
+- Hash is calculated during upload and stored in database
+- Hash is recalculated during retrieval and compared
+- If mismatch occurs, the document is flagged as tampered
+
+3. Ledger Audit Logging
+   All major actions are recorded in the ledger:
+
+- Upload
+- Status update
+- Soft delete
+- Restore
+- Tamper detection
+
+Ledger is append-only, ensuring audit integrity.
+
+4. Document Verification Workflow
+
+- Every uploaded document starts in PENDING status
+- Bank user verifies and updates status to ACCEPTED or REJECTED
+- Every status update is logged in the ledger
+
+5. Soft Delete and Quarantine
+   Instead of permanent deletion:
+
+- Document is marked as deleted
+- File is moved to quarantine/
+- Metadata is stored such as deleted_by, deleted_at, and delete_reason
+
+6. Restore Functionality
+   Admin and Bank users can restore deleted documents:
+
+- File moved back from quarantine/ to uploads/
+- Document becomes active again
+- Restore action is logged in ledger
+
+7. Rule-Based Risk Scoring (0–100)
+   Risk score is calculated using weighted factors:
+
+Document Integrity: 40%  
+Ledger Activity: 30%  
+Transaction Behavior: 20%  
+External Country Risk: 10%
+
+Risk Levels:
+
+- LOW: 0 – 30
+- MEDIUM: 31 – 70
+- HIGH: 71 – 100
+
+Risk Score Fields Stored:
+
+- risk_score
+- risk_level
+- risk_reason
+- risk_updated_at
+
+Risk score is recalculated automatically when:
+
+- Document upload
+- Document delete
+- Document restore
+- Bank status update
+- Transaction changes
 
 ---
 
 ## API Endpoints
 
-### Authentication
+Authentication:
 
-| Method | Endpoint  | Description                 |
-| ------ | --------- | --------------------------- |
-| POST   | `/signup` | Register new corporate user |
-| POST   | `/login`  | Login and receive JWT token |
+- POST /signup
+- POST /login
 
-### Documents
+Documents:
 
-| Method | Endpoint                      | Description                             |
-| ------ | ----------------------------- | --------------------------------------- |
-| POST   | `/upload-document`            | Upload document (Corporate only)        |
-| GET    | `/my-documents`               | View corporate user documents           |
-| GET    | `/documents`                  | View all documents (Admin/Bank/Auditor) |
-| PUT    | `/documents/{doc_id}/status`  | Update status (Bank only)               |
-| DELETE | `/documents/{doc_id}`         | Soft delete (Admin/Bank/Corporate)      |
-| PUT    | `/documents/{doc_id}/restore` | Restore from quarantine (Admin/Bank)    |
-| GET    | `/documents/{doc_id}/preview` | Preview document (Public)               |
+- POST /upload-document
+- GET /my-documents
+- GET /documents
+- PUT /documents/{doc_id}/status
+- DELETE /documents/{doc_id}
+- PUT /documents/{doc_id}/restore
+- GET /documents/{doc_id}/preview
 
-### Ledger
+Ledger:
 
-| Method | Endpoint                     | Description         |
-| ------ | ---------------------------- | ------------------- |
-| GET    | `/documents/{doc_id}/ledger` | View ledger history |
+- GET /documents/{doc_id}/ledger
 
-### Risk Scoring
+Risk Scoring:
 
-| Method | Endpoint                    | Description                      |
-| ------ | --------------------------- | -------------------------------- |
-| GET    | `/users/{email}/risk-score` | Fetch and recalculate risk score |
+- GET /users/{email}/risk-score
 
 ---
 
 ## Frontend Pages
 
-- `login.html`
-- `corporate.html`
-- `bank.html`
-- `auditor.html`
-- `admin.html`
+- login.html
+- corporate.html
+- bank.html
+- auditor.html
+- admin.html
 
 ---
 
 ## Application Workflow
 
-1. Corporate user logs in and uploads a document
-2. Backend stores the file and generates SHA-256 hash
+1. Corporate logs in and uploads a document
+2. SHA-256 hash is generated and stored
 3. Ledger entry is created for upload action
-4. Bank user verifies the document and updates status
+4. Bank verifies document and updates status
 5. Auditor reviews ledger and integrity results
-6. Deleted documents are moved to quarantine (soft delete)
+6. Deleted documents are moved to quarantine
 7. Admin/Bank can restore deleted documents
-8. Risk score recalculates automatically after major actions
+8. Risk score recalculates after every major action
+
+---
+
+## Deployment Journey
+
+Timeline: December 2025 to February 2026 (8 Weeks)
+
+Month 1:
+
+- Research and architecture planning
+- Database schema finalized
+- Authentication and RBAC implemented
+- Document upload and integrity verification completed
+- Ledger and dashboards developed
+
+Month 2:
+
+- Risk scoring implemented
+- Testing and debugging
+- PostgreSQL migration for production
+- Render deployment configuration completed
+- Production deployment issues resolved
+
+Final deployment is stable and operational.
 
 ---
 
 ## How to Run Locally
 
-### Backend Setup
+Install dependencies:
 
 ```bash
-cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+Run application:
+python app.py
+
+Contact:
+Developer: M.Venkata Ramya
+Email: mvramya2003@gmail.com
 ```
