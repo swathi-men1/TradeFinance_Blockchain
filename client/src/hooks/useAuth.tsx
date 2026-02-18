@@ -1,5 +1,5 @@
-import { create } from "zustand"; // Wait, user said no extra libraries, but I need a simple state or just use context. I'll use simple React Context for Auth.
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import api from "../api/axios";
 
 interface User {

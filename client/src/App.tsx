@@ -6,8 +6,9 @@ import DocumentsPage from "./pages/DocumentsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import RiskPage from "./pages/RiskPage";
 import LogsPage from "./pages/LogsPage";
+import type { ReactNode } from "react";
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
