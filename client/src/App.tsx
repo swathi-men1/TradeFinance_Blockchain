@@ -1,56 +1,52 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { useAuth } from "./hooks/useAuth";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import DocumentsPage from "./pages/DocumentsPage";
-import type { ReactNode } from "react";
+import TransactionsPage from "./pages/TransactionsPage";
+import RiskPage from "./pages/RiskPage";
+import LogsPage from "./pages/LogsPage";
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) return null;
-
-  if (!user) return <Navigate to="/login" replace />;
-
-  return <>{children}</>;
-}
-
-function AppRoutes() {
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/documents"
-        element={
-          <ProtectedRoute>
-            <DocumentsPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <nav style={{ width: "200px", borderRight: "1px solid #ccc", padding: "1rem" }}>
+        <h3>Menu</h3>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          <li><Link to="/">Dashboard</Link></li>
+          <li><Link to="/documents">Documents</Link></li>
+          <li><Link to="/transactions">Transactions</Link></li>
+          <li><Link to="/risk">Risk Analysis</Link></li>
+          <li><Link to="/logs">System Logs</Link></li>
+        </ul>
+        <button onClick={() => {
+          localStorage.removeItem("access_token");
+          window.location.href = "/login";
+        }}>Logout</button>
+      </nav>
+      <main style={{ flex: 1, padding: "2rem" }}>
+        {children}
+      </main>
+    </div>
   );
 }
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+          <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+          <Route path="/risk" element={<ProtectedRoute><RiskPage /></ProtectedRoute>} />
+          <Route path="/logs" element={<ProtectedRoute><LogsPage /></ProtectedRoute>} />
+        </Routes>
       </BrowserRouter>
-    </QueryClientProvider>
+    </AuthProvider>
   );
 }

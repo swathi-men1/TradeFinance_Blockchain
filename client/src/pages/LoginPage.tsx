@@ -1,50 +1,41 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
-  const { login, isLoggingIn } = useAuth();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({ email, password });
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      login(res.data.access_token);
+      navigate("/");
+    } catch (err) {
+      setError("Invalid credentials");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A1A3C] text-white">
-      <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl w-96 shadow-xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Trade Finance Explorer
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 rounded bg-white/5 border border-white/20 focus:outline-none"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 rounded bg-white/5 border border-white/20 focus:outline-none"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            disabled={isLoggingIn}
-            className="w-full bg-cyan-500 hover:bg-cyan-600 p-3 rounded font-semibold"
-          >
-            {isLoggingIn ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
-      </div>
+    <div style={{ maxWidth: "400px", margin: "100px auto", padding: "2rem", border: "1px solid #ccc" }}>
+      <h2>Login</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Email:</label><br />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%" }} />
+        </div>
+        <div style={{ marginBottom: "1rem" }}>
+          <label>Password:</label><br />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: "100%" }} />
+        </div>
+        <button type="submit" style={{ width: "100%" }}>Login</button>
+      </form>
     </div>
   );
 }

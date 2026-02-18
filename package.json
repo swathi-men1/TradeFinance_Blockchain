@@ -11,6 +11,9 @@
   "description": "",
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@tanstack/react-query": "^5.90.21",
+    "axios": "^1.13.5",
+    "react-router-dom": "^7.13.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7"
   }
