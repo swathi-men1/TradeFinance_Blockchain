@@ -1,0 +1,61 @@
+Hi Team,
+
+This is a reminder that 20th February 2026 is the final deadline to submit your complete project code.
+
+Please ensure that all project files are uploaded to your assigned GitHub branch before the deadline.
+
+Mandatory Requirements
+Kindly make sure the following are completed:
+
+Update the README file with a clear and brief explanation of the work you have done.
+
+Add the deployment link to the README.
+
+ Include relevant screenshots of your model/output.
+
+ Confirm that your assigned branch contains the complete code and updated README.
+
+Repository Link: https://github.com/swathi-men1/TradeFinance_Blockchain
+
+On 20th February, I will be sharing your respective branches with the Infosys Team.
+
+Please note that certificates will be issued based on your GitHub submission and attendance percentage only. Failure to complete the submission within the deadline will result in non-issuance of certificates.
+
+Final Presentation Details
+Demo rehearsals will be conducted between 23rd – 26th February 2026.
+There will be no rescheduling under any circumstances.
+
+The final presentation is not mandatory for everyone. Only those who are:
+
+Technically strong
+
+Confident in communication
+
+Well-prepared on the project
+
+can volunteer to present.
+
+Important Points:
+Presentation must be delivered as a team of 5 members.
+
+Discuss within your group and share the names by today without fail. 
+
+As a team, you must decide the best project for presentation. The selected project should clearly meet all the given requirements, have proper UI, strong features and fully align with the project objectives.
+
+Demo rehearsal is compulsory before the final presentation.
+
+Presentation Structure (15 Minutes Total):
+5 mins: PPT Overview
+
+5 mins: Live Demo (Run the project beforehand; no code walkthrough)
+
+5 mins: Q&A Session (Be well-prepared)
+
+These steps are mandatory to properly document and evaluate your contribution.
+
+If you have already completed all requirements, kindly ignore this message. Otherwise, treat this as a priority and complete your submission at the earliest.
+
+Best regards,
+Swathi
+Mentor – Infosys Internship Program
+

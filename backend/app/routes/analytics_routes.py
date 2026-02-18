@@ -93,7 +93,7 @@ def get_dashboard_stats(
     risk_alerts = len([r for r in risks if float(r.score) > 70])
 
     return {
-        "totalVolume": f"${total_volume:,.2f}",
+        "totalVolume": f"Rs. {total_volume:,.2f}",
         "activeTrades": active_trades,
         "riskAlerts": risk_alerts,
     }
