@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Trade</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<div class="form-section">
+    <h1>Create Trade</h1>
+
+    <form id="tradeForm" onsubmit="event.preventDefault(); createTrade();">
+
+        <label>Seller</label>
+        <input type="text" id="seller" required>
+
+        <label>Product</label>
+        <input type="text" id="product" required>
+
+        <label>Quantity</label>
+        <input type="number" id="quantity" required>
+
+        <label>Price</label>
+        <input type="number" id="price" required>
+
+        <button type="submit">Create Trade</button>
+
+        <p id="msg" class="success"></p>
+    </form>
+</div>
+
+<script>
+async function createTrade() {
+    const seller = document.getElementById("seller").value.trim();
+    const product = document.getElementById("product").value.trim();
+    const quantity = document.getElementById("quantity").value;
+    const price = document.getElementById("price").value;
+
+    if (!seller || !product || !quantity || !price) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/trade", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                seller: seller,
+                product: product,
+                quantity: parseInt(quantity),
+                price: parseFloat(price)
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail || "Trade creation failed");
+            return;
+        }
+
+        // ✅ Save trade_id
+        localStorage.setItem("trade_id", data.trade_id);
+
+        // ✅ Show trade_id to user
+        document.getElementById("msg").innerText =
+            "Trade created successfully. Trade ID: " + data.trade_id;
+
+        // ✅ Redirect after short delay
+        setTimeout(() => {
+            window.location.href = "upload_document.html";
+        }, 1200);
+
+    } catch (error) {
+        console.error(error);
+        alert("Backend not reachable");
+    }
+}
+</script>
+
+</body>
+</html>

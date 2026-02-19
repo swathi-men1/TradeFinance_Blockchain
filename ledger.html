@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ledger</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+<script>
+const role = localStorage.getItem("role");
+
+if (role !== "auditor") {
+    window.location.href = "login.html";
+}
+</script>
+<h1>Ledger</h1>
+
+<table class="trades-table" id="ledgerTable">
+    <tr>
+        <th>Action</th>
+        <th>Details</th>
+        <th>Time</th>
+    </tr>
+</table>
+
+<script>
+async function loadLedger() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/ledger");
+
+        if (!res.ok) {
+            const data = await res.json();
+            document.body.innerHTML =
+                `<h2 style="color:red">${data.detail}</h2>`;
+            return;
+        }
+
+        const ledger = await res.json();
+        const table = document.getElementById("ledgerTable");
+
+        ledger.reverse().forEach(l => {
+            const row = table.insertRow();
+
+            row.insertCell().innerText = l.action;
+
+            const d = row.insertCell();
+            d.innerText = l.details;
+
+            if (l.action === "TAMPER_DETECTED") {
+                d.style.color = "red";
+                d.style.fontWeight = "bold";
+            }
+
+            row.insertCell().innerText = l.timestamp || "—";
+        });
+
+    } catch (err) {
+        console.error(err);
+        document.body.innerHTML =
+            "<h2 style='color:red'>Backend not reachable</h2>";
+    }
+}
+
+window.onload = loadLedger;
+</script>
+
+</body>
+</html>
