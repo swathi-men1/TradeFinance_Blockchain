@@ -1,0 +1,119 @@
+# Functional Requirements Specification (FRS)
+# Project: Trade Finance Blockchain Explorer
+# Developer: Abdul Samad
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: trade_finance_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: trade_finance
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - trade_finance_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO (S3-compatible object storage)
+  minio:
+    image: minio/minio:latest
+    container_name: trade_finance_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9400:9000"
+      - "9401:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - trade_finance_network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Client (Create bucket on startup)
+  minio-setup:
+    platform: linux/amd64
+    image: minio/mc:latest
+    container_name: trade_finance_minio_setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c " sleep 10; /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin; /usr/bin/mc mb myminio/trade-finance-documents || true; /usr/bin/mc anonymous set download myminio/trade-finance-documents; exit 0; "
+    networks:
+      - trade_finance_network
+
+  # Backend (FastAPI)
+  backend:
+    platform: linux/amd64
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trade_finance_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/trade_finance
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_DB: trade_finance
+      SECRET_KEY: your-secret-key-change-this-in-production-min-32-characters
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_REGION: us-east-1
+      S3_BUCKET_NAME: trade-finance-documents
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9400
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173","http://localhost:80","http://localhost"]'
+      DEBUG: "True"
+    ports:
+      - "8000:8000"
+    networks:
+      - trade_finance_network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    platform: linux/amd64
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trade_finance_frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - "80:80"
+    networks:
+      - trade_finance_network
+    restart: unless-stopped
+
+networks:
+  trade_finance_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
