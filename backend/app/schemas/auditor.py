@@ -21,7 +21,6 @@ class DocumentVerificationResponse(BaseModel):
 
 
 class DocumentFlagRequest(BaseModel):
-    document_id: int
     reason: str
 
 

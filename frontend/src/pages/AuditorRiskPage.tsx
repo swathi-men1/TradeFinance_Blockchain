@@ -72,7 +72,7 @@ export default function AuditorRiskPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* User List */}
                 <div className="lg:col-span-1 space-y-4">
-                    <GlassCard className="h-[600px] flex flex-col">
+                    <GlassCard className="h-[650px] flex flex-col">
                         <h3 className="text-xl font-bold text-white mb-4">Entities</h3>
                         <div className="overflow-y-auto flex-1 space-y-2 pr-2 custom-scrollbar">
                             {loading ? (
@@ -104,7 +104,7 @@ export default function AuditorRiskPage() {
 
                 {/* Risk Details */}
                 <div className="lg:col-span-2">
-                    <GlassCard className="h-[600px] overflow-y-auto custom-scrollbar">
+                    <GlassCard className="h-[650px] overflow-y-auto custom-scrollbar">
                         {!selectedRisk ? (
                             <div className="h-full flex flex-col items-center justify-center text-secondary opacity-50">
                                 <span className="text-4xl mb-4">📊</span>
@@ -136,7 +136,7 @@ export default function AuditorRiskPage() {
 
                                 <div>
                                     <h3 className="text-lg font-bold text-white mb-2">Risk Rationale</h3>
-                                    <div className="bg-dark/40 p-4 rounded-xl border border-gray-700">
+                                    <div className="bg-dark/40 p-4 rounded-xl border border-gray-700 max-h-[240px] overflow-y-auto custom-scrollbar">
                                         {selectedRisk.rationale ? (
                                             <div className="space-y-3 text-sm text-gray-300">
                                                 {selectedRisk.rationale.split('\n').map((line, idx) => {

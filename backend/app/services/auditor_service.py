@@ -272,7 +272,7 @@ class AuditorService:
 
             # Check for duplicates (excluding VERIFIED and system actions)
             if entry.action in [LedgerAction.ISSUED, LedgerAction.AMENDED, LedgerAction.SHIPPED,
-                               LedgerAction.RECEIVED, LedgerAction.PAID]:
+                                LedgerAction.RECEIVED, LedgerAction.PAID]:
                 if entry.action in seen_actions:
                     duplicate_actions.append(entry.action.value)
                     is_valid = False
@@ -647,7 +647,7 @@ class AuditorService:
         }
 
         return {
-            "report_type": "AUDIT",
+            "report_type": filters.get("report_type", "AUDIT"),
             "generated_at": datetime.utcnow(),
             "generated_by": auditor.name,
             "summary": summary,
@@ -667,6 +667,11 @@ class AuditorService:
         filters: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Generate and export report in specified format"""
+        # Ensure filters pass report_type
+        if filters is None:
+            filters = {}
+        filters["report_type"] = report_type
+        
         report = AuditorService.generate_audit_report(db, auditor, filters)
 
         if format.upper() == "CSV":
@@ -701,7 +706,7 @@ class AuditorService:
             }
 
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        pdf_doc = SimpleDocTemplate(buffer, pagesize=letter)  # Renamed 'doc' to 'pdf_doc' to avoid shadowing
         elements = []
         styles = getSampleStyleSheet()
 
@@ -773,12 +778,15 @@ class AuditorService:
             elements.append(Spacer(1, 12))
             
             doc_data = [["Doc #", "Verified At", "Valid", "Flagged"]]
-            for doc_ver in report['document_verifications'][:20]: # Limit for PDF readability
+            
+            # Use 'verification' instead of 'doc' to avoid shadowing variable if necessary, 
+            # but more importantly, 'pdf_doc' is safe now.
+            for verification in report['document_verifications'][:20]: 
                 doc_data.append([
-                    doc_ver['doc_number'],
-                    str(doc_ver['verified_at'])[:19],
-                    "Yes" if doc_ver['is_valid'] else "NO",
-                    "Yes" if doc_ver['flagged'] else "No"
+                    verification['doc_number'],
+                    str(verification['verified_at'])[:19],
+                    "Yes" if verification['is_valid'] else "NO",
+                    "Yes" if verification['flagged'] else "No"
                 ])
             
             t_docs = Table(doc_data, colWidths=[100, 150, 60, 60])
@@ -793,7 +801,7 @@ class AuditorService:
 
         # Build PDF
         try:
-            doc.build(elements)
+            pdf_doc.build(elements) # Use the correct variable 'pdf_doc'
             pdf_value = buffer.getvalue()
         except Exception as e:
             import traceback

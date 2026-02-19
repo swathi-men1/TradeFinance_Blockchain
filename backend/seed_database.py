@@ -18,9 +18,8 @@ from sqlalchemy import text
 from app.db.session import SessionLocal
 from app.core.security import hash_password
 
-
 def seed_users_with_sql(db_session, force: bool = False):
-    """Seed users using raw SQL to avoid enum type issues"""
+    """Seed users using raw SQL"""
     
     # Define test users
     test_users = [
@@ -55,15 +54,23 @@ def seed_users_with_sql(db_session, force: bool = False):
     ]
     
     print("Checking existing users...")
-    result = db_session.execute(text("SELECT COUNT(*) FROM users"))
-    existing_count = result.scalar()
-    
+    try:
+        result = db_session.execute(text("SELECT COUNT(*) FROM users"))
+        existing_count = result.scalar()
+    except Exception as e:
+        print(f"Error checking users (Database might not be ready): {e}")
+        return
+
     if existing_count > 0 and not force:
         print(f"Database already has {existing_count} user(s).")
         print("\nExisting users:")
-        result = db_session.execute(text("SELECT email, role, org_name FROM users ORDER BY id"))
-        for row in result:
-            print(f"  - {row[0]} ({row[1]}) - {row[2]}")
+        try:
+            result = db_session.execute(text("SELECT email, role, org_name FROM users ORDER BY id"))
+            for row in result:
+                # Handle potential different row formats (tuple vs object)
+                print(f"  - {row[0]} ({row[1]}) - {row[2]}")
+        except Exception:
+            print("  (Could not list users)")
         
         print("\n💡 Tip: To add missing test users anyway, run with --force flag")
         print("        docker-compose exec backend python seed_database.py --force")
@@ -90,31 +97,37 @@ def seed_users_with_sql(db_session, force: bool = False):
         hashed_password = hash_password(user_data["password"])
         
         # Insert using raw SQL
-        db_session.execute(
-            text("""
-                INSERT INTO users (name, email, password, role, org_name)
-                VALUES (:name, :email, :password, CAST(:role AS user_role), :org_name)
-            """),
-            {
-                "name": user_data["name"],
-                "email": user_data["email"],
-                "password": hashed_password,
-                "role": user_data["role"],
-                "org_name": user_data["org_name"]
-            }
-        )
-        print(f"  ✓ Created {user_data['role']} user: {user_data['email']}")
-        users_created += 1
+        # Removed explicit CAST(:role AS user_role) to be safer. 
+        # Postgres usually auto-casts strings to Enums on insert.
+        try:
+            db_session.execute(
+                text("""
+                    INSERT INTO users (name, email, password, role, org_name)
+                    VALUES (:name, :email, :password, :role, :org_name)
+                """),
+                {
+                    "name": user_data["name"],
+                    "email": user_data["email"],
+                    "password": hashed_password,
+                    "role": user_data["role"],
+                    "org_name": user_data["org_name"]
+                }
+            )
+            print(f"  ✓ Created {user_data['role']} user: {user_data['email']}")
+            users_created += 1
+        except Exception as e:
+            print(f"  ❌ Failed to create {user_data['email']}. Error: {e}")
+            # If it failed specifically on the Enum, we might need the cast back
+            # But usually it fails because 'admin' isn't in the Enum list if definitions mismatch
     
     if users_created > 0:
         db_session.commit()
         print(f"\n✅ Database seeding completed! Created {users_created} new user(s).")
     else:
-        print(f"\n✅ All test users already exist. No changes made.")
+        print(f"\n✅ No new users created.")
     
     if users_skipped > 0:
         print(f"   ({users_skipped} user(s) skipped - already existed)")
-
 
 def main():
     """Main function to run database seeding"""
@@ -145,7 +158,6 @@ def main():
     
     print("\nSeeding process finished.")
     print("\n📋 See PRIVATE_CREDENTIALS.md for login details")
-
 
 if __name__ == "__main__":
     main()

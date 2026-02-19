@@ -8,6 +8,7 @@ import { LedgerEntry } from '../types/ledger.types';
 import { LedgerTimeline } from '../components/LedgerTimeline';
 import { GlassCard } from '../components/GlassCard';
 import { formatDateShortIST } from '../utils/dateFormat';
+import auditorService, { DocumentVerificationResponse } from '../services/auditorService';
 
 export default function DocumentDetailsPage() {
     const { id } = useParams();
@@ -19,19 +20,56 @@ export default function DocumentDetailsPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<DocumentUpdate>({});
     const [saving, setSaving] = useState(false);
+
+    // Auditor specific state
+    const [verificationResult, setVerificationResult] = useState<DocumentVerificationResponse | null>(null);
+    const [flagReason, setFlagReason] = useState('');
+    const [showFlagModal, setShowFlagModal] = useState(false);
+    const [success, setSuccess] = useState('');
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const handleVerifyDocument = async () => {
         try {
             setVerifying(true);
-            const result = await documentService.verifyDocument(parseInt(id!));
-            const statusText = result.is_valid ? 'Verified' : 'Failed';
-            alert(`Verification Result: ${statusText}\nMessage: ${result.message || 'Integrity Verified'}`);
+            setVerificationResult(null);
+            setError('');
+            setSuccess('');
+
+            // Use auditor service for auditors, document service for others
+            if (user?.role === 'auditor') {
+                const result = await auditorService.verifyDocument(parseInt(id!));
+                setVerificationResult(result);
+                if (result.is_valid) {
+                    setSuccess(result.message);
+                } else {
+                    setError(result.message);
+                }
+            } else {
+                const result = await documentService.verifyDocument(parseInt(id!));
+                const statusText = result.is_valid ? 'Verified' : 'Failed';
+                alert(`Verification Result: ${statusText}\nMessage: ${result.message || 'Integrity Verified'}`);
+            }
         } catch (err: any) {
-            alert(`Verification Failed: ${err.response?.data?.detail || 'Unknown error'}`);
+            setError(err.response?.data?.detail || 'Verification failed');
+            if (user?.role !== 'auditor') {
+                alert(`Verification Failed: ${err.response?.data?.detail || 'Unknown error'}`);
+            }
         } finally {
             setVerifying(false);
+        }
+    };
+
+    const handleFlag = async () => {
+        if (!document || !flagReason.trim()) return;
+
+        try {
+            await auditorService.flagDocument(document.id, flagReason);
+            setSuccess(`Document ${document.doc_number} flagged for investigation`);
+            setShowFlagModal(false);
+            setFlagReason('');
+        } catch (err: any) {
+            setError(err.response?.data?.detail || 'Failed to flag document');
         }
     };
 
@@ -148,7 +186,7 @@ export default function DocumentDetailsPage() {
         );
     }
 
-    if (error || !document) {
+    if (!document) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <GlassCard className="text-center max-w-md">
@@ -220,6 +258,37 @@ export default function DocumentDetailsPage() {
                                 )}
                             </>
                         )}
+
+                        {/* Auditor Actions */}
+                        {user?.role === 'auditor' && (
+                            <>
+                                <button
+                                    onClick={handleVerifyDocument}
+                                    disabled={verifying}
+                                    className="btn-primary"
+                                >
+                                    {verifying ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                            Verifying...
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <span>🔍</span>
+                                            <span>Verify</span>
+                                        </>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => setShowFlagModal(true)}
+                                    className="btn-outline text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+                                >
+                                    <span>🚩</span>
+                                    <span>Flag</span>
+                                </button>
+                            </>
+                        )}
+
                         {!isEditing && (
                             <>
                                 <button onClick={handleViewFile} className="btn-outline text-cyan-400 border-cyan-400 hover:bg-cyan-400 hover:text-black">
@@ -235,6 +304,72 @@ export default function DocumentDetailsPage() {
                     </div>
                 </div>
             </div>
+
+
+            {/* Notifications */}
+            {
+                error && (
+                    <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-red-200 mb-6 flex justify-between items-center">
+                        <span>{error}</span>
+                        <button onClick={() => setError('')} className="text-sm hover:text-white">✕</button>
+                    </div>
+                )
+            }
+            {
+                success && (
+                    <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4 text-green-200 mb-6 flex justify-between items-center">
+                        <span>{success}</span>
+                        <button onClick={() => setSuccess('')} className="text-sm hover:text-white">✕</button>
+                    </div>
+                )
+            }
+
+            {/* Verification Result Card */}
+            {
+                verificationResult && (
+                    <GlassCard className={`mb-8 border-l-4 ${verificationResult.is_valid ? 'border-l-green-500' : 'border-l-red-500'}`}>
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-xl font-bold text-white">
+                                Verification Result
+                            </h3>
+                            <button onClick={() => setVerificationResult(null)} className="text-secondary hover:text-white">✕</button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p className="text-secondary text-sm">Document ID</p>
+                                <p className="text-white font-semibold">{verificationResult.document_id}</p>
+                            </div>
+                            <div>
+                                <p className="text-secondary text-sm">Status</p>
+                                <p className={`font-semibold ${verificationResult.is_valid ? 'text-green-400' : 'text-red-400'}`}>
+                                    {verificationResult.is_valid ? '✓ VERIFIED' : '✗ FAILED'}
+                                </p>
+                            </div>
+                            <div className="md:col-span-2">
+                                <p className="text-secondary text-sm">Stored Hash</p>
+                                <p className="text-white font-mono text-xs break-all bg-dark/30 p-2 rounded">{verificationResult.stored_hash}</p>
+                            </div>
+                            <div className="md:col-span-2">
+                                <p className="text-secondary text-sm">Current Hash</p>
+                                <p className="text-white font-mono text-xs break-all bg-dark/30 p-2 rounded">{verificationResult.current_hash}</p>
+                            </div>
+                        </div>
+                        <p className="text-white mb-4">{verificationResult.message}</p>
+
+                        {!verificationResult.is_valid && (
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setShowFlagModal(true)}
+                                    className="btn-primary bg-red-600 hover:bg-red-700"
+                                >
+                                    🚩 Flag for Investigation
+                                </button>
+                            </div>
+                        )}
+                    </GlassCard>
+                )
+            }
 
             {/* Document Metadata Card */}
             <GlassCard className="mb-8">
@@ -440,6 +575,47 @@ export default function DocumentDetailsPage() {
                     </div>
                 </div>
             </GlassCard>
-        </div>
+
+            {/* Flag Modal */}
+            {
+                showFlagModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <GlassCard className="max-w-md w-full mx-4">
+                            <h3 className="text-xl font-bold text-white mb-4">
+                                Flag Document for Investigation
+                            </h3>
+                            <p className="text-secondary mb-4">
+                                Document: {document.doc_number}
+                            </p>
+                            <textarea
+                                value={flagReason}
+                                onChange={(e) => setFlagReason(e.target.value)}
+                                placeholder="Enter reason for flagging this document..."
+                                className="input-field w-full mb-4"
+                                rows={4}
+                            />
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => {
+                                        setShowFlagModal(false);
+                                        setFlagReason('');
+                                    }}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleFlag}
+                                    disabled={!flagReason.trim()}
+                                    className="btn-primary bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                                >
+                                    Flag Document
+                                </button>
+                            </div>
+                        </GlassCard>
+                    </div>
+                )
+            }
+        </div >
     );
 }

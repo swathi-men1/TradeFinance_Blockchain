@@ -195,28 +195,7 @@ export default function AuditorDashboardPage() {
 
             {/* Quick Action Modules */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Document Verification */}
-                <Link to="/auditor/documents" className="block group">
-                    <GlassCard className="h-full hover:border-lime/50 transition-all">
-                        <div className="flex items-start gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-2xl">
-                                📋
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-lime transition-colors">
-                                    Document Verification
-                                </h3>
-                                <p className="text-secondary text-sm mb-4">
-                                    Verify document authenticity, check integrity hashes, and flag suspicious documents for investigation.
-                                </p>
-                                <div className="flex items-center text-lime text-sm">
-                                    <span>Verify Documents</span>
-                                    <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                                </div>
-                            </div>
-                        </div>
-                    </GlassCard>
-                </Link>
+
 
                 {/* Ledger Lifecycle */}
                 <Link to="/auditor/ledger" className="block group">
