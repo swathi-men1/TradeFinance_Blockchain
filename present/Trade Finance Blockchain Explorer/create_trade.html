@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Trade</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<div class="form-section">
+    <h1>Create Trade</h1>
+
+    <form id="tradeForm" onsubmit="createTrade(event);">
+
+        <label>Seller</label>
+        <input type="text" id="seller" required>
+
+        <label>Product</label>
+        <input type="text" id="product" required>
+
+        <label>Quantity</label>
+        <input type="number" id="quantity" required>
+
+        <label>Price</label>
+        <input type="number" id="price" required>
+
+        <button type="submit">Create Trade</button>
+
+        <p id="msg" class="success"></p>
+    </form>
+    <div id="tradeResult" class="success-message"></div>
+</div>
+
+<script>
+async function createTrade(event) {
+    event.preventDefault();
+
+    const seller = document.getElementById("seller").value.trim();
+    const product = document.getElementById("product").value.trim();
+    const quantity = document.getElementById("quantity").value;
+    const price = document.getElementById("price").value;
+
+    const tradeData = { seller, product, quantity, price };
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/trade", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-User": localStorage.getItem("username")
+            },
+            body: JSON.stringify(tradeData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail);
+            return;
+        }
+
+        // ✅ SHOW TRADE ID BELOW FORM
+        document.getElementById("tradeResult").innerHTML =
+            `Trade created successfully Trade ID: ${data.trade_id}`;
+
+        // optional: clear form
+        document.getElementById("tradeForm").reset();
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error");
+    }
+}
+</script>
+
+</body>
+</html>
