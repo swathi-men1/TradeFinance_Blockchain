@@ -32,6 +32,7 @@ from app.schemas.auditor import (
 )
 from app.schemas.document import DocumentResponse
 from app.schemas.trade import TradeResponse
+from app.schemas.ledger import LedgerEntryResponse
 
 router = APIRouter(prefix="/auditor", tags=["Auditor"])
 
@@ -135,6 +136,23 @@ def flag_document(
 
 
 # Ledger Lifecycle Endpoints
+@router.get("/ledger", response_model=List[LedgerEntryResponse])
+def get_full_ledger(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: User = Depends(require_roles([UserRole.AUDITOR])),
+    db: Session = Depends(get_db)
+):
+    """
+    Get full system ledger audit trail.
+    
+    - **AUDITOR** only
+    - Immutable sequence of all system actions
+    - Traceability of every event
+    """
+    return AuditorService.get_full_ledger(db, skip=skip, limit=limit)
+
+
 @router.get("/ledger/{document_id}/timeline", response_model=LedgerLifecycleResponse)
 def get_ledger_timeline(
     document_id: int,

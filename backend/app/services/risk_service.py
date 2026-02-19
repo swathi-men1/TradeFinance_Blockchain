@@ -130,7 +130,7 @@ class RiskService:
             RiskScore record (created or updated)
         """
         user = db.query(User).filter(User.id == user_id).first()
-        if not user:
+        if not user or user.role != UserRole.CORPORATE:
             return None
         
         # ===== Step 1: Collect Data =====
@@ -272,7 +272,7 @@ class RiskService:
         Called by admin endpoint for bulk recalculation.
         """
         users = db.query(User).filter(
-            User.role.in_([UserRole.CORPORATE, UserRole.BANK])
+            User.role == UserRole.CORPORATE
         ).all()
         
         count = 0

@@ -1,3 +1,5 @@
+export type UserRole = 'bank' | 'corporate' | 'auditor' | 'admin';
+
 export interface Organization {
     id: number;
     org_name: string;
@@ -10,7 +12,7 @@ export interface User {
     name: string;
     email: string;
     password?: string;
-    role: 'bank' | 'corporate' | 'auditor' | 'admin';
+    role: UserRole;
     org_name: string;
     is_active: boolean;
     user_code?: string;

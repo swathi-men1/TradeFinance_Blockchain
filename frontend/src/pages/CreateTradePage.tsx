@@ -67,9 +67,16 @@ export default function CreateTradePage() {
             return;
         }
 
-        // Role validation: current user must be buyer or seller (unless admin)
-        if (user?.role !== 'admin') {
-            const currentUserId = user?.id?.toString();
+        // Role validation
+        const currentUserId = user?.id?.toString();
+
+        if (user?.role === 'bank') {
+            if (buyerId === currentUserId || sellerId === currentUserId) {
+                setError("Bank users cannot be parties (buyer/seller) in a trade. Please enter Corporate User IDs.");
+                return;
+            }
+        } else if (user?.role !== 'admin') {
+            // Corporate users must be one of the parties
             if (buyerId !== currentUserId && sellerId !== currentUserId) {
                 setError(`You must be either the buyer or seller. Your User ID is: ${currentUserId}`);
                 return;
@@ -108,7 +115,7 @@ export default function CreateTradePage() {
             {/* Header */}
             <div className="mb-8">
                 <button
-                    onClick={() => navigate('/trades')}
+                    onClick={() => navigate(user?.role === 'bank' ? '/bank/trades' : '/trades')}
                     className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
                 >
                     <span>←</span>
@@ -133,7 +140,12 @@ export default function CreateTradePage() {
                     <p className="text-sm mt-2">
                         <strong>Your User Code: <span className="user-code user-code-large">{user?.user_code}</span></strong>
                     </p>
-                    {user?.role !== 'admin' && (
+                    {user?.role === 'bank' ? (
+                        <div className="mt-2 text-sm text-lime-400 bg-lime-900/20 p-2 rounded border border-lime-500/30">
+                            <strong>Note:</strong> This trade will be created between two Corporate Users.
+                            You are acting as the facilitating bank.
+                        </div>
+                    ) : user?.role !== 'admin' && (
                         <p className="text-sm mt-2">
                             ⚠️ <strong>Important:</strong> You must be either the buyer or seller in this trade.
                             Reference your User Code: <span className="user-code">{user?.user_code}</span>
@@ -166,8 +178,8 @@ export default function CreateTradePage() {
                             required
                         />
                         <p className="mt-2 text-xs text-muted">
-                            {user?.role === 'admin'
-                                ? 'Must be a Corporate or Bank user ID'
+                            {user?.role === 'admin' || user?.role === 'bank'
+                                ? 'Must be a Corporate User ID'
                                 : `Use your ID (${user?.id}) here if you're the buyer`}
                         </p>
                     </div>
@@ -186,8 +198,8 @@ export default function CreateTradePage() {
                             required
                         />
                         <p className="mt-2 text-xs text-muted">
-                            {user?.role === 'admin'
-                                ? 'Must be different from buyer and a Corporate or Bank user'
+                            {user?.role === 'admin' || user?.role === 'bank'
+                                ? 'Must be different from buyer and a Corporate User ID'
                                 : `Use your ID (${user?.id}) here if you're the seller`}
                         </p>
                     </div>
@@ -305,7 +317,13 @@ export default function CreateTradePage() {
                                 <span className="text-success">✓</span>
                                 <span>Blockchain ledger entry will be created automatically</span>
                             </li>
-                            {user?.role !== 'admin' && (
+                            {user?.role === 'bank' && (
+                                <li className="flex items-start gap-2">
+                                    <span className="text-info">ℹ️</span>
+                                    <span>Bank acts as facilitator (cannot be buyer/seller)</span>
+                                </li>
+                            )}
+                            {user?.role !== 'admin' && user?.role !== 'bank' && (
                                 <li className="flex items-start gap-2">
                                     <span className="text-warning">⚠️</span>
                                     <span>You must be either the buyer (#{buyerId || '___'}) or seller (#{sellerId || '___'})</span>
@@ -360,7 +378,7 @@ export default function CreateTradePage() {
                         <p className="text-white font-semibold mb-1">Q: What IDs should I use?</p>
                         <p className="text-sm">
                             A: Your User Code is <span className="user-code">{user?.user_code}</span>.
-                            {user?.role !== 'admin' && ' Please provide this to your trading partner.'}
+                            {user?.role !== 'admin' && user?.role !== 'bank' && ' Please provide this to your trading partner.'}
                             {' '}Contact your trading partner for their User Code for trade setup.
                         </p>
                     </div>
@@ -368,8 +386,8 @@ export default function CreateTradePage() {
                     <div>
                         <p className="text-white font-semibold mb-1">Q: Why am I getting "forbidden" errors?</p>
                         <p>
-                            A: {user?.role === 'admin'
-                                ? 'As admin, you can create any trade. Ensure buyer and seller are Corporate or Bank users.'
+                            A: {user?.role === 'admin' || user?.role === 'bank'
+                                ? 'As Bank/Admin, ensure buyer and seller are valid Corporate User IDs.'
                                 : `You must be either the buyer or seller. Your User Code is ${user?.user_code}.`}
                         </p>
                     </div>

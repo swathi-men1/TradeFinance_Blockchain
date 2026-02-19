@@ -25,6 +25,12 @@ class Document(Base):
     issued_at = Column(TIMESTAMP, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     
+    # New fields for Bank Oversight
+    filename = Column(String(255), nullable=True)
+    description = Column(String(500), nullable=True)
+    mime_type = Column(String(100), nullable=True)
+    size = Column(Integer, nullable=True)
+    
     # Relationships
     owner = relationship("User", backref="documents")
     ledger_entries = relationship("LedgerEntry", back_populates="document", cascade="all, delete-orphan")

@@ -210,7 +210,11 @@ export default function DocumentDetailsPage() {
             {/* Header */}
             <div className="mb-8">
                 <button
-                    onClick={() => navigate('/documents')}
+                    onClick={() => {
+                        if (user?.role === 'bank') navigate('/bank/documents');
+                        else if (user?.role === 'auditor') navigate('/auditor/documents');
+                        else navigate('/documents');
+                    }}
                     className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
                 >
                     <span>←</span>

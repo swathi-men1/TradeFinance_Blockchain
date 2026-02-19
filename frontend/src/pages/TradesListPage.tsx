@@ -66,7 +66,7 @@ export default function TradesListPage() {
                         {trades.length} trade{trades.length !== 1 ? 's' : ''} in total
                     </p>
                 </div>
-                {user?.role !== 'auditor' && (
+                {(user?.role === 'bank' || user?.role === 'admin') && (
                     <Link to="/trades/create" className="btn-primary">
                         <span>➕</span>
                         <span>Create Trade</span>
@@ -144,7 +144,7 @@ export default function TradesListPage() {
                             ? 'No trades match your search criteria'
                             : 'Create your first trade to get started'}
                     </p>
-                    {user?.role !== 'auditor' && !searchTerm && statusFilter === 'all' && (
+                    {(user?.role === 'bank' || user?.role === 'admin') && !searchTerm && statusFilter === 'all' && (
                         <Link to="/trades/create" className="btn-primary">
                             <span>➕</span>
                             <span>Create Trade</span>

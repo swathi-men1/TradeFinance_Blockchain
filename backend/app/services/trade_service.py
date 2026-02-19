@@ -60,19 +60,20 @@ class TradeService:
             )
         
         # Permission check: user must be either buyer or seller (unless admin)
-        if current_user.role not in [UserRole.ADMIN]:
+        # Permission check: user must be either buyer or seller (unless admin or bank)
+        if current_user.role not in [UserRole.ADMIN, UserRole.BANK]:
             if current_user.id != trade_data.buyer_id and current_user.id != trade_data.seller_id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You can only create trades where you are the buyer or seller"
                 )
         
-        # Validate roles: buyer and seller must be CORPORATE or BANK
+        # Validate roles: buyer and seller must be CORPORATE
         for user, role_name in [(buyer, "Buyer"), (seller, "Seller")]:
-            if user.role not in [UserRole.CORPORATE, UserRole.BANK]:
+            if user.role not in [UserRole.CORPORATE]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"{role_name} must be either Corporate or Bank user"
+                    detail=f"{role_name} must be a Corporate user"
                 )
         
         # Create trade
@@ -122,7 +123,7 @@ class TradeService:
         query = db.query(TradeTransaction)
         
         # Role-based filtering
-        if current_user.role in [UserRole.CORPORATE, UserRole.BANK]:
+        if current_user.role == UserRole.CORPORATE:
             # Can only see trades where they are buyer or seller
             query = query.filter(
                 or_(
@@ -130,10 +131,7 @@ class TradeService:
                     TradeTransaction.seller_id == current_user.id
                 )
             )
-        elif current_user.role == UserRole.AUDITOR:
-            # Can see all trades (read-only enforced at API level)
-            pass
-        elif current_user.role == UserRole.ADMIN:
+        elif current_user.role in [UserRole.BANK, UserRole.AUDITOR, UserRole.ADMIN]:
             # Can see all trades
             pass
         
@@ -151,7 +149,7 @@ class TradeService:
             )
         
         # Permission check
-        if current_user.role in [UserRole.CORPORATE, UserRole.BANK]:
+        if current_user.role == UserRole.CORPORATE:
             if trade.buyer_id != current_user.id and trade.seller_id != current_user.id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,

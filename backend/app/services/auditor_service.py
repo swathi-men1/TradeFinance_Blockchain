@@ -32,9 +32,29 @@ class AuditorService:
     ]
 
     @staticmethod
+    def get_full_ledger(db: Session, skip: int = 0, limit: int = 100) -> List[LedgerEntry]:
+        """Get full ledger audit trail"""
+        return db.query(LedgerEntry).order_by(LedgerEntry.created_at.desc()).offset(skip).limit(limit).all()
+
+    @staticmethod
     def get_all_documents(db: Session, skip: int = 0, limit: int = 100) -> List[Document]:
-        """Get all documents for auditor review"""
-        return db.query(Document).offset(skip).limit(limit).all()
+        """Get all documents for auditor review with verification status"""
+        documents = db.query(Document).offset(skip).limit(limit).all()
+        
+        for doc in documents:
+            # Check for verification ledger entry
+            verification = db.query(LedgerEntry).filter(
+                LedgerEntry.document_id == doc.id,
+                LedgerEntry.action == LedgerAction.VERIFIED
+            ).order_by(LedgerEntry.created_at.desc()).first()
+            
+            if verification:
+                is_valid = verification.entry_metadata.get("is_valid", True)
+                doc.verification_status = "VERIFIED" if is_valid else "FAILED"
+            else:
+                doc.verification_status = "PENDING"
+                
+        return documents
 
     @staticmethod
     def get_document_by_id(db: Session, document_id: int) -> Document:
@@ -241,6 +261,17 @@ class AuditorService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to retrieve file: {str(e)}"
             )
+
+    @staticmethod
+    def get_full_ledger(
+        db: Session,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[LedgerEntry]:
+        """Get full system ledger audit trail"""
+        return db.query(LedgerEntry).order_by(
+            LedgerEntry.created_at.desc()
+        ).offset(skip).limit(limit).all()
 
     @staticmethod
     def get_document_ledger_timeline(db: Session, document_id: int) -> Dict[str, Any]:

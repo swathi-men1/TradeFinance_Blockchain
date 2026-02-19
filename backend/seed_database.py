@@ -1,12 +1,6 @@
 """
 Database seeding script for Trade Finance Blockchain Explorer
-Creates test users for different roles: Admin, Corporate, Bank, Auditor
-
-Usage:
-    # Run inside Docker container:
-    docker-compose exec backend python seed_database.py
 """
-
 import sys
 import os
 from pathlib import Path
@@ -21,35 +15,38 @@ from app.core.security import hash_password
 def seed_users_with_sql(db_session, force: bool = False):
     """Seed users using raw SQL"""
     
-    # Define test users
     test_users = [
         {
             "name": "System Administrator",
             "email": "admin@tradefinance.com",
             "password": "admin123!@#",
             "role": "admin",
-            "org_name": "Trade Finance Platform"
+            "org_name": "Trade Finance Platform",
+            "user_code": "ADM-001"
         },
         {
             "name": "John Corporate",
             "email": "corporate@company.com",
             "password": "corporate123!@#",
             "role": "corporate",
-            "org_name": "Acme Corporation"
+            "org_name": "Acme Corporation",
+            "user_code": "CORP-001"
         },
         {
             "name": "Sarah Banking",
             "email": "bank@globalbank.com",
             "password": "bank123!@#",
             "role": "bank",
-            "org_name": "Global Bank Ltd"
+            "org_name": "Global Bank Ltd",
+            "user_code": "BANK-001"
         },
         {
             "name": "Michael Auditor",
             "email": "auditor@auditfirm.com",
             "password": "auditor123!@#",
             "role": "auditor",
-            "org_name": "Independent Audit Services"
+            "org_name": "Independent Audit Services",
+            "user_code": "AUD-001"
         }
     ]
     
@@ -58,106 +55,89 @@ def seed_users_with_sql(db_session, force: bool = False):
         result = db_session.execute(text("SELECT COUNT(*) FROM users"))
         existing_count = result.scalar()
     except Exception as e:
-        print(f"Error checking users (Database might not be ready): {e}")
+        print(f"Error checking users: {e}")
+        db_session.rollback()
         return
 
     if existing_count > 0 and not force:
-        print(f"Database already has {existing_count} user(s).")
-        print("\nExisting users:")
-        try:
-            result = db_session.execute(text("SELECT email, role, org_name FROM users ORDER BY id"))
-            for row in result:
-                # Handle potential different row formats (tuple vs object)
-                print(f"  - {row[0]} ({row[1]}) - {row[2]}")
-        except Exception:
-            print("  (Could not list users)")
-        
-        print("\n💡 Tip: To add missing test users anyway, run with --force flag")
-        print("        docker-compose exec backend python seed_database.py --force")
+        print(f"Database already has {existing_count} user(s). Run with --force to update.")
         return
     
-    print("\nCreating test users...")
+    print("\nCreating/Updating test users...")
     users_created = 0
-    users_skipped = 0
+    users_updated = 0
     
     for user_data in test_users:
-        # Check if user with this email already exists
-        result = db_session.execute(
-            text("SELECT COUNT(*) FROM users WHERE email = :email"),
-            {"email": user_data["email"]}
-        )
-        exists = result.scalar() > 0
-        
-        if exists:
-            print(f"  ⊘ Skipped {user_data['role']} user: {user_data['email']} (already exists)")
-            users_skipped += 1
-            continue
-        
-        # Hash the password
-        hashed_password = hash_password(user_data["password"])
-        
-        # Insert using raw SQL
-        # Removed explicit CAST(:role AS user_role) to be safer. 
-        # Postgres usually auto-casts strings to Enums on insert.
         try:
+            # Check if user with this email already exists
+            result = db_session.execute(
+                text("SELECT COUNT(*) FROM users WHERE email = :email"),
+                {"email": user_data["email"]}
+            )
+            exists = result.scalar() > 0
+            
+            hashed_password = hash_password(user_data["password"])
+
+            if exists:
+                if force:
+                    # Update password AND force is_active = true
+                    db_session.execute(
+                        text("""
+                            UPDATE users 
+                            SET password = :password, is_active = true 
+                            WHERE email = :email
+                        """),
+                        {"password": hashed_password, "email": user_data["email"]}
+                    )
+                    db_session.commit()
+                    print(f"  ↻ Updated and activated {user_data['role']}: {user_data['email']}")
+                    users_updated += 1
+                else:
+                    print(f"  ⊘ Skipped {user_data['role']}: {user_data['email']} (exists)")
+                continue
+            
+            # Insert new user with is_active = true
             db_session.execute(
                 text("""
-                    INSERT INTO users (name, email, password, role, org_name)
-                    VALUES (:name, :email, :password, :role, :org_name)
+                    INSERT INTO users (name, email, password, role, org_name, user_code, is_active)
+                    VALUES (:name, :email, :password, CAST(:role AS user_role), :org_name, :user_code, true)
                 """),
                 {
                     "name": user_data["name"],
                     "email": user_data["email"],
                     "password": hashed_password,
                     "role": user_data["role"],
-                    "org_name": user_data["org_name"]
+                    "org_name": user_data["org_name"],
+                    "user_code": user_data["user_code"]
                 }
             )
-            print(f"  ✓ Created {user_data['role']} user: {user_data['email']}")
+            db_session.commit()
+            print(f"  ✓ Created and activated {user_data['role']} user: {user_data['email']}")
             users_created += 1
+            
         except Exception as e:
-            print(f"  ❌ Failed to create {user_data['email']}. Error: {e}")
-            # If it failed specifically on the Enum, we might need the cast back
-            # But usually it fails because 'admin' isn't in the Enum list if definitions mismatch
+            print(f"  ❌ Failed to process {user_data['email']}. Error: {e}")
+            db_session.rollback() 
     
-    if users_created > 0:
-        db_session.commit()
-        print(f"\n✅ Database seeding completed! Created {users_created} new user(s).")
-    else:
-        print(f"\n✅ No new users created.")
-    
-    if users_skipped > 0:
-        print(f"   ({users_skipped} user(s) skipped - already existed)")
+    print(f"\n✅ Database seeding completed! Created {users_created} new, Updated {users_updated} existing.")
 
 def main():
-    """Main function to run database seeding"""
     print("=" * 60)
     print("Trade Finance Blockchain Explorer - Database Seeding")
     print("=" * 60)
-    print()
     
-    # Check for --force flag
     force = "--force" in sys.argv or "-f" in sys.argv
-    
-    if force:
-        print("⚠️  Force mode enabled - will add missing users\n")
-    
-    # Create database session
     db = SessionLocal()
     
     try:
         seed_users_with_sql(db, force=force)
     except Exception as e:
-        print(f"\n❌ Error during seeding: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print(f"\n❌ Fatal Error during seeding: {str(e)}")
         db.rollback()
-        raise
     finally:
         db.close()
     
     print("\nSeeding process finished.")
-    print("\n📋 See PRIVATE_CREDENTIALS.md for login details")
 
 if __name__ == "__main__":
     main()

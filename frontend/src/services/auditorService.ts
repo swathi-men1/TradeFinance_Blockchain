@@ -41,6 +41,18 @@ export interface LedgerLifecycleEvent {
   validation_notes?: string;
 }
 
+export interface LedgerEntry {
+  id: number;
+  action: string;
+  actor_id: number;
+  actor: { id: number; name: string };
+  document_id: number | null;
+  entry_metadata: Record<string, any>;
+  created_at: string;
+  previous_hash: string;
+  entry_hash: string;
+}
+
 export interface LedgerLifecycleResponse {
   document_id: number;
   document_number: string;
@@ -207,6 +219,11 @@ const auditorService = {
   },
 
   // Ledger Lifecycle
+  getFullLedger: async (skip = 0, limit = 100): Promise<LedgerEntry[]> => {
+    const response = await apiClient.get(`/auditor/ledger?skip=${skip}&limit=${limit}`);
+    return response.data;
+  },
+
   getLedgerTimeline: async (documentId: number): Promise<LedgerLifecycleResponse> => {
     const response = await apiClient.get(`/auditor/ledger/${documentId}/timeline`);
     return response.data;

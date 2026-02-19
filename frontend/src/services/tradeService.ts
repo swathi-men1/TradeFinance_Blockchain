@@ -46,5 +46,10 @@ export const tradeService = {
     getTradeDocuments: async (tradeId: number): Promise<Document[]> => {
         const response = await apiClient.get<Document[]>(`/trades/${tradeId}/documents`);
         return response.data;
+    },
+
+    disputeTrade: async (tradeId: number): Promise<Trade> => {
+        const response = await apiClient.post<Trade>(`/corporate/trades/${tradeId}/dispute`);
+        return response.data;
     }
 };

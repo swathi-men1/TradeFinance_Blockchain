@@ -8,7 +8,7 @@ import {
     IntegrityAlert
 } from '../types/admin.types';
 
-export type { Organization, User, AuditLog, SystemAnalytics, IntegrityAlert };
+export type { Organization, User, AuditLog, SystemAnalytics, IntegrityAlert, UserRole };
 
 
 export const adminService = {
@@ -54,9 +54,13 @@ export const adminService = {
     deleteUser: async (id: number) => {
         await api.delete(`/admin/users/${id}`);
     },
+    resetPassword: async (id: number): Promise<{ message: string; temp_password: string; user_id: number }> => {
+        const response = await api.post(`/admin/users/${id}/reset-password`);
+        return response.data;
+    },
 
     // Audit Logs
-    getAuditLogs: async (filters?: { user_id?: number, action?: string }) => {
+    getAuditLogs: async (filters?: { user_id?: number, action?: string, skip?: number, limit?: number }) => {
         const response = await api.get<AuditLog[]>('/admin/audit/logs', { params: filters });
         return response.data;
     },
@@ -68,6 +72,10 @@ export const adminService = {
     },
     getIntegrityAlerts: async () => {
         const response = await api.get<IntegrityAlert[]>('/admin/integrity/alerts');
+        return response.data;
+    },
+    getUserActivity: async (userId: number) => {
+        const response = await api.get(`/admin/users/${userId}/activity`);
         return response.data;
     }
 };

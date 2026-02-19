@@ -14,6 +14,10 @@ from app.schemas.risk import RiskScoreResponse
 from app.services.trade_service import TradeService
 from app.services.document_service import DocumentService
 from app.services.risk_service import RiskService
+from app.services.ledger_service import LedgerService
+
+from app.schemas.trade import TradeStatusUpdate
+from app.schemas.ledger import LedgerEntryResponse
 
 router = APIRouter(prefix="/corporate", tags=["Corporate Role"])
 
@@ -50,6 +54,26 @@ def get_transaction(
     # Enrich response if needed (e.g. counts)
     # Pydantic's from_attributes handles the conversion
     return trade
+
+@router.post("/trades/{trade_id}/dispute", response_model=TradeResponse)
+def dispute_trade(
+    trade_id: int,
+    current_user: User = Depends(require_roles([UserRole.CORPORATE])),
+    db: Session = Depends(get_db)
+):
+    """
+    Raise a dispute flag on a trade transaction.
+    
+    - Triggers ledger entry
+    - Triggers risk recalculation
+    - Cannot delete trade
+    """
+    return TradeService.update_trade_status(
+        db, 
+        current_user, 
+        trade_id, 
+        TradeStatusUpdate(status=TradeStatus.DISPUTED)
+    )
 
 
 # ==================================================================================
@@ -136,6 +160,26 @@ def get_counterparty_risk(
     if not score:
         raise HTTPException(status_code=404, detail="Risk score not found for this counterparty")
     return score
+
+
+# ==================================================================================
+# MODULE 5: Ledger Explorer (Read Only)
+# ==================================================================================
+
+@router.get("/ledger", response_model=List[LedgerEntryResponse])
+def get_my_ledger_activity(
+    limit: int = 50,
+    current_user: User = Depends(require_roles([UserRole.CORPORATE])),
+    db: Session = Depends(get_db)
+):
+    """
+    View ledger actions affecting the user (read-only).
+    
+    Includes:
+    - Actions performed by the user
+    - Actions performed on user's documents
+    """
+    return LedgerService.get_recent_activity(db, current_user, limit)
 
 
 # ==================================================================================

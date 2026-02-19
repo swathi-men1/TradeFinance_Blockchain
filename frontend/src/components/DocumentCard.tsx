@@ -26,7 +26,8 @@ export function DocumentCard({
     const statusConfig = {
         verified: { badge: 'badge-success', label: 'Verified', icon: '✓' },
         pending: { badge: 'badge-warning', label: 'Pending', icon: '⏳' },
-        invalid: { badge: 'badge-error', label: 'Invalid', icon: '✗' }
+        invalid: { badge: 'badge-error', label: 'Invalid', icon: '✗' },
+        failed: { badge: 'badge-error', label: 'Failed', icon: '✗' }
     };
 
     const config = statusConfig[status];

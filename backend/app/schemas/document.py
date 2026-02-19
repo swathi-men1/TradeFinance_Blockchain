@@ -30,6 +30,11 @@ class DocumentResponse(BaseModel):
     hash: str
     issued_at: datetime
     created_at: datetime
+    filename: Optional[str] = None
+    description: Optional[str] = None
+    mime_type: Optional[str] = None
+    size: Optional[int] = None
+    verification_status: Optional[str] = None
     
     class Config:
         from_attributes = True

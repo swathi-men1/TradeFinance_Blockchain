@@ -1,29 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import AdminOrgManagement from '../components/AdminOrgManagement';
-import AdminAuditLogs from '../components/AdminAuditLogs';
-
-// ... (existing imports, but replace_file_content works on chunks. I will do 2 chunks or one big replace if imports are close)
-
-// Actually, I can't easily insert imports AND change render in one `replace_file_content` block if they are far apart.
-// I'll do it in two steps or use multi_replace.
-
-// Let's use multi_replace or just use write_to_file if I am replacing a lot. 
-// DashboardPage is small enough to read, but `replace_file_content` is safer for preserving other parts.
-// I will use `replace_file_content` for the imports first, then the render.
-
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import RiskScoreWidget from '../components/RiskScoreWidget';
 import AdminStatsDashboard from '../components/AdminStatsDashboard';
 import AdminUserManagement from '../components/AdminUserManagementSimple';
 import AdminTradeManagement from '../components/AdminTradeManagement';
+import AdminOrgManagement from '../components/AdminOrgManagement';
+import AdminAuditLogs from '../components/AdminAuditLogs';
 import BankDashboard from '../components/BankDashboard';
 import CorporateDashboard from '../components/CorporateDashboard';
 import { StatCard } from '../components/StatCard';
 import { GlassCard } from '../components/GlassCard';
 import { tradeService } from '../services/tradeService';
 import { documentService } from '../services/documentService';
-
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -69,6 +58,16 @@ export default function DashboardPage() {
         return null;
     }
 
+    // STRICT: Bank Users have their own minimal console
+    if (user.role === 'bank') {
+        return <Navigate to="/bank/trades" replace />;
+    }
+
+    // Admin welcome page is the System Overview
+    if (user.role === 'admin') {
+        return <Navigate to="/admin/dashboard" replace />;
+    }
+
     // Determine dashboard type based on role
     const isDashboardCorporateOrBank = user.role === 'corporate' || user.role === 'bank';
     const isDashboardAuditor = user.role === 'auditor';
@@ -98,17 +97,14 @@ export default function DashboardPage() {
                 </div>
             </GlassCard>
 
-            {/* Risk Score Widget - Corporate & Bank Only - Keep general widget for convenience or fallback */}
+            {/* Risk Score Widget - Corporate & Bank Only */}
             {isDashboardCorporateOrBank && !isDashboardCorporate && (
                 <div className="mb-8">
                     <RiskScoreWidget />
                 </div>
             )}
 
-            {/* For Corporate, we use the integrated dashboard risk view, so hidden here unless desired */}
-            {/* Actually, the prompt says "Risk Insight Viewer" module. CorporateDashboard includes it. */}
-
-            {/* Admin Dashboard */}
+            {/* Dashboards */}
             {isDashboardAdmin ? (
                 <div className="mb-8 space-y-8">
                     <AdminStatsDashboard />
@@ -117,12 +113,10 @@ export default function DashboardPage() {
                     <AdminTradeManagement />
                 </div>
             ) : isDashboardBank ? (
-                /* Bank Dashboard */
                 <div className="mb-8">
                     <BankDashboard />
                 </div>
             ) : isDashboardCorporate ? (
-                /* Corporate Dashboard */
                 <div className="mb-8">
                     <CorporateDashboard />
                 </div>
@@ -152,70 +146,54 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* Quick Action Cards */}
-            <div className="mb-12">
-                <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    Quick Actions
-                </h2>
+            {/* Quick Action Cards - Hidden for Corporate */}
+            {!isDashboardCorporate && (
+                <div className="mb-12">
+                    <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        Quick Actions
+                    </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* View Documents - All Roles */}
-                    <Link to="/documents" className="block group">
-                        <GlassCard>
-                            <div className="text-5xl mb-4">📚</div>
-                            <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                View Documents
-                            </h3>
-                            <p className="text-secondary">
-                                Browse and {isDashboardAuditor ? 'monitor' : 'manage'} all trade documents
-                            </p>
-                        </GlassCard>
-                    </Link>
-
-                    {/* Upload Document - Not Auditor */}
-                    {!isDashboardAuditor && (
-                        <Link to="/upload" className="block group">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <Link to="/documents" className="block group">
                             <GlassCard>
-                                <div className="text-5xl mb-4">⬆️</div>
+                                <div className="text-5xl mb-4">📚</div>
                                 <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                    Upload Document
+                                    View Documents
                                 </h3>
                                 <p className="text-secondary">
-                                    Add new trade finance documents
+                                    Browse and {isDashboardAuditor ? 'monitor' : 'manage'} all trade documents
                                 </p>
                             </GlassCard>
                         </Link>
-                    )}
 
-                    {/* View Trades - All Roles */}
-                    <Link to="/trades" className="block group">
-                        <GlassCard>
-                            <div className="text-5xl mb-4">💱</div>
-                            <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                Trade Transactions
-                            </h3>
-                            <p className="text-secondary">
-                                {isDashboardAuditor ? 'Monitor' : 'View and manage'} trade transactions
-                            </p>
-                        </GlassCard>
-                    </Link>
+                        {!isDashboardAuditor && (
+                            <Link to="/documents" className="block group">
+                                <GlassCard>
+                                    <div className="text-5xl mb-4">⬆️</div>
+                                    <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                        Upload Document
+                                    </h3>
+                                    <p className="text-secondary">
+                                        Add new trade finance documents
+                                    </p>
+                                </GlassCard>
+                            </Link>
+                        )}
 
-                    {/* Create Trade - Bank Only (Corporate cannot create) */}
-                    {isDashboardBank && (
-                        <Link to="/trades/create" className="block group">
+                        <Link to="/trades" className="block group">
                             <GlassCard>
-                                <div className="text-5xl mb-4">➕</div>
+                                <div className="text-5xl mb-4">💱</div>
                                 <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-lime transition-colors" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                    Create Trade
+                                    Trade Transactions
                                 </h3>
                                 <p className="text-secondary">
-                                    Initiate a new trade transaction
+                                    {isDashboardAuditor ? 'Monitor' : 'View and manage'} trade transactions
                                 </p>
                             </GlassCard>
                         </Link>
-                    )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Role-Specific Access Info */}
             <GlassCard className="bg-secondary bg-opacity-30 mb-8">

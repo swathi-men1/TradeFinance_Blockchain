@@ -8,7 +8,7 @@ import { Document } from '../types/document.types';
 import { GlassCard } from '../components/GlassCard';
 import AdminTradeManagement from '../components/AdminTradeManagement';
 
-const statusConfig = {
+const statusConfig: Record<string, { color: string; icon: string; label: string }> = {
     pending: { color: 'warning', icon: '⏳', label: 'Pending' },
     in_progress: { color: 'info', icon: '🔄', label: 'In Progress' },
     completed: { color: 'success', icon: '✅', label: 'Completed' },
@@ -69,6 +69,21 @@ export default function TradeDetailsPage() {
         }
     };
 
+    const handleDispute = async () => {
+        if (!confirm('Are you sure you want to dispute this trade? This will trigger a risk review.')) return;
+
+        try {
+            setUpdatingStatus(true);
+            await tradeService.disputeTrade(parseInt(id!));
+            await fetchTradeDetails();
+            alert('Trade has been disputed. A risk review has been triggered.');
+        } catch (err: any) {
+            setError(err.response?.data?.detail || 'Failed to dispute trade');
+        } finally {
+            setUpdatingStatus(false);
+        }
+    };
+
     const handleStatusUpdate = async () => {
         if (!selectedStatus) return;
 
@@ -98,9 +113,9 @@ export default function TradeDetailsPage() {
     };
 
     const handleDocumentToggle = (documentId: number) => {
-        setSelectedDocuments(prev =>
+        setSelectedDocuments((prev: number[]) =>
             prev.includes(documentId)
-                ? prev.filter(id => id !== documentId)
+                ? prev.filter((id: number) => id !== documentId)
                 : [...prev, documentId]
         );
     };
@@ -180,8 +195,9 @@ export default function TradeDetailsPage() {
 
     if (!trade) return null;
 
-    const canUpdateStatus = user?.role !== 'auditor' && nextStatuses[trade.status]?.length > 0;
-    const config = statusConfig[trade.status as keyof typeof statusConfig] || statusConfig.pending;
+    const canUpdateStatus = user?.role === 'bank' && (nextStatuses[trade.status]?.length ?? 0) > 0;
+    const canDispute = user?.role === 'corporate' && trade.status !== 'disputed' && trade.status !== 'completed' && trade.status !== 'paid';
+    const config = statusConfig[trade.status] ?? { color: 'info', icon: '❓', label: trade.status };
 
     return (
         <>
@@ -189,7 +205,7 @@ export default function TradeDetailsPage() {
                 {/* Header */}
                 <div className="mb-8">
                     <button
-                        onClick={() => navigate('/trades')}
+                        onClick={() => navigate(user?.role === 'bank' ? '/bank/trades' : '/trades')}
                         className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
                     >
                         <span>←</span>
@@ -277,69 +293,90 @@ export default function TradeDetailsPage() {
                         </div>
                     </GlassCard>
 
-                    {/* Status Management Card */}
-                    {canUpdateStatus && (
+                    {/* Status Management / Dispute Card */}
+                    {(canUpdateStatus || canDispute) && (
                         <GlassCard>
                             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                <span>🔄</span>
-                                <span>Update Status</span>
+                                <span>{canDispute ? '⚠️' : '🔄'}</span>
+                                <span>{canDispute ? 'Actions' : 'Update Status'}</span>
                             </h2>
 
-                            {!showStatusUpdate ? (
-                                <button
-                                    onClick={() => setShowStatusUpdate(true)}
-                                    className="btn-primary w-full"
-                                >
-                                    <span>🔄</span>
-                                    <span>Change Status</span>
-                                </button>
-                            ) : (
+                            {/* Corporate Dispute Action */}
+                            {canDispute && (
                                 <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
-                                        <select
-                                            value={selectedStatus}
-                                            onChange={(e) => setSelectedStatus(e.target.value)}
-                                            className="input-field"
-                                        >
-                                            <option value="">Choose status...</option>
-                                            {nextStatuses[trade.status].map((status) => {
-                                                const cfg = statusConfig[status as keyof typeof statusConfig];
-                                                return (
-                                                    <option key={status} value={status}>
-                                                        {cfg.icon} {cfg.label}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
+                                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-200 mb-4">
+                                        If there is an issue with this trade, you can raise a dispute. This will flag the transaction for risk review.
                                     </div>
-
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setShowStatusUpdate(false);
-                                                setSelectedStatus('');
-                                            }}
-                                            className="btn-secondary flex-1"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleStatusUpdate}
-                                            disabled={!selectedStatus || updatingStatus}
-                                            className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {updatingStatus ? (
-                                                <span className="flex items-center justify-center gap-2">
-                                                    <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
-                                                    Updating...
-                                                </span>
-                                            ) : (
-                                                'Update'
-                                            )}
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={handleDispute}
+                                        disabled={updatingStatus}
+                                        className="btn bg-red-600 hover:bg-red-700 text-white w-full border-0"
+                                    >
+                                        {updatingStatus ? 'Processing...' : '⚠️ Raise Dispute'}
+                                    </button>
                                 </div>
+                            )}
+
+                            {/* Bank Status Update Action */}
+                            {canUpdateStatus && (
+                                <>
+                                    {!showStatusUpdate ? (
+                                        <button
+                                            onClick={() => setShowStatusUpdate(true)}
+                                            className="btn-primary w-full"
+                                        >
+                                            <span>🔄</span>
+                                            <span>Change Status</span>
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
+                                                <select
+                                                    value={selectedStatus}
+                                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                                    className="input-field"
+                                                >
+                                                    <option value="">Choose status...</option>
+                                                    {(nextStatuses[trade.status] ?? []).map((status) => {
+                                                        const cfg = statusConfig[status] ?? { icon: '❓', label: status };
+                                                        return (
+                                                            <option key={status} value={status}>
+                                                                {cfg.icon} {cfg.label}
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                            </div>
+
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => {
+                                                        setShowStatusUpdate(false);
+                                                        setSelectedStatus('');
+                                                    }}
+                                                    className="btn-secondary flex-1"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={handleStatusUpdate}
+                                                    disabled={!selectedStatus || updatingStatus}
+                                                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {updatingStatus ? (
+                                                        <span className="flex items-center justify-center gap-2">
+                                                            <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
+                                                            Updating...
+                                                        </span>
+                                                    ) : (
+                                                        'Update'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             {/* Status Lifecycle Timeline */}
@@ -488,8 +525,8 @@ export default function TradeDetailsPage() {
                                                 <div
                                                     key={doc.id}
                                                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isLinked
-                                                            ? 'opacity-50 cursor-not-allowed'
-                                                            : 'hover:bg-opacity-10'
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : 'hover:bg-opacity-10'
                                                         }`}
                                                     style={{
                                                         borderColor: isSelected
@@ -567,14 +604,14 @@ export default function TradeDetailsPage() {
                         </div>
                     </div>
                 )}
-            </div>
 
-            {/* Admin Trade Management Section */}
-            {user?.role === 'admin' && (
-                <div className="mt-8">
-                    <AdminTradeManagement />
-                </div>
-            )}
+                {/* Admin Trade Management Section */}
+                {user?.role === 'admin' && (
+                    <div className="mt-8">
+                        <AdminTradeManagement />
+                    </div>
+                )}
+            </div>
         </>
     );
 }

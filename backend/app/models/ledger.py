@@ -17,6 +17,7 @@ class LedgerAction(str, enum.Enum):
     DOCUMENT_UPLOADED = "DOCUMENT_UPLOADED"
     DOCUMENT_UPDATED = "DOCUMENT_UPDATED"
     DOCUMENT_DELETED = "DOCUMENT_DELETED"
+    VIEWED = "VIEWED"
     
     # Trade actions (Week 5)
     TRADE_CREATED = "TRADE_CREATED"

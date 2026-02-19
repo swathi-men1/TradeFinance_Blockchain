@@ -80,7 +80,11 @@ class DocumentService:
             doc_number=doc_number,
             file_url=s3_key if s3_upload_success else f"pending:{s3_key}",
             hash=document_hash,
-            issued_at=issued_at_dt  # Use parsed datetime
+            issued_at=issued_at_dt,  # Use parsed datetime
+            filename=file.filename,
+            description=f"{doc_type.value if hasattr(doc_type, 'value') else doc_type} - {doc_number}",
+            mime_type=file.content_type,
+            size=len(file_content)
         )
         
         db.add(new_document)
@@ -388,7 +392,8 @@ class DocumentService:
                 Params={
                     'Bucket': settings.S3_BUCKET_NAME,
                     'Key': document.file_url,
-                    'ResponseContentDisposition': f'{disposition}; filename="{filename}"'
+                    'ResponseContentDisposition': f'{disposition}; filename="{filename}"',
+                    'ResponseContentType': document.mime_type or ('application/pdf' if filename.lower().endswith('.pdf') else 'application/octet-stream')
                 },
                 ExpiresIn=3600  # URL valid for 1 hour
             )
@@ -448,7 +453,14 @@ class DocumentService:
             else:
                 filename = basename
                 
-            return response['Body'].iter_chunks(), filename, response.get('ContentType', 'application/octet-stream')
+            # Determine content type (database > s3 > fallback)
+            content_type = document.mime_type
+            if not content_type:
+                content_type = response.get('ContentType', 'application/octet-stream')
+                if content_type == 'application/octet-stream' and filename.lower().endswith('.pdf'):
+                    content_type = 'application/pdf'
+                
+            return response['Body'].iter_chunks(), filename, content_type
             
         except Exception as e:
             print(f"S3 Download Error: {e}")

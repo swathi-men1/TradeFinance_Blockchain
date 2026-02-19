@@ -346,6 +346,41 @@ def deactivate_user(
     
     return user
     
+@router.post("/users/{user_id}/reset-password")
+def reset_user_password(
+    user_id: int,
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
+    db: Session = Depends(get_db)
+):
+    """
+    Reset a user's password to a temporary value.
+
+    - Generates a new temporary password
+    - Logs action to audit trail
+    - Returns the temporary password (admin must share securely)
+    """
+    import secrets, string
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Generate a secure temporary password
+    alphabet = string.ascii_letters + string.digits + "!@#$%"
+    temp_password = ''.join(secrets.choice(alphabet) for _ in range(16))
+
+    user.password = get_password_hash(temp_password)
+    db.commit()
+
+    # Audit Log
+    AuditLog.log_action(db, current_user.id, "PASSWORD_RESET", "User", user.id)
+
+    return {
+        "message": f"Password reset for user {user.name}",
+        "temp_password": temp_password,
+        "user_id": user_id
+    }
+
+
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     user_id: int,

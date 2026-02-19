@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '../components/GlassCard';
-import auditorService, { RiskInsightResponse } from '../services/auditorService';
+import { bankService, BankRiskScore } from '../services/bankService';
 
 const RISK_CONFIG: Record<string, { bg: string; text: string; border: string; bar: string }> = {
     CRITICAL: { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30', bar: 'bg-red-500' },
@@ -60,22 +60,21 @@ function RationalePanel({ rationale }: { rationale: string }) {
     );
 }
 
-export default function AuditorRiskPage() {
-    const [riskScores, setRiskScores] = useState<RiskInsightResponse[]>([]);
-    const [selectedRisk, setSelectedRisk] = useState<RiskInsightResponse | null>(null);
-    const [loadingDetails, setLoadingDetails] = useState(false);
+export default function BankRiskPage() {
+    const [scores, setScores] = useState<BankRiskScore[]>([]);
+    const [selected, setSelected] = useState<BankRiskScore | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
 
-    useEffect(() => { fetchRiskScores(); }, []);
+    useEffect(() => { fetchScores(); }, []);
 
-    const fetchRiskScores = async () => {
+    const fetchScores = async () => {
         setLoading(true);
         setError('');
         try {
-            const data = await auditorService.getAllRiskScores();
-            setRiskScores(data);
+            const data = await bankService.getRiskMonitor();
+            setScores(data);
         } catch {
             setError('Failed to load risk scores. Please try again.');
         } finally {
@@ -83,29 +82,14 @@ export default function AuditorRiskPage() {
         }
     };
 
-    const selectUser = async (user: RiskInsightResponse) => {
-        if (selectedRisk?.user_id === user.user_id) {
-            setSelectedRisk(null);
-            return;
-        }
-        setSelectedRisk(user);
-        setLoadingDetails(true);
-        try {
-            const fresh = await auditorService.getUserRiskInsight(user.user_id);
-            setSelectedRisk(fresh);
-        } catch {
-            // keep the list-level data if detail fetch fails
-        } finally {
-            setLoadingDetails(false);
-        }
+    const toggleSelect = (item: BankRiskScore) => {
+        setSelected(prev => prev?.user_id === item.user_id ? null : item);
     };
 
-    const filtered = filterCategory
-        ? riskScores.filter(r => r.category === filterCategory)
-        : riskScores;
+    const filtered = filterCategory ? scores.filter(r => r.category === filterCategory) : scores;
 
-    const criticalCount = riskScores.filter(r => r.category === 'CRITICAL').length;
-    const highCount = riskScores.filter(r => r.category === 'HIGH').length;
+    const criticalCount = scores.filter(r => r.category === 'CRITICAL').length;
+    const highCount = scores.filter(r => r.category === 'HIGH').length;
 
     return (
         <div className="fade-in space-y-6">
@@ -117,11 +101,11 @@ export default function AuditorRiskPage() {
                             <span className="text-2xl">⚠️</span>
                             <h1 className="text-3xl font-bold text-white">Risk Monitor</h1>
                         </div>
-                        <p className="text-secondary">Compliance review — verify fairness, consistency, and transparency of risk scoring</p>
+                        <p className="text-secondary">Corporate client risk overview — monitor scores, categories and rationale</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-secondary bg-lime/10 border border-lime/20 px-3 py-2 rounded-lg">
-                        <span className="text-lime font-bold">🔒</span>
-                        <span>Read-only · Auditor Access</span>
+                    <div className="flex items-center gap-2 text-xs text-secondary bg-orange-500/10 border border-orange-500/20 px-3 py-2 rounded-lg">
+                        <span className="text-orange-400 font-bold">🏦</span>
+                        <span>Bank Access · Read-only</span>
                     </div>
                 </div>
             </GlassCard>
@@ -146,7 +130,7 @@ export default function AuditorRiskPage() {
                             <p className="text-xs text-secondary">High</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-white">{riskScores.length}</p>
+                            <p className="text-2xl font-bold text-white">{scores.length}</p>
                             <p className="text-xs text-secondary">Total Scored</p>
                         </div>
                     </div>
@@ -157,13 +141,19 @@ export default function AuditorRiskPage() {
                                 key={c}
                                 onClick={() => setFilterCategory(c)}
                                 className={`px-3 py-1 rounded text-xs font-semibold border transition-all ${filterCategory === c
-                                        ? 'bg-lime/20 text-lime border-lime/40'
-                                        : 'text-secondary border-gray-700 hover:border-gray-500'
+                                    ? 'bg-lime/20 text-lime border-lime/40'
+                                    : 'text-secondary border-gray-700 hover:border-gray-500'
                                     }`}
                             >
                                 {c === '' ? 'All' : c}
                             </button>
                         ))}
+                        <button
+                            onClick={fetchScores}
+                            className="ml-2 px-3 py-1 rounded text-xs font-semibold border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 transition-all"
+                        >
+                            ↻ Refresh
+                        </button>
                     </div>
                 </div>
             </GlassCard>
@@ -181,8 +171,8 @@ export default function AuditorRiskPage() {
                 <GlassCard>
                     <div className="flex flex-col items-center justify-center py-20 opacity-50">
                         <span className="text-5xl mb-4">📭</span>
-                        <p className="text-xl text-white mb-1">No records available for audit review.</p>
-                        <p className="text-sm text-secondary">No risk scores match the current filter.</p>
+                        <p className="text-xl text-white mb-1">No risk scores available.</p>
+                        <p className="text-sm text-secondary">No records match the current filter.</p>
                     </div>
                 </GlassCard>
             ) : (
@@ -190,7 +180,7 @@ export default function AuditorRiskPage() {
                     {/* Risk Score Table */}
                     <div className="xl:col-span-3">
                         <GlassCard>
-                            <h2 className="text-lg font-bold text-white mb-4">Entity Risk Scores</h2>
+                            <h2 className="text-lg font-bold text-white mb-4">Corporate Client Risk Scores</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
@@ -205,14 +195,14 @@ export default function AuditorRiskPage() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-800">
                                         {filtered.map(risk => {
-                                            const isSelected = selectedRisk?.user_id === risk.user_id;
+                                            const isSelected = selected?.user_id === risk.user_id;
                                             return (
                                                 <tr
                                                     key={risk.user_id}
-                                                    onClick={() => selectUser(risk)}
+                                                    onClick={() => toggleSelect(risk)}
                                                     className={`transition-colors cursor-pointer ${isSelected
-                                                            ? 'bg-lime/5 border-l-2 border-l-lime'
-                                                            : 'hover:bg-white/5'
+                                                        ? 'bg-lime/5 border-l-2 border-l-lime'
+                                                        : 'hover:bg-white/5'
                                                         }`}
                                                 >
                                                     <td className="py-3 px-3">
@@ -220,8 +210,12 @@ export default function AuditorRiskPage() {
                                                     </td>
                                                     <td className="py-3 px-3">
                                                         <div className="flex flex-col">
-                                                            <span className="text-white text-sm font-medium">{risk.user_name}</span>
-                                                            <span className="text-secondary text-xs">{risk.organization}</span>
+                                                            <span className="text-white text-sm font-medium">
+                                                                {risk.user_name ?? `User #${risk.user_id}`}
+                                                            </span>
+                                                            <span className="text-secondary text-xs">
+                                                                {risk.org_name ?? '—'}
+                                                            </span>
                                                         </div>
                                                     </td>
                                                     <td className="py-3 px-3">
@@ -255,14 +249,10 @@ export default function AuditorRiskPage() {
                     {/* Rationale Detail Panel */}
                     <div className="xl:col-span-2">
                         <GlassCard className="h-full min-h-[400px] flex flex-col">
-                            {!selectedRisk ? (
+                            {!selected ? (
                                 <div className="flex-1 flex flex-col items-center justify-center text-secondary opacity-50">
                                     <span className="text-5xl mb-4">📊</span>
-                                    <p className="text-sm">Select an entity to view detailed risk rationale</p>
-                                </div>
-                            ) : loadingDetails ? (
-                                <div className="flex-1 flex items-center justify-center">
-                                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-lime border-t-transparent" />
+                                    <p className="text-sm">Select a client to view detailed risk rationale</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col h-full">
@@ -270,27 +260,29 @@ export default function AuditorRiskPage() {
                                     <div className="border-b border-gray-700 pb-4 mb-4">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h2 className="text-xl font-bold text-white">{selectedRisk.user_name}</h2>
-                                                <p className="text-lime text-sm">{selectedRisk.organization}</p>
-                                                <p className="text-secondary text-xs mt-0.5 capitalize">{selectedRisk.user_role}</p>
+                                                <h2 className="text-xl font-bold text-white">
+                                                    {selected.user_name ?? `User #${selected.user_id}`}
+                                                </h2>
+                                                <p className="text-lime text-sm">{selected.org_name ?? '—'}</p>
+                                                <p className="text-secondary text-xs mt-0.5">Corporate</p>
                                             </div>
                                             <div className="text-right">
-                                                <div className={`text-3xl font-bold ${RISK_CONFIG[selectedRisk.category]?.text ?? 'text-gray-300'}`}>
-                                                    {selectedRisk.score?.toFixed(1) ?? 'N/A'}
+                                                <div className={`text-3xl font-bold ${RISK_CONFIG[selected.category]?.text ?? 'text-gray-300'}`}>
+                                                    {selected.score?.toFixed(1) ?? 'N/A'}
                                                 </div>
-                                                <RiskBadge category={selectedRisk.category} />
+                                                <RiskBadge category={selected.category} />
                                             </div>
                                         </div>
                                         <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                                             <div className="bg-dark/30 p-2 rounded-lg">
                                                 <p className="text-secondary">User ID</p>
-                                                <p className="text-white font-mono font-bold">#{selectedRisk.user_id}</p>
+                                                <p className="text-white font-mono font-bold">#{selected.user_id}</p>
                                             </div>
                                             <div className="bg-dark/30 p-2 rounded-lg">
                                                 <p className="text-secondary">Last Updated</p>
                                                 <p className="text-white">
-                                                    {selectedRisk.last_updated
-                                                        ? new Date(selectedRisk.last_updated).toLocaleString()
+                                                    {selected.last_updated
+                                                        ? new Date(selected.last_updated).toLocaleString()
                                                         : 'Never'}
                                                 </p>
                                             </div>
@@ -301,7 +293,7 @@ export default function AuditorRiskPage() {
                                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                                         <h3 className="text-sm font-bold text-white mb-3">Risk Rationale</h3>
                                         <div className="bg-dark/40 border border-gray-700 rounded-xl p-4">
-                                            <RationalePanel rationale={selectedRisk.rationale} />
+                                            <RationalePanel rationale={selected.rationale} />
                                         </div>
                                     </div>
                                 </div>

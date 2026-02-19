@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import DocumentsListPage from './pages/DocumentsListPage';
-import UploadDocumentPage from './pages/UploadDocumentPage';
+
 import DocumentDetailsPage from './pages/DocumentDetailsPage';
 import TradesListPage from './pages/TradesListPage';
 import CreateTradePage from './pages/CreateTradePage';
@@ -26,11 +26,18 @@ import AuditorReportsPage from './pages/AuditorReportsPage';
 import AuditorLedgerPage from './pages/AuditorLedgerPage';
 import AuditorTradesPage from './pages/AuditorTradesPage';
 import AuditorRiskPage from './pages/AuditorRiskPage';
+import BankTradesPage from './pages/BankTradesPage';
+import BankDocumentsPage from './pages/BankDocumentsPage';
+import BankRiskPage from './pages/BankRiskPage';
+import BankLedgerPage from './pages/BankLedgerPage';
+import CorporateLedgerPage from './pages/CorporateLedgerPage';
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import OrganizationManagementPage from './pages/admin/OrganizationManagementPage';
 import AuditLogPage from './pages/admin/AuditLogPage';
+import SystemMonitoringPage from './pages/admin/SystemMonitoringPage';
+import RiskOversightPage from './pages/admin/RiskOversightPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -57,6 +64,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
+    const { user } = useAuth();
     return (
         <AppLayout>
             <Routes>
@@ -84,14 +92,7 @@ function AppRoutes() {
                     }
                 />
 
-                <Route
-                    path="/upload"
-                    element={
-                        <ProtectedRoute>
-                            <UploadDocumentPage />
-                        </ProtectedRoute>
-                    }
-                />
+
 
                 <Route
                     path="/documents/:id"
@@ -187,12 +188,31 @@ function AppRoutes() {
                     }
                 />
 
-                {/* Ledger Viewer routes - Admin and Auditor only */}
+                <Route
+                    path="/admin/monitoring"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <SystemMonitoringPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/risk"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <RiskOversightPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Ledger Viewer routes */}
                 <Route
                     path="/ledger"
                     element={
                         <ProtectedRoute>
-                            <LedgerViewer />
+                            {/* Corporate users get their own read-only view */}
+                            {user?.role === 'corporate' ? <CorporateLedgerPage /> : <LedgerViewer />}
                         </ProtectedRoute>
                     }
                 />
@@ -255,6 +275,43 @@ function AppRoutes() {
                     }
                 />
 
+
+
+                {/* Bank Routes */}
+                <Route
+                    path="/bank/trades"
+                    element={
+                        <ProtectedRoute allowedRoles={['bank']}>
+                            <BankTradesPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/bank/documents"
+                    element={
+                        <ProtectedRoute allowedRoles={['bank']}>
+                            <BankDocumentsPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/bank/risk"
+                    element={
+                        <ProtectedRoute allowedRoles={['bank']}>
+                            <BankRiskPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/bank/ledger"
+                    element={
+                        <ProtectedRoute allowedRoles={['bank']}>
+                            <BankLedgerPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Auditor Risk route */}
                 <Route
                     path="/auditor/risk"
                     element={
