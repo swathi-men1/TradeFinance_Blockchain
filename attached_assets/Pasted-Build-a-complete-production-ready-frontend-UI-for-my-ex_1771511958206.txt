@@ -1,0 +1,163 @@
+Build a complete, production-ready frontend UI for my existing FastAPI backend without changing backend code.
+
+Tech stack:
+- React (Vite + TypeScript)
+- Tailwind CSS
+- React Query
+- Axios
+- React Router DOM
+
+IMPORTANT:
+Do NOT modify backend. Only frontend.
+
+--------------------------------------------------
+API BASE URL
+--------------------------------------------------
+Use:
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+All endpoints are prefixed with /api
+
+--------------------------------------------------
+AUTH (JWT)
+--------------------------------------------------
+POST /api/auth/login
+POST /api/auth/register
+GET /api/auth/me
+POST /api/auth/logout
+
+Store token in localStorage and send in headers:
+Authorization: Bearer <token>
+
+--------------------------------------------------
+DOCUMENTS
+--------------------------------------------------
+GET /api/documents/
+POST /api/documents/
+
+--------------------------------------------------
+TRANSACTIONS
+--------------------------------------------------
+GET /api/transactions/
+POST /api/transactions/
+
+--------------------------------------------------
+ANALYTICS
+--------------------------------------------------
+GET /api/analytics/stats
+GET /api/analytics/risk
+GET /api/analytics/logs
+
+Stats response:
+{
+  total_volume: number,
+  active_trades: number,
+  high_risk_entities: number
+}
+
+Risk response:
+[
+  {
+    id: number,
+    user_id: number,
+    score: number,
+    rationale: string,
+    last_updated: string
+  }
+]
+
+--------------------------------------------------
+REQUIREMENTS
+--------------------------------------------------
+
+1. Create proper folder structure:
+src/
+  components/
+  pages/
+  hooks/
+  layouts/
+  lib/
+
+2. Create reusable:
+- Layout (sidebar + topbar)
+- Card component
+- Button, Input, Table
+
+3. Design theme:
+- Dark premium fintech UI
+- Background: #0b1220
+- Cards: glass effect (blur + border)
+- Accent: cyan (#22d3ee) and blue
+- Smooth hover effects
+
+4. Pages to implement:
+
+LOGIN PAGE
+- Centered glass card
+- Gradient button
+- Proper validation
+- On login → redirect to dashboard
+
+DASHBOARD
+- Welcome message with user name
+- 3 stat cards:
+  - Total Volume
+  - Active Trades
+  - Risk Alerts
+- Area chart (recharts)
+- Recent documents list
+
+DOCUMENTS PAGE
+- Table of documents
+- Create document form (modal)
+
+TRANSACTIONS PAGE
+- List + create transaction
+
+RISK PAGE (IMPORTANT FIX)
+- Fetch from /api/analytics/risk
+- Display cards:
+    - user_id
+    - score (highlight red if >70)
+    - rationale
+- Add search filter by user_id
+- Show loading + empty state
+- FIX existing bug where data is not rendering
+
+5. Hooks (MANDATORY)
+Create:
+- useAuth()
+- useDocuments()
+- useTransactions()
+- useAnalytics()
+
+Each should:
+- use React Query
+- use axios
+- include Authorization header
+
+6. Routing
+- /login
+- /dashboard
+- /documents
+- /transactions
+- /risk
+
+Protected routes → redirect to login if not authenticated
+
+7. ENV FILE
+Create:
+VITE_API_BASE_URL=""
+
+8. Clean code:
+- No duplicate files
+- No broken imports
+- No unused code
+- All pages working
+
+--------------------------------------------------
+GOAL
+--------------------------------------------------
+A clean, premium, professional fintech dashboard UI that looks modern and works perfectly with backend APIs.
+
+Also ensure Risk page is fully working and displays data correctly.
