@@ -2,52 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ------------------ */
-/* GLOBAL THEME */
-/* ------------------ */
-
-body {
-  background-color: #0b1220;
-  color: white;
+@layer base {
+  body {
+    background-color: #0b1220;
+    color: #f8fafc;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
 }
 
-/* ------------------ */
-/* GLASS EFFECT */
-/* ------------------ */
+@layer components {
+  .glass-card {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    @apply shadow-2xl rounded-2xl;
+  }
 
-.glass {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-}
+  .glass-card-hover {
+    @apply transition-all duration-300;
+  }
 
-/* ------------------ */
-/* CARD */
-/* ------------------ */
+  .glass-card-hover:hover {
+    border-color: rgba(34, 211, 238, 0.3);
+    box-shadow: 0 0 30px rgba(34, 211, 238, 0.15);
+    transform: translateY(-2px);
+  }
 
-.card {
-  @apply glass rounded-xl p-5 shadow-lg;
-  transition: all 0.3s ease;
-}
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+  }
 
-.card:hover {
-  border-color: rgba(34, 211, 238, 0.5);
-  box-shadow: 0 0 25px rgba(34, 211, 238, 0.25);
-  transform: translateY(-3px);
-}
+  .btn-gradient {
+    @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-2 px-6 rounded-xl 
+           hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-cyan-500/20;
+  }
 
-/* ------------------ */
-/* BUTTON */
-/* ------------------ */
+  .input-field {
+    @apply bg-white/5 border border-white/10 text-white px-4 py-2.5 rounded-xl w-full 
+           focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all;
+  }
 
-.btn-primary {
-  @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition;
-}
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-cyan-400 
+           hover:bg-white/5 transition-all cursor-pointer;
+  }
 
-/* ------------------ */
-/* INPUT */
-/* ------------------ */
-
-.input {
-  @apply bg-white/5 border border-white/10 text-white px-3 py-2 rounded-lg w-full;
+  .nav-link-active {
+    @apply bg-cyan-500/10 text-cyan-400 border border-cyan-500/20;
+  }
 }
