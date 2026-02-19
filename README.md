@@ -88,10 +88,10 @@ Use these accounts to explore different roles within the system.
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Admin** | `admin@example.com` | `admin123` |
-| **Corporate** | `corp@example.com` | `corp123` |
-| **Bank** | `bank@example.com` | `bank123` |
-| **Auditor** | `auditor@example.com` | `auditor123` |
+| **Admin** | `admin@tradefinance.com` | `AdminSecure2026!` |
+| **Corporate** | `corporate@company.com` | `corporate@company.com` |
+| **Bank** | `bank@globalbank.com` | `BankSecure2026!` |
+| **Auditor** | `auditor@auditfirm.com` | `AuditSecure2026!` |
 
 ---
 
@@ -117,3 +117,4 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 **Abdul Samad**
 *   *Project developed as part of Infosys Internship Program 6.0*
+
