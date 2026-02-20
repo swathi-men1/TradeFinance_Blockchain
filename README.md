@@ -1,184 +1,319 @@
-# 🚢 Trade Finance Blockchain Explorer (ChainDocs)
+### **Trade Finance Blockchain Explorer**
 
 ---
 
-## 📖 Overview
+### **Overview**
 
-Trade Finance Blockchain Explorer (ChainDocs) is a secure, web-based prototype designed to manage and track trade finance documents such as Invoices, Trade Contracts, and Shipping Documents.
-
-This project demonstrates how "blockchain-inspired concepts" like cryptographic hashing and ledger-based audit trails can enhance "transparency, integrity, and traceability" in trade finance workflows.
-
-Developed as part of the **Infosys Springboard Internship Program**.
+The Trade Finance Blockchain Explorer is a secure web-based application designed to manage trade finance operations and analyze corporate risk levels using blockchain principles.
 
 ---
 
- ### 👩‍💻 Developer Information
+### **The system focuses on:**
 
-- **Developer:** Ughasri P, Lakshmi Chetana Pathipaka, Karuparty Meghana 
-- **Internship Program:** Infosys Springboard  
-- **Duration:** 8 Weeks  
-- **Project Type:** Academic / Internship Prototype  
-- **Status:** ✅ Completed  
-
----
-
-### ❗ Problem Statement
-
-Trade finance transactions involve multiple stakeholders and high-value documents.  
-Traditional systems are often paper-based, error-prone, and lack transparency, making document verification and auditing difficult.
-
-A secure digital system is required to:
-- Manage trade documents efficiently  
-- Track transaction history  
-- Ensure document authenticity  
-- Provide tamper-evident audit records  
+- Secure trade record management
+- Blockchain-based audit logging
+- Analytical risk scoring
+- Visual risk dashboards for decision-making
+- This project was developed as part of the Infosys Springboard Internship Program and deployed as a fully functional application.
 
 ---
 
-### 🎯 Objectives
+### **Developer Information**
 
-- Digitize trade finance document management  
-- Ensure document integrity using cryptographic hashing  
-- Maintain a ledger-style audit trail  
-- Simulate blockchain principles like immutability and transparency  
-- Provide a simple dashboard-style user interface  
-- Demonstrate real-world application of emerging technologies  
+- Developer: Ughasri P
 
----
+- Program: Infosys Springboard Internship
 
- ### 🛠️ Technology Stack
+- Timeline: December 2025 – February 2026 (8 Weeks)
 
-### 🔹 Frontend
-- HTML  
-- CSS  
-- JavaScript  
+- Status: Production Deployed and Operational
 
-### 🔹 Backend (Future Scope)
-- Python (Flask / FastAPI)
+- Email:ughasrimec@gmail.com
 
-### 🔹 Database (Future Scope)
-- SQLite / PostgreSQL  
-
-### 🔹 Blockchain Concepts Used
-- SHA-256 Hashing  
-- Ledger-based Audit Logging  
+- Live Application
 
 ---
 
-## 🔐 Security & Integrity Concepts
-
-### 📄 Document Integrity
-- Each uploaded document generates a **SHA-256 hash**
-- Hash values are stored for verification
-- Any modification results in a hash mismatch, indicating tampering
-
-### 📜 Audit Trail
-- All critical actions are logged in an append-only ledger:
-  - Trade creation  
-  - Document uploads  
-  - Status updates  
-  - Verification activities  
-
-This ensures **full transparency and traceability**.
+### **Deployment URL:** https://tradefinance-blockchain-dmxi.onrender.com
 
 ---
 
-## 👥 User Roles (Prototype Level)
+### **Problem Statement**
 
-### 🏢 Corporate User
-- Create trade transactions  
-- Upload trade-related documents  
-- View their own trades and documents  
-
-### 🏦 Bank User
-- View and verify trade documents  
-- Update trade status  
-- Review ledger history  
-
-### 🧾 Auditor
-- Read-only access  
-- View all trades, documents, and audit logs  
-
-### ⚙️ Admin (Conceptual)
-- Monitor system activity  
-- Manage users and records  
+- Trade finance systems involve high-value transactions that require trust, transparency, and risk monitoring.
+- Traditional systems often lack:
+- Transparent audit trails
+- Automated risk evaluation
+- Visual analytics for corporate risk
+- This project solves these challenges by integrating blockchain-style ledgers, risk scoring algorithms, and an analytical dashboard.
 
 ---
 
-## ⭐ Key Features
+### **Objectives**
 
-### 1️⃣ Trade Creation
-- Create trades with seller, product, quantity, and price  
-- Each trade represents a trade finance transaction  
-
-### 2️⃣ Document Upload
-- Upload documents such as:
-  - Invoice  
-  - Trade Contract  
-  - Shipping Documents  
-- Documents are linked to a unique Trade ID  
-
-### 3️⃣ Ledger-Based Audit Logging
-- Append-only ledger records all major actions  
-- Provides a clear view of the trade lifecycle  
-
-### 4️⃣ Trade Status Tracking
-- Trade status progression:
-  - Pending  
-  - Approved  
-  - Completed  
+- Secure management of trade finance records
+- Maintain immutable blockchain-style ledger logs
+- Detect suspicious or high-risk corporate activity
+- Calculate automated corporate risk scores
+- Visualize risk distribution using dashboards
+- Enable role-based access for secure operations
 
 ---
 
-## 📄 Documents Used
+### **Technology Stack**
 
-- Invoice  
-- Trade Contract  
-- Shipping Documents (Sample representation)
+- **Backend:** Flask (Python)
 
-These documents demonstrate a complete trade finance workflow.
+- **Database:** PostgreSQL (Production),SQLite (Development)
 
-🗂️ Project Structure
-```text
-TRADE FINANCE BLOCKCHAIN EXPLORER
-│
-└── Trade
-    │
-    ├── .vscode
-    │   └── launch.json
-    │
-    ├── backend
-    │   ├── __pycache__
-    │   ├── chaindocs.db
-    │   ├── database.py
-    │   ├── main.py
-    │   └── models.py
-    │
-    ├── admin.html
-    ├── admin.js
-    ├── blocks.html
-    ├── image.png
-    ├── CONTRACT.docx
-    ├── CONTRACT.pdf
-    ├── create_trade.html
-    ├── dashboard.html
-    ├── index.html
-    ├── INVOICE-2.docx
-    ├── INVOICE-2.pdf
-    ├── INVOICE.docx
-    ├── INVOICE.pdf
-    ├── ledger.html
-    ├── login.html
-    ├── README.md
-    ├── risk_utils.py
-    ├── risk.html
-    ├── SHIPPING.docx
-    ├── SHIPPING.pdf
-    ├── signin.js
-    ├── signup.html
-    ├── signup.js
-    ├── trade.css
-    ├── upload_document.html
-    ├── verify.html
-    └── view_trades.html
+- **ORM:** SQLAlchemy
+
+- **Authentication & Authorization:** JWT (JSON Web Token),Role-Based Access Control (RBAC)
+
+- **Hashing & Security:** SHA-256 (Document Integrity Verification),PBKDF2 (Password Hashing)
+
+- **Frontend:** HTML,CSS,JavaScript
+
+- **Visualization & Analytics:** Chart.js (Risk Analytics & Dashboard Graphs)
+
+- **Deployment Platform:** Render
+
+- **Production Server:** Gunicorn
+
+- **Version Control:** Git & GitHub
+
 ---
+
+### **Blockchain Concept**
+
+- Hash-based verification
+- Immutable ledger logs
+- Security & Access Control
+- Role-based access control implemented at backend level
+  
+**Separate access for:**
+
+- Corporate users
+- Bank/Admin users
+- Backend validation prevents unauthorized actions
+
+---
+
+## **User Roles**
+
+- Corporate User
+- Create and manage trade records
+- Upload trade-related documents
+- View personal trade and risk information
+- Admin / Bank User
+- View all trades
+- Monitor blockchain ledger logs
+- Review corporate risk levels
+- Oversee system integrity
+
+---
+
+## **Key Features**
+
+- Trade Management
+- Create, view, and manage trade records
+- Trades contribute to risk analysis
+- Blockchain Ledger
+
+## **Immutable ledger stores:**
+
+- Trade creation events
+- Document uploads
+- Risk updates
+- Ledger entries cannot be modified or deleted
+- Risk Analysis Engine
+- Automated risk score calculation
+- Risk score range: 0 – 100
+
+## **Risk level classification:**
+
+- Low Risk
+- Medium Risk
+- High Risk
+- Analytical Risk Dashboard
+- Displays corporate risk score
+- Shows risk level visually
+- Bar chart visualization using Chart.js
+
+## **Risk Scoring Logic:**
+
+- Risk score is calculated using multiple parameters:
+- Risk Score = Base Score 
+           + (Trade Count × Weight) 
+           + (Ledger Events × Weight)
+
+## **Risk Levels**
+
+- Score Range	Risk Level
+0 – 39	-- Low Risk
+40 – 69 -- Medium Risk
+70 – 100 -- High Risk
+
+## **Risk score is recalculated when:**
+
+- New trade is created
+- Document is uploaded
+- Ledger activity changes
+
+## **Risk Visualization :**
+ 
+- Implemented using Chart.js
+- Bar chart shows:
+- Low Risk Corporates
+- Medium Risk Corporates
+- High Risk Corporates
+- Data fetched dynamically from backend APIs
+
+---
+
+### **API Endpoints :**
+| Method | Endpoint  | Description                                   |
+|--------|-----------|-----------------------------------------------|
+| POST   | `/signup` | Register a new user                           |
+| POST   | `/login`  | Authenticate user and generate session        |
+
+---
+
+## **Trade Management APIs :**
+
+| Method | Endpoint        | Description                                             |
+|--------|-----------------|---------------------------------------------------------|
+| POST   | `/create-trade` | Create a new trade record                               |
+| GET    | `/view-trades`  | View all trades (role-based access)                     |
+| GET    | `/my-trades`    | View trades created by logged-in corporate user          |
+
+---
+
+ ## **Document Management APIs :**
+
+| Method | Endpoint                         | Description                                           |
+|--------|----------------------------------|-------------------------------------------------------|
+| POST   | `/upload-document`               | Upload trade-related document                         |
+| GET    | `/documents`                     | View all uploaded documents                           |
+| GET    | `/my-documents`                  | View documents uploaded by logged-in user             |
+| GET    | `/documents/{doc_id}/preview`    | Preview uploaded document                             |
+| DELETE | `/documents/{doc_id}`            | Soft delete a document                                |
+| PUT    | `/documents/{doc_id}/restore`    | Restore deleted document                              |
+
+---
+
+## **Document Verification APIs :**
+
+| Method | Endpoint                       | Description                                               |
+|--------|--------------------------------|-----------------------------------------------------------|
+| PUT    | `/documents/{doc_id}/status`   | Verify and update document status (ACCEPTED / REJECTED)  |
+
+---
+
+### **Blockchain Ledger APIs :**
+
+| Method | Endpoint                          | Description                                      |
+|--------|-----------------------------------|--------------------------------------------------|
+| GET    | `/ledger`                         | View complete ledger entries                     |
+| GET    | `/documents/{doc_id}/ledger`      | View ledger history for a specific document      |
+
+---
+
+### **Risk Analysis APIs**
+
+| Method | Endpoint                         | Description                               |
+|-------:|----------------------------------|-------------------------------------------|
+| GET    | `/risk-score`                    | Get risk score of logged-in user           |
+| GET    | `/risk-summary`                  | Get aggregated corporate risk data         |
+| GET    | `/users/{username}/risk-score`   | Get risk score of a specific user          |
+
+---
+
+### **Dashboard APIs**
+
+| Method | Endpoint                  | Description                              |
+|-------:|---------------------------|------------------------------------------|
+| GET    | `/dashboard/summary`      | Fetch dashboard analytics data           |
+| GET    | `/dashboard/trades`       | Trade statistics for dashboard           |
+| GET    | `/dashboard/risk`         | Risk visualization data                  |
+
+---
+
+### **Frontend Pages**
+
+- login.html
+
+- dashboard.html
+
+- view_trades.html
+
+- upload_document.html
+
+- risk.html
+
+---
+
+### **Application Workflow**
+
+1. Corporate user logs in
+2. Trade is created and stored
+3. Ledger entry is added automatically
+4. Risk score is calculated
+5. Risk dashboard displays analytics
+6. Admin monitors system-wide risk
+
+---
+
+### **Screenshots**
+
+Include screenshots of:
+
+- Corporate Risk Dashboard
+- Risk Bar Chart
+- Trade Management Page
+- Ledger View
+
+/screenshots
+
+ ├── dashboard.png
+ 
+ ├── risk_chart.png
+ 
+ ├── trades.png
+ 
+ └── ledger.png
+
+---
+
+### **How to Run Locally**
+
+Install dependencies
+
+pip install -r requirements.txt
+
+Run the application
+
+uvicorn main:app --reload
+
+---
+
+### **Branch Confirmation**
+
+All project code is committed to:
+
+- TF_Blockchain--Ughasri
+- README updated with:
+- Full project explanation
+- Module details
+- Risk logic
+- Screenshots section
+- Deployment link
+
+---
+
+### **Conclusion**
+
+- This project demonstrates how blockchain concepts combined with analytical risk dashboards can improve transparency and decision-making in trade finance systems. The Analytical Risk Dashboard enables organizations to proactively identify and manage corporate risk.
+
+
+
