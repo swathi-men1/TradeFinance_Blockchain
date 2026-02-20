@@ -95,6 +95,20 @@ Use these accounts to explore different roles within the system.
 
 ---
 
+## 🌐 Live Demo
+
+Experience the platform live at: **[Trade Finance Explorer](https://trade-finance-platform-explorer.netlify.app)**
+
+You can explore the system using the following test credentials:
+- **Admin**: `admin@tradefinance.com` / `AdminSecure2026!`
+- **Corporate**: `corporate@company.com` / `CorpSecure2026!`
+- **Bank**: `bank@globalbank.com` / `BankSecure2026!`
+- **Auditor**: `auditor@auditfirm.com` / `AuditSecure2026!`
+
+*(Note: The database is pre-seeded with test data for demonstration purposes. The frontend is hosted on Netlify, the backend API on Vercel, and the PostgreSQL database on Render.)*
+
+---
+
 ## ⚙️ Environment Variables
 
 ### Backend (`.env`)
@@ -117,5 +131,6 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 **Abdul Samad**
 *   *Project developed as part of Infosys Internship Program 6.0*
+
 
 
