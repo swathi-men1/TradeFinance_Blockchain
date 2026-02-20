@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from apscheduler.schedulers.background import BackgroundScheduler
 import hashlib
 import os
 
@@ -33,43 +32,6 @@ app.add_middleware(
 
 
 # -------------------------
-# INTEGRITY JOB
-# -------------------------
-def verify_ledger_integrity():
-    db: Session = SessionLocal()
-    try:
-        entries = db.query(LedgerEntry).order_by(
-            LedgerEntry.created_at.asc()).all()
-
-        previous_hash = "GENESIS"
-
-        for entry in entries:
-            recalculated_string = (f"{entry.document_id}"
-                                   f"{entry.actor_id}"
-                                   f"{previous_hash}"
-                                   f"{entry.created_at}")
-
-            recalculated_hash = hashlib.sha256(
-                recalculated_string.encode()).hexdigest()
-
-            if entry.current_hash != recalculated_hash:
-                log_action(
-                    db=db,
-                    user_id=entry.actor_id,
-                    action_type="INTEGRITY_ALERT",
-                    entity_type="LEDGER",
-                    entity_id=entry.id,
-                    description="Ledger integrity mismatch detected",
-                )
-                break
-
-            previous_hash = entry.current_hash
-
-    finally:
-        db.close()
-
-
-# -------------------------
 # STARTUP
 # -------------------------
 @app.on_event("startup")
@@ -86,23 +48,43 @@ app.include_router(ledger_routes.router, prefix="/api")
 app.include_router(transaction_routes.router, prefix="/api")
 app.include_router(analytics_routes.router, prefix="/api")
 
+
 # -------------------------
-# SERVE REACT BUILD
+# ROOT API CHECK
 # -------------------------
-FRONTEND_DIR = "client/dist"
+@app.get("/api")
+def api_root():
+    return {"status": "ok"}
+
+
+# -------------------------
+# SERVE REACT BUILD (FIXED)
+# -------------------------
+
+# absolute path (IMPORTANT FIX)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+FRONTEND_DIR = os.path.join(os.getcwd(), "client", "dist")
 
 if os.path.exists(FRONTEND_DIR):
 
+    # serve assets
+    app.mount("/assets",
+              StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")),
+              name="assets")
+
+    # serve static files like vite.svg
     app.mount(
-        "/assets",
-        StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")),
-        name="assets",
+        "/",
+        StaticFiles(directory=FRONTEND_DIR, html=True),
+        name="static",
     )
 
-    @app.get("/")
+    # fallback for React routes
+    @app.get("/", include_in_schema=False)
     async def serve_root():
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
+    # React routing
+    @app.get("/{path:path}", include_in_schema=False)
+    async def serve_react(path: str):
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))

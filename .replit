@@ -1,13 +1,19 @@
-modules = ["python-3.11", "nodejs-20", "web"]
+run = "bash start.sh"
+modules = ["nodejs-20", "python-3.11"]
 
-run = "uvicorn backend.app.main:app --host 0.0.0.0 --port 3000"
+[deployment]
+run = ["bash", "start.sh"]
 
 [[ports]]
 localPort = 3000
-externalPort = 80
+externalPort = 3000
 
 [[ports]]
-localPort = 5173
-externalPort = 5173
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 8000
+externalPort = 80
 
 [nix]

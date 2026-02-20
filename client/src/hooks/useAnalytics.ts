@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import api from "../api/axios";
 
 // ------------------
 // TYPES
@@ -15,19 +13,21 @@ export interface RiskScore {
   last_updated: string;
 }
 
+export interface DashboardStats {
+  total_volume: number;
+  active_trades: number;
+  high_risk_entities: number;
+}
+
 // ------------------
 // RISK SCORES
 // ------------------
 
 export function useRiskScores() {
   return useQuery<RiskScore[]>({
-    queryKey: ["ri"],
+    queryKey: ["risk"],
     queryFn: async () => {
-      const res = await axios.get(`${BASE_URL}/api/analytics/risk`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await api.get("/api/analytics/risk");
       return res.data;
     },
   });
@@ -38,14 +38,10 @@ export function useRiskScores() {
 // ------------------
 
 export function useStats() {
-  return useQuery({
+  return useQuery<DashboardStats>({
     queryKey: ["stats"],
     queryFn: async () => {
-      const res = await axios.get(`${BASE_URL}/api/analytics/stats`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await api.get("/api/analytics/stats");
       return res.data;
     },
   });
