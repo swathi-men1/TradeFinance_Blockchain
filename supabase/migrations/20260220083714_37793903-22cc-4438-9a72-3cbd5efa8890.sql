@@ -1,0 +1,3 @@
+
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'system';
+ALTER TYPE public.ledger_action ADD VALUE IF NOT EXISTS 'RISK_RECALCULATED';
