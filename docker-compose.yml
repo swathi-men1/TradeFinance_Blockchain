@@ -64,6 +64,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    command: /bin/bash -c "dos2unix /app/wait-for-db.sh && /bin/bash /app/wait-for-db.sh"
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/trade_finance
       POSTGRES_HOST: postgres

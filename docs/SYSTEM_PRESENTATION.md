@@ -46,12 +46,12 @@ The platform is designed with distinct Role-Based Access Control (RBAC) to ensur
 ### 🏢 Corporate User (Buyer/Seller)
 *   **Trade Initiation:** Create new trade transactions and purchase orders with counterparties.
 *   **Document Management:** Securely upload and hash trade documents (Invoices, Bill of Lading, Packing Lists).
-*   **Lifecycle Tracking:** Real-time visibility into trade status (Pending -> In Progress -> Completed/Paid).
+*   **Lifecycle Tracking:** Real-time visibility into trade status (Pending -> In Progress -> Completed/Disputed).
 
 ### 🏦 Bank User
 *   **Credit Evaluation:** Review trade details and participant risk scores before issuing credit.
 *   **Financial Processing:** Issue Letters of Credit (LC) and authorize payments.
-*   **Settlement:** Mark trades as paid/settled, updating the immutable ledger status.
+*   **Settlement:** Mark trades as completed, updating the immutable ledger status.
 
 ### 🔍 Auditor
 *   **Risk Insights:** Access detailed risk profiles for all entities, including score rationale (0-100) and historical trends.

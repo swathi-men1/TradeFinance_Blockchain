@@ -1,6 +1,6 @@
 # Trade Finance Blockchain Explorer
 
-> A modern, blockchain-inspired trade finance platform with immutable ledger tracking, document management, and role-based access control.
+> A modern, blockchain-inspired trade finance platform with immutable ledger tracking, document management, and intelligent automated risk assessment.
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=React)](https://reactjs.org)
@@ -11,138 +11,29 @@
 
 ---
 
-## Overview
+## 📖 Overview
 
-Trade Finance Blockchain Explorer is a comprehensive platform for managing trade finance operations with cryptographic integrity, immutable audit trails, and intelligent risk assessment. Built for banks, corporations, auditors, and administrators to streamline international trade workflows.
+Trade Finance Blockchain Explorer is a comprehensive, secure platform tailored for managing trade finance operations. Engineered for banks, corporations, auditors, and administrators, the system enforces strict role-based workflows, ensuring cryptographic integrity, an immutable audit trail, and proactive counterparty risk evaluation.
 
 ### Key Capabilities
 
-- **Document Management** - Secure upload, storage, and verification of trade documents (Letter of Credit, Invoices, Bills of Lading)
-- **Trade Lifecycle Tracking** - End-to-end monitoring from initiation to completion
-- **Immutable Ledger** - Blockchain-inspired append-only audit trail for all transactions
-- **Risk Scoring** - AI-driven counterparty risk assessment and monitoring
-- **WTO/BIS Integration** - Alignment with global trade standards and compliance
-- **Hash Verification** - SHA-256 cryptographic integrity checking
-- **Role-Based Access** - Granular permissions for Bank, Corporate, Auditor, and Admin roles
-- **Admin Activity Logging** - Complete tracking of admin login/logout actions with immutable audit trail
+- **Secure Trade Workflow** - Bank-initiated trade transactions safeguarding the integrity of digital trade agreements.
+- **Document Management** - Secure upload, storage, and SHA-256 hash verification of vital trade documents.
+- **Immutable Ledger** - Blockchain-inspired append-only system-generated audit trail capturing all critical actions.
+- **Rule-Based Risk Engine** - Transparent algorithmic scoring triggering alerts on disputes and integrity mismatches.
+- **Compliance Transparency** - Dedicated auditor access ensuring uninterrupted oversight over transactions and documents.
+- **Role-Based Access Control (RBAC)** - Granular functionality silos for Bank, Corporate, Auditor, and Admin entities.
 
 ---
 
-## Features
+## 🚦 Quick Start Guide
 
-### Core Functionality
-- ✅ **JWT Authentication** - Secure token-based authentication with role management
-- ✅ **User Code System** - Professional 6-character user identification (e.g., `JOH847`)
-- ✅ **Document Upload** - S3-compatible storage with automatic hash generation
-- ✅ **Trade Management** - Complete CRUD operations for trade transactions
-- ✅ **Risk Scoring** - Automated risk category assessment (LOW/MEDIUM/HIGH) with AI verification
-- ✅ **Ledger Tracking** - Immutable record of all document and trade actions
-- ✅ **Hash Verification** - Real-time integrity validation
-- ✅ **Admin Activity Logging** - Complete tracking of admin login/logout with immutable audit trail
-
-### User Experience
-- 🎨 **Modern UI** - Sleek glassmorphism design with neon gradients and Tailwind CSS
-- 🔄 **Visual Workflow** - Interactive diagrams illustrating the trade finance process
-- 📱 **Responsive** - Mobile-friendly interface with adaptive layouts
-- 🌍 **Timezone Aware** - Automatic local timezone detection and display
-- 🔔 **Real-time Notifications** - Instant feedback for all operations
-- 📊 **Interactive Dashboards** - Role-specific analytics and insights
-
-### Security & Compliance
-- 🔐 **Password Hashing** - Bcrypt encryption for user credentials
-- 🔑 **JWT Tokens** - Secure session management
-- 🛡️ **RBAC** - Role-based access control enforced at API and UI levels
-- 📝 **Audit Logging** - Complete action history for compliance
-- 🔗 **Hash Chains** - Linked ledger entries for tamper detection
-
----
-
-## 🛠️ Technology Stack
-
-### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| FastAPI | 0.109.0 | High-performance async API framework |
-| PostgreSQL | 14+ | Relational database |
-| SQLAlchemy | 2.0.25 | ORM and query builder |
-| Alembic | Latest | Database migrations |
-| MinIO | Latest | S3-compatible object storage |
-| Python | 3.11 | Runtime environment |
-
-### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18 | UI framework |
-| TypeScript | 5 | Type-safe development |
-| Vite | 5 | Build tool and dev server |
-| CSS3 | - | Styling (Glassmorphism) |
-| Axios | Latest | HTTP client |
-| React Router | 6 | Client-side routing |
-
-### Infrastructure
-- **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
-- **Nginx** - Frontend web server
-- **MinIO** - S3-compatible storage
-
----
-
-## 📁 Project Structure
-
-```
-TradeFinance_Blockchain/
-├── backend/                      # FastAPI Backend
-│   ├── app/
-│   │   ├── api/                 # REST API endpoints
-│   │   │   ├── auth.py         # Authentication routes
-│   │   │   ├── documents.py    # Document management
-│   │   │   ├── trades.py       # Trade operations
-│   │   │   ├── risk.py         # Risk scoring
-│   │   │   ├── ledger.py       # Ledger operations
-│   │   │   └── admin.py        # Admin operations
-│   │   ├── core/               # Core utilities
-│   │   │   ├── security.py    # JWT & password hashing
-│   │   │   └── hashing.py     # SHA-256 file hashing
-│   │   ├── db/                 # Database configuration
-│   │   ├── models/             # SQLAlchemy models
-│   │   ├── schemas/            # Pydantic schemas
-│   │   ├── services/           # Business logic layer
-│   │   └── utils/              # Helper functions
-│   ├── alembic/                # Database migrations
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── wait-for-db.sh         # Startup script
-├── frontend/                    # React Frontend
-│   ├── src/
-│   │   ├── components/         # Reusable UI components
-│   │   ├── context/            # React context providers
-│   │   ├── pages/              # Page components
-│   │   ├── services/           # API integration
-│   │   ├── types/              # TypeScript definitions
-│   │   ├── utils/              # Utility functions
-│   │   ├── App.tsx             # Main application
-│   │   └── index.css           # Global styles
-│   ├── public/                 # Static assets
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── Dockerfile
-├── docker-compose.yml           # Container orchestration
-├── README.md                    # This file
-└── QUICKSTART_GUIDE.md         # Quick start instructions
-
-```
-
----
-
-## 🚦 Quick Start
-
-### Prerequisites
+### ✅ Prerequisites
 - Docker Desktop (v20.10+)
 - Docker Compose (v2.0+)
-- 4GB RAM minimum
 - Ports available: 80, 8000, 5432, 9000, 9001
 
-### Installation
+### 🚀 Step 1: Installation & Booting
 
 1. **Clone the repository**
    ```bash
@@ -152,299 +43,126 @@ TradeFinance_Blockchain/
 
 2. **Start all services**
    ```bash
-   docker-compose up --build
+   docker-compose up --build -d
    ```
 
-3. **Access the application**
-   - **Frontend**: http://localhost
-   - **Backend API**: http://localhost:8000
-   - **API Documentation**: http://localhost:8000/docs
-   - **MinIO Console**: http://localhost:9001
+### 🎯 Step 2: Seed the Database (First Time Only)
 
-4. **Default credentials** (for testing)
-   - Register a new user via the UI
-   - Or use API: `POST /api/v1/auth/register`
-   - **Admin User**: `admin@tradefinance.com` / `admin123` (pre-configured)
-   - **Admin Login**: Creates immutable ledger entry with login timestamp
-   - **Admin Logout**: Creates immutable ledger entry with logout timestamp
-   - **Ledger Viewer**: Access via `/ledger` route (Admin/Auditor only)
+Create test users for all system roles. Run this script **inside** the backend Docker container:
 
-### Stopping the Application
 ```bash
-docker-compose down
+docker-compose exec backend python seed_database.py
 ```
 
-For detailed setup instructions, see [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)
+*Expected output: Generates default users for Admin, Bank, Corporate, and Auditor roles.*
+
+### 🔑 Step 3: Default Test Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@tradefinance.com | admin123!@# |
+| Corporate | corporate@company.com | corporate123!@# |
+| Bank | bank@globalbank.com | bank123!@# |
+| Auditor | auditor@auditfirm.com | auditor123!@# |
+
+### 🌐 Step 4: Access the Application Routes
+
+1. **Frontend UI**: `http://localhost` (Landing Page & Login)
+2. **Backend API URL**: `http://localhost:8000`
+3. **API Documentation**: `http://localhost:8000/docs` (Interactive Swagger Docs)
+4. **Storage Console (MinIO)**: `http://localhost:9001` (Creds: `minioadmin` / `minioadmin`)
 
 ---
 
-## 👥 User Roles
+## 👥 Roles & Workflows
 
-| Role | Permissions | Use Case |
-|------|-------------|----------|
-| **Bank** | Upload documents, create trades, view own data, risk scoring | Financial institutions managing trade finance |
-| **Corporate** | Upload documents, create trades, view own data, risk scoring | Businesses engaged in international trade |
-| **Auditor** | Read-only access to all documents and trades, monitoring | Compliance and audit teams |
-| **Admin** | Full system access, user management, logging | System administrators |
+| Role | Core Responsibilities |
+|------|-----------------------|
+| **Bank** | Originates ALL trades. Reviews and oversees the progression of trades. Monitors Risk Scores dynamically calculated for participating corporations. |
+| **Corporate** | Participates merely in trades allocated to them. Uploads digital documentation to meet trade requirements. Able to raise a dispute against a counterpart. |
+| **Auditor** | Enjoys global read-only transparency. Assesses compliance alerts, reviews document hashing history, and oversees the immutable ledger timeline and health. |
+| **Admin** | Executes system-wide CRUD on users. System monitoring. Can't directly spoof standard trades. |
 
-### Role-Specific Features
-
-**Bank & Corporate:**
-- Create and manage trades
-- Upload trade documents
-- View risk scores
-- Access personal dashboards
-- Upload supporting documents
-
-**Auditor:**
-- View all documents (read-only)
-- Access monitoring dashboard
-- Review audit logs
-- Generate compliance reports
-
-**Admin:**
-- User management (CRUD)
-- Trade management (CRUD)
-- System monitoring
-- Access all features
+### The Trade Workflow & Risk Assessment
+1. **Initiation**: A **Bank** matches a Corporate Buyer to a Corporate Seller and registers the Trade as `PENDING`.
+2. **Execution**: Corporate users upload required documents. The system hashes them simultaneously, locking their state securely. 
+3. **Tracking**: The trade advances to `IN_PROGRESS` and eventually `COMPLETED`.
+4. **Disputes & Risk**: If a trade falls into a `DISPUTED` state, or if a subsequently uploaded document fails SHA-256 verification via the Auditor dashboard, the system's **Risk Engine** triggers heavily weighted penalties—automatically shifting offending corporate profiles into `HIGH` risk classifications for Banks to review.
 
 ---
 
-## 📊 Database Schema
+## 🛠️ Technology Stack
 
-### Core Tables
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| FastAPI | 0.109.0 | High-performance async API framework |
+| PostgreSQL | 14+ | Relational data persistence |
+| SQLAlchemy | 2.0.25 | ORM and complex query builder |
+| Alembic | Latest | Schema migrations |
+| MinIO | Latest | S3-compatible object storage |
+| Python | 3.11 | Runtime environment |
 
-**users** - User accounts and authentication
-- `id`, `user_code`, `name`, `email`, `password`, `role`, `organization_name`
-- Unique 6-character user codes (e.g., `JOH847`)
-
-**documents** - Document metadata
-- `id`, `filename`, `file_hash` (SHA-256), `s3_key`, `uploaded_by`, `created_at`
-
-**trade_transactions** - Trade lifecycle
-- `id`, `buyer_id`, `seller_id`, `amount`, `currency`, `status`, `created_at`
-- Statuses: PENDING, APPROVED, COMPLETED, REJECTED
-
-**trade_documents** - Trade-document relationships
-- Links trades to supporting documents
-
-**ledger_entries** - Immutable audit trail
-- `id`, `action`, `actor_id`, `document_id`, `previous_entry_hash`, `entry_hash`
-- Hash chain for tamper detection
-
-**risk_scores** - Counterparty risk assessment
-- `id`, `user_id`, `score` (0-100), `category` (LOW/MEDIUM/HIGH), `calculated_at`
-
-**audit_logs** - System monitoring
-- `id`, `user_id`, `action`, `details`, `timestamp`
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18 | Declarative UI framework |
+| TypeScript | 5 | Type-safe front-end architecture |
+| Vite | 5 | Build tool and fast dev server |
+| CSS3 | - | Custom styling layout (Glassmorphism) |
+| Axios | Latest | Promise-based HTTP client |
+| React Router | 6 | Client-side routing management |
 
 ---
 
-## 🔐 Security Features
+## 🛡️ Security Features Enabled
 
-### Authentication & Authorization
-- **JWT Tokens** - Secure, stateless authentication
-- **Password Hashing** - Bcrypt with salt
-- **Role-Based Access Control** - Enforced at API and UI levels
-- **Session Management** - Token expiration and refresh
-
-### Data Integrity
-- **SHA-256 Hashing** - File integrity verification
-- **Hash Chains** - Ledger entry linking for tamper detection
-- **Immutable Ledger** - Append-only audit trail
-- **Database Constraints** - Referential integrity
-
-### Application Security
-- **CORS Protection** - Configured allowed origins
-- **Input Validation** - Pydantic schemas
-- **SQL Injection Prevention** - SQLAlchemy ORM
-- **XSS Protection** - React escape by default
+- ✅ **Admin Self-Registration Blocked**: Standard `/register` endpoint strictly enforces `CORPORATE` role baseline creation.
+- ✅ **Role-Based Access Control**: Middleware route protection rejects unauthorized API calls universally.
+- ✅ **Audit Logging**: Separate, tamper-proof logs for Administrative governance steps.
+- ✅ **JWT Authentication**: Secure stateless token-based authorization.
+- ✅ **Password Hashing**: Bcrypt with adaptive salt arrays.
+- ✅ **Document Integrity**: SHA-256 hash generation and realtime mathematical evaluation.
+- ✅ **Hash Chains**: Appended ledger items carry the mathematical hash of previous actions to flag database tampering.
 
 ---
 
-## 📖 API Reference
+## 📖 API Reference Highlights
 
-### Authentication
+*All actions executed below automatically spawn encrypted, un-alterable records within the system Ledger.*
+
+**Documents**
 ```http
-POST   /api/v1/auth/register    # Register new user
-POST   /api/v1/auth/login       # Login and receive JWT
-POST   /api/v1/auth/logout      # Logout user (creates ledger entry)
-GET    /api/v1/auth/me          # Get current user info
+POST   /api/v1/documents/upload      # Upload file & trigger SHA-256 hashing
+GET    /api/v1/documents/{id}/verify # Validate hash integrity against ledger record
 ```
 
-### Admin Activity Logging
+**Trades**
 ```http
-POST   /api/v1/auth/login       # Creates ledger entry for admin login
-POST   /api/v1/auth/logout      # Creates ledger entry for admin logout
-GET    /api/v1/ledger/all    # View all ledger entries (Admin/Auditor)
+POST   /api/v1/trades              # Vault-locked to Bank creation only
+PUT    /api/v1/trades/{id}/status  # Progress trade across valid workflow states
 ```
 
-### Documents
+**Risk Engine**
 ```http
-POST   /api/v1/documents/upload      # Upload document (multipart/form-data)
-GET    /api/v1/documents              # List documents (role-scoped)
-GET    /api/v1/documents/{id}         # Get document details
-GET    /api/v1/documents/{id}/verify  # Verify hash integrity
-DELETE /api/v1/documents/{id}         # Delete document (admin only)
+POST   /api/v1/risk/calculate      # Algorithmically re-evaluate counterparty footprint
 ```
 
-### Trades
+**Ledger Transparency**
 ```http
-POST   /api/v1/trades              # Create new trade
-GET    /api/v1/trades              # List trades (role-scoped)
-GET    /api/v1/trades/{id}         # Get trade details
-PUT    /api/v1/trades/{id}/status  # Update trade status
-DELETE /api/v1/trades/{id}         # Delete trade (admin only)
+GET    /api/v1/ledger/verify-chain # Cryptographically assert entire database timeline is un-tampered
 ```
 
-### Risk Scoring
-```http
-GET    /api/v1/risk/my-score       # Get current user's risk score
-POST   /api/v1/risk/calculate      # Calculate risk for user
-GET    /api/v1/risk/history/{id}   # Get risk score history
-```
-
-### Ledger
-```http
-POST   /api/v1/ledger/entries           # Create ledger entry
-GET    /api/v1/ledger/documents/{id}    # Get document ledger timeline
-GET    /api/v1/ledger/verify-chain      # Verify ledger integrity
-```
-
-### Admin
-```http
-GET    /api/v1/admin/users           # List all users
-POST   /api/v1/admin/users           # Create user
-DELETE /api/v1/admin/users/{id}      # Delete user
-GET    /api/v1/admin/audit-logs      # View audit logs
-```
-
-**Interactive API Documentation**: http://localhost:8000/docs
-
----
-
-## 🎨 User Interface
-
-### Design System
-- **Color Palette**: Dark theme with neon purple, cyan, and lime accents
-- **Typography**: Inter (UI), Fira Code (monospace)
-- **Effects**: Glassmorphism, gradient backgrounds, subtle animations
-- **Layout**: Responsive grid system, mobile-first approach
-
-### Key Components
-- **Dashboard** - Role-specific analytics and quick actions
-- **Document Explorer** - File management with drag-drop upload
-- **Trade Manager** - Complete trade workflow interface
-- **Risk Score Widget** - Visual risk indicators
-- **Ledger Timeline** - Interactive audit trail visualization
-- **User Code Badges** - Styled user identification
-
----
-
-## 🧪 Testing
-
-### Manual Testing
-1. Register users with different roles
-2. Upload various document types
-3. Create trades and link documents
-4. Verify hash integrity
-5. Check ledger entries
-6. Test role-based access restrictions
-
-### API Testing
-Use the interactive Swagger UI at http://localhost:8000/docs
+*(Interactive Documentation is directly accessible locally at `http://localhost:8000/docs` upon spinning up the Docker network.)*
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
-
-**Containers won't start:**
-```bash
-docker-compose down -v
-docker-compose up --build
-```
-
-**Database migration errors:**
-```bash
-docker-compose exec backend alembic upgrade head
-```
-
-**MinIO connection issues:**
-- Check MinIO console: http://localhost:9001
-- Default credentials: minioadmin / minioadmin
-
-**Frontend not loading:**
-- Clear browser cache
-- Check console for errors
-- Verify backend is running on port 8000
-
-**CORS errors:**
-- Ensure frontend is accessed via http://localhost (not 127.0.0.1)
-- Check backend CORS settings
-
-### Logs
-```bash
-# View all logs
-docker-compose logs -f
-
-# View specific service logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
-```
-
----
-
-## 🔄 Database Migrations
-
-### View migration status
-```bash
-docker-compose exec backend alembic current
-```
-
-### Create new migration
-```bash
-docker-compose exec backend alembic revision -m "description"
-```
-
-### Apply migrations
-```bash
-docker-compose exec backend alembic upgrade head
-```
-
-### Rollback migration
-```bash
-docker-compose exec backend alembic downgrade -1
-```
-
----
-
-## 🚀 Deployment
-
-### Production Considerations
-
-1. **Environment Variables**
-   - Set strong `SECRET_KEY` for JWT
-   - Configure `DATABASE_URL` for production database
-   - Update `CORS_ORIGINS` to actual frontend domain
-   - Set `MINIO_ENDPOINT` to production storage
-
-2. **Database**
-   - Use managed PostgreSQL service
-   - Enable SSL connections
-   - Configure backups
-
-3. **Object Storage**
-   - Use AWS S3 or production MinIO cluster
-   - Enable encryption at rest
-   - Configure bucket policies
-
-4. **Security**
-   - Enable HTTPS (TLS/SSL certificates)
-   - Implement rate limiting
-   - Set up monitoring and alerts
-   - Regular security audits
+* **Issue:** "Database already has X user(s). Skipping seed."
+  **Solution:** Normal behavior if you've already run the seeder script. The users persist correctly.
+* **Issue:** Connection / CORS Errors
+  **Solution:** Ensure you are accessing the frontend via `http://localhost` (not `127.0.0.1` unless explicitly configured). Ensure the backend container remains healthy via `docker-compose ps`.
 
 ---
 
@@ -454,23 +172,4 @@ MIT License - see LICENSE file for details
 
 ---
 
-## 🤝 Contributing
-
-This project follows industry best practices for trade finance blockchain applications.
-
-For questions or support, please open an issue in the repository.
-
----
-
-## 📞 Support
-
-For technical support or questions:
-- Review the [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)
-- Check API documentation at http://localhost:8000/docs
-- Review troubleshooting section above
-
----
-
-**Built with ❤️ for modern trade finance operations**
-
----
+**Built with ❤️ for secure, transparent, and modernized trade finance operations.**
