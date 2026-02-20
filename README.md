@@ -27,7 +27,7 @@ The **Trade Finance Blockchain Explorer** is a full-stack solution designed to m
 | **Backend** | Python 3.11, FastAPI, SQLAlchemy |
 | **Database** | PostgreSQL 15 |
 | **Storage** | MinIO (S3-Compatible) |
-| **Infrastructure** | Docker, Docker Compose |
+| **Infrastructure** | Docker, Docker Compose, Netlify (Frontend Hosting)|
 
 ---
 
@@ -117,4 +117,5 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 **Abdul Samad**
 *   *Project developed as part of Infosys Internship Program 6.0*
+
 
