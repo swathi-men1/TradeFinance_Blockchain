@@ -147,9 +147,27 @@ View Analytics
 
 🧪 Screenshots / Demo
 
+<img width="642" height="437" alt="Screenshot 2026-02-20 at 10 53 38 PM" src="https://github.com/user-attachments/assets/8ecb1ae2-8bda-43ad-983b-92a7effea5b0" />
+
+
+<img width="1440" height="825" alt="Screenshot 2026-02-20 at 10 54 52 PM" src="https://github.com/user-attachments/assets/1bb3b4c5-dc42-4bcd-9774-9351d6dcf422" />
+<img width="220" height="349" alt="Screenshot 2026-02-20 at 10 52 14 PM" src="https://github.com/user-attachments/assets/d13594e5-6b17-4506-85d2-c1d2401518c8" />
+<img width="422" height="241" alt="Screenshot 2026-02-20 at 10 51 41 PM" src="https://github.com/user-attachments/assets/dd36fe46-f2d8-49c2-9bfd-c0b9ec158ffa" />
+<img width="1438" height="783" alt="Screenshot 2026-02-20 at 10 54 38 PM" src="https://github.com/user-attachments/assets/30fb2b31-9a9c-42b1-866d-06f27ce35aa0" />
+<img width="1440" height="787" alt="Screenshot 2026-02-20 at 10 51 21 PM" src="https://github.com/user-attachments/assets/9043d582-42cf-4837-91d8-e065bb75925f" />
+<img width="802" height="398" alt="Screenshot 2026-02-20 at 10 51 07 PM" src="https://github.com/user-attachments/assets/619d4387-4d87-450f-9e90-4ff6dc934e4e" />
+<img width="1417" height="794" alt="Screenshot 2026-02-20 at 10 50 42 PM" src="https://github.com/user-attachments/assets/442691ef-fa72-4df7-92c9-380ea623ba5f" />
+<img width="1419" height="807" alt="Screenshot 2026-02-20 at 10 54 22 PM" src="https://github.com/user-attachments/assets/a384bb1a-2d77-4fc8-bd30-321ed90735d1" />
+<img width="1440" height="819" alt="Screenshot 2026-02-20 at 10 53 49 PM" src="https://github.com/user-attachments/assets/37ded052-07ee-4658-b6ee-ab206be0f62f" />
+<img width="642" height="437" alt="Screenshot 2026-02-20 at 10 53 38 PM" src="https://github.com/user-attachments/assets/b9273f72-2ff9-4a57-bc01-12ff4cea6ab4" />
+
+
 
 
 🌐 Deployment Link
+<img width="746" height="578" alt="Screenshot 2026-02-20 at 11 25 23 PM" src="https://github.com/user-attachments/assets/f1caf813-9c59-4327-a10c-3f5d1ead7895" /><img width="995" height="540" alt="Screenshot 2026-02-20 at 10 53 03 PM" src="https://github.com/user-attachments/assets/f793d04c-fe45-4047-82bd-ae0c0a81da4e" />
+
+
 
 
 ⚠️ Current Limitations
