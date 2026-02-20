@@ -316,7 +316,9 @@ uvicorn main:app --reload
 All project code is committed to:
 
 - TF_Blockchain--Ughasri
-- README updated with:
+- 
+  README updated with:
+  
 - Full project explanation
 - Module details
 - Risk logic
