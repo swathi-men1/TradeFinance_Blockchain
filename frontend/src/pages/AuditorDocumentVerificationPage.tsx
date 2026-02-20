@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GlassCard } from '../components/GlassCard';
 import auditorService from '../services/auditorService';
 import { Eye, Download, ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
@@ -67,6 +68,7 @@ export default function AuditorDocumentVerificationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => { fetchDocuments(); }, []);
 
@@ -83,14 +85,8 @@ export default function AuditorDocumentVerificationPage() {
     }
   };
 
-  const handleViewDocument = async (doc: Document) => {
-    try {
-      const blob = await auditorService.downloadDocument(doc.id);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } catch {
-      setError('Failed to open document. Please try again.');
-    }
+  const handleViewDocument = (doc: Document) => {
+    navigate(`/documents/${doc.id}`);
   };
 
   const handleDownloadDocument = async (doc: Document) => {
@@ -168,8 +164,8 @@ export default function AuditorDocumentVerificationPage() {
                 key={s}
                 onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1 rounded text-xs font-semibold border transition-all ${filterStatus === s
-                    ? 'bg-lime/20 text-lime border-lime/40'
-                    : 'text-secondary border-gray-700 hover:border-gray-500'
+                  ? 'bg-lime/20 text-lime border-lime/40'
+                  : 'text-secondary border-gray-700 hover:border-gray-500'
                   }`}
               >
                 {s === '' ? 'All' : s}
