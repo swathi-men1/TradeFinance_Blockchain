@@ -374,29 +374,29 @@ export default function DocumentDetailsPage() {
                 {/* Left Column - Document Info */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Document Information */}
-                    <GlassCard className="border border-white/10">
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <GlassCard className="border border-gray-300 bg-white">
+                        <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-3">
                             <span className="text-3xl">📋</span>
                             <span>Document Information</span>
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">ID</label>
-                                <p className="text-white text-lg font-semibold">#{document.id}</p>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">ID</label>
+                                <p className="text-black text-lg font-semibold">#{document.id}</p>
                             </div>
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">Number</label>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">Number</label>
                                 {isEditing ? (
-                                    <input type="text" className="input-field w-full bg-gray-900/60 border border-gray-700 rounded-lg text-white" 
+                                    <input type="text" className="input-field w-full bg-white border border-gray-300 rounded-lg text-black" 
                                         value={editForm.doc_number} onChange={(e) => setEditForm({ ...editForm, doc_number: e.target.value })} />
                                 ) : (
-                                    <p className="text-white text-lg font-semibold">{document.doc_number}</p>
+                                    <p className="text-black text-lg font-semibold">{document.doc_number}</p>
                                 )}
                             </div>
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">Type</label>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">Type</label>
                                 {isEditing ? (
-                                    <select className="input-field w-full bg-gray-900/60 border border-gray-700 rounded-lg text-white" 
+                                    <select className="input-field w-full bg-white border border-gray-300 rounded-lg text-black" 
                                         value={editForm.doc_type} onChange={(e) => setEditForm({ ...editForm, doc_type: e.target.value as any })}>
                                         <option value="LOC">💰 Letter of Credit</option>
                                         <option value="INVOICE">🧾 Commercial Invoice</option>
@@ -406,26 +406,26 @@ export default function DocumentDetailsPage() {
                                         <option value="INSURANCE_CERT">🛡️ Insurance Certificate</option>
                                     </select>
                                 ) : (
-                                    <p className="text-white text-lg font-semibold">{formatDocType(document.doc_type)}</p>
+                                    <p className="text-black text-lg font-semibold">{formatDocType(document.doc_type)}</p>
                                 )}
                             </div>
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">Organization</label>
-                                <p className="text-white text-lg font-semibold">{document.owner?.org_name || '—'}</p>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">Organization</label>
+                                <p className="text-black text-lg font-semibold">{document.owner?.org_name || '—'}</p>
                             </div>
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">Issued</label>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">Issued</label>
                                 {isEditing ? (
-                                    <input type="date" className="input-field w-full bg-gray-900/60 border border-gray-700 rounded-lg text-white text-sm"
+                                    <input type="date" className="input-field w-full bg-white border border-gray-300 rounded-lg text-black text-sm"
                                         value={editForm.issued_at ? new Date(editForm.issued_at).toISOString().split('T')[0] : ''} 
                                         onChange={(e) => setEditForm({ ...editForm, issued_at: e.target.value })} />
                                 ) : (
-                                    <p className="text-white text-lg font-semibold">{formatDateShortIST(document.issued_at)}</p>
+                                    <p className="text-black text-lg font-semibold">{formatDateShortIST(document.issued_at)}</p>
                                 )}
                             </div>
                             <div>
-                                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-2">Uploaded</label>
-                                <p className="text-white text-lg font-semibold">{formatDateShortIST(document.created_at)}</p>
+                                <label className="text-black/60 text-xs font-semibold uppercase tracking-wider block mb-2">Uploaded</label>
+                                <p className="text-black text-lg font-semibold">{formatDateShortIST(document.created_at)}</p>
                             </div>
                         </div>
                     </GlassCard>
@@ -449,18 +449,27 @@ export default function DocumentDetailsPage() {
                                                 <span className="font-semibold text-black">{entry.action.replace(/_/g, ' ')}</span>
                                                 {entry.entry_metadata?.is_valid && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">✓ Valid</span>}
                                             </div>
-                                            <span className="text-xs text-gray-600">{formatDateShortIST(entry.created_at)}</span>
+                                            <span className="text-xs text-black/60">{formatDateShortIST(entry.created_at)}</span>
                                         </div>
-                                        <p className="text-xs text-gray-600 mb-2">Actor: User #{entry.actor_id}</p>
+                                        <p className="text-xs text-black/60 mb-2">
+                                            Actor: {entry.actor ? (
+                                                <span className="font-semibold text-black">
+                                                    {entry.actor.name}
+                                                    {entry.actor.user_code && <span className="text-blue-700"> ({entry.actor.user_code})</span>}
+                                                </span>
+                                            ) : (
+                                                <span>User #{entry.actor_id}</span>
+                                            )}
+                                        </p>
                                         <code className="text-xs font-mono text-blue-700 break-all">{entry.entry_hash?.substring(0, 24)}...</code>
                                     </div>
                                 ))}
                                 {ledgerEntries.length > 5 && (
-                                    <p className="text-center text-gray-600 text-sm py-2">+{ledgerEntries.length - 5} more entries</p>
+                                    <p className="text-center text-black/60 text-sm py-2">+{ledgerEntries.length - 5} more entries</p>
                                 )}
                             </div>
                         ) : (
-                            <div className="text-center py-12 text-gray-600">No ledger entries</div>
+                            <div className="text-center py-12 text-black/60">No ledger entries</div>
                         )}
                     </GlassCard>
                 </div>

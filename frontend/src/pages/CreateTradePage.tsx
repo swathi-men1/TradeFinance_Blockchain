@@ -147,19 +147,16 @@ export default function CreateTradePage() {
                             <strong>Name:</strong> {user?.name}
                         </p>
                         <p className="text-slate-700 text-sm mt-1">
-                            <strong>Your Numeric User ID:</strong> <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300 font-bold text-base">{user?.id}</span>
-                        </p>
-                        <p className="text-slate-700 text-sm mt-1">
-                            <strong>Your User Code:</strong> <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300 font-bold">{user?.user_code}</span>
+                            <strong>Your User Code:</strong> <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300 font-bold text-base">{user?.user_code}</span>
                         </p>
                         {user?.role === 'bank' ? (
                             <div className="mt-3 text-sm text-emerald-700 bg-emerald-50 p-3 rounded-lg border-2 border-emerald-200">
-                                <strong>Note:</strong> This trade will be created between two Corporate Users. You are acting as the facilitating bank. Use Corporate IDs (14, 15, or 16).
+                                <strong>Note:</strong> This trade will be created between two Corporate Users. You are acting as the facilitating bank. Use Corporate Codes (CORP-001, CORP-002, CORP-003).
                             </div>
                         ) : user?.role !== 'admin' && (
                             <p className="text-slate-700 text-sm mt-3 flex items-start gap-2">
                                 <span>⚠️</span>
-                                <span><strong>Important:</strong> You must be either the buyer or seller in this trade. Use your numeric ID: <span className="font-mono bg-white px-2 py-1 rounded border border-amber-300 font-bold">{user?.id}</span> and your partner's ID (or another corporate user ID).</span>
+                                <span><strong>Important:</strong> You must be either the buyer or seller in this trade. Use your code: <span className="font-mono bg-white px-2 py-1 rounded border border-amber-300 font-bold">{user?.user_code}</span> and your partner's code (or another corporate user code).</span>
                             </p>
                         )}
                     </div>
@@ -176,43 +173,43 @@ export default function CreateTradePage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Buyer ID */}
+                    {/* Buyer Code */}
                     <div>
                         <label className="block text-sm font-bold text-slate-900 mb-2">
-                            Buyer User ID (Numeric) *
+                            Buyer User Code *
                         </label>
                         <input
                             type="text"
-                            value={buyerId}
-                            onChange={(e) => setBuyerId(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all"
-                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.id} (your ID) or partner's ID like 14, 15, 16` : 'E.g., 14, 15, 16 (corporate users)'}
+                            value={buyerCode}
+                            onChange={(e) => setBuyerCode(e.target.value.toUpperCase())}
+                            className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all font-mono text-lg font-bold tracking-wide"
+                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.user_code} or CORP-001, CORP-002, CORP-003` : 'E.g., CORP-001, CORP-002, CORP-003'}
                             required
                         />
                         <p className="mt-2 text-xs text-slate-600">
                             {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'Use Corporate User IDs: 14 (CORP-001), 15 (CORP-002), 16 (CORP-003)'
-                                : `Use your ID (${user?.id}) here if you're the buyer`}
+                                ? 'Use Corporate User Codes: CORP-001, CORP-002, CORP-003'
+                                : `Use your code (${user?.user_code}) here if you're the buyer`}
                         </p>
                     </div>
 
-                    {/* Seller ID */}
+                    {/* Seller Code */}
                     <div>
                         <label className="block text-sm font-bold text-slate-900 mb-2">
-                            Seller User ID (Numeric) *
+                            Seller User Code *
                         </label>
                         <input
                             type="text"
-                            value={sellerId}
-                            onChange={(e) => setSellerId(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all"
-                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.id} (your ID) or partner's ID like 14, 15, 16` : 'E.g., 14, 15, 16 (corporate users)'}
+                            value={sellerCode}
+                            onChange={(e) => setSellerCode(e.target.value.toUpperCase())}
+                            className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all font-mono text-lg font-bold tracking-wide"
+                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.user_code} or CORP-001, CORP-002, CORP-003` : 'E.g., CORP-001, CORP-002, CORP-003'}
                             required
                         />
                         <p className="mt-2 text-xs text-slate-600">
                             {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'Use Corporate User IDs: 14 (CORP-001), 15 (CORP-002), 16 (CORP-003)'
-                                : `Use your ID (${user?.id}) here if you're the seller`}
+                                ? 'Use Corporate User Codes: CORP-001, CORP-002, CORP-003'
+                                : `Use your code (${user?.user_code}) here if you're the seller`}
                         </p>
                     </div>
 
@@ -349,7 +346,7 @@ export default function CreateTradePage() {
                             {user?.role !== 'admin' && user?.role !== 'bank' && (
                                 <li className="flex items-start gap-2">
                                     <span className="text-amber-600 font-bold">⚠️</span>
-                                    <span>You must be either the buyer (#{buyerId || '___'}) or seller (#{sellerId || '___'})</span>
+                                    <span>You must be either the buyer or seller in this trade</span>
                                 </li>
                             )}
                             <li className="flex items-start gap-2">
@@ -401,14 +398,13 @@ export default function CreateTradePage() {
                 <div className="mb-8">
                     <h4 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <span>👥</span>
-                        <span>Available Users & Their IDs</span>
+                        <span>Available Users & Their Codes</span>
                     </h4>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b-2 border-slate-300 bg-slate-50">
                                     <th className="text-left px-4 py-3 font-bold text-slate-900">User Code</th>
-                                    <th className="text-left px-4 py-3 font-bold text-slate-900">User ID</th>
                                     <th className="text-left px-4 py-3 font-bold text-slate-900">Name</th>
                                     <th className="text-left px-4 py-3 font-bold text-slate-900">Role</th>
                                 </tr>
@@ -416,43 +412,36 @@ export default function CreateTradePage() {
                             <tbody className="divide-y divide-slate-200">
                                 <tr className="hover:bg-blue-50">
                                     <td className="px-4 py-3 font-mono font-bold text-blue-600">ADM-001</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">11</td>
                                     <td className="px-4 py-3 text-slate-700">System Administrator</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-bold">Admin</span></td>
                                 </tr>
                                 <tr className="hover:bg-blue-50">
                                     <td className="px-4 py-3 font-mono font-bold text-green-600">BANK-001</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">12</td>
                                     <td className="px-4 py-3 text-slate-700">Sarah Banking</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Bank</span></td>
                                 </tr>
                                 <tr className="hover:bg-blue-50">
                                     <td className="px-4 py-3 font-mono font-bold text-green-600">BANK-002</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">13</td>
                                     <td className="px-4 py-3 text-slate-700">David European Bank</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Bank</span></td>
                                 </tr>
                                 <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
                                     <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-001</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">14</td>
                                     <td className="px-4 py-3 text-slate-700">John Corporate</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
                                 </tr>
                                 <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
                                     <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-002</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">15</td>
                                     <td className="px-4 py-3 text-slate-700">Emily Tech Trading</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
                                 </tr>
                                 <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
                                     <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-003</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">16</td>
                                     <td className="px-4 py-3 text-slate-700">Lisa Asia Trade</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
                                 </tr>
                                 <tr className="hover:bg-orange-50">
                                     <td className="px-4 py-3 font-mono font-bold text-orange-600">AUD-001</td>
-                                    <td className="px-4 py-3 font-bold text-slate-900">17</td>
                                     <td className="px-4 py-3 text-slate-700">Michael Auditor</td>
                                     <td className="px-4 py-3"><span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-bold">Auditor</span></td>
                                 </tr>
@@ -464,11 +453,11 @@ export default function CreateTradePage() {
                 {/* FAQs */}
                 <div className="space-y-6 text-sm text-slate-700 border-t-2 border-slate-200 pt-8">
                     <div>
-                        <p className="text-slate-900 font-bold mb-2">Q: What IDs should I use?</p>
+                        <p className="text-slate-900 font-bold mb-2">Q: What codes should I use?</p>
                         <p className="text-slate-700">
-                            A: Use the <strong>numeric User ID</strong> (e.g., <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">14</span>), not the user code. Your User Code is <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">{user?.user_code}</span>.
-                            {user?.role !== 'admin' && user?.role !== 'bank' && ' Please provide this to your trading partner.'}
-                            {' '}See the table above to find user IDs.
+                            A: Use <strong>User Codes</strong> (e.g., <span className="font-mono bg-cyan-50 px-2 py-1 rounded border border-cyan-300">CORP-001</span>), not numeric IDs. Your User Code is <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">{user?.user_code}</span>.
+                            {user?.role !== 'admin' && user?.role !== 'bank' && ' Please provide this code to your trading partner.'}
+                            {' '}See the reference table above.
                         </p>
                     </div>
 
@@ -477,7 +466,7 @@ export default function CreateTradePage() {
                         <p className="text-slate-700">
                             <strong>Corporate users (CORP-001, CORP-002, CORP-003)</strong> can be buyers and sellers. 
                             {user?.role === 'bank' && ' As a Bank, you cannot be a party but you can create trades between corporates.'}
-                            Use their numeric IDs: <span className="font-mono bg-cyan-50 px-2 py-1 rounded border border-cyan-300">14, 15, 16</span>
+                            Use their user codes: <span className="font-mono bg-cyan-50 px-2 py-1 rounded border border-cyan-300">CORP-001, CORP-002, CORP-003</span>
                         </p>
                     </div>
 
@@ -485,8 +474,8 @@ export default function CreateTradePage() {
                         <p className="text-slate-900 font-bold mb-2">Q: Why am I getting "forbidden" errors?</p>
                         <p className="text-slate-700">
                             A: {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'As Bank/Admin, ensure buyer and seller are valid Corporate User IDs (14, 15, or 16).'
-                                : `You must be either the buyer or seller. Your User ID is ${user?.id}. Use your ID and a trading partner's ID.`}
+                                ? 'As Bank/Admin, ensure buyer and seller are valid Corporate User Codes (CORP-001, CORP-002, CORP-003).'
+                                : `You must be either the buyer or seller. Your User Code is ${user?.user_code}. Use your code and a trading partner's code.`}
                         </p>
                     </div>
 

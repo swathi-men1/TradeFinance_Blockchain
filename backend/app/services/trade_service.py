@@ -38,12 +38,12 @@ class TradeService:
         - Audit trail clear: Bank actions are separate from counterparty behavior
         """
         
-        # Validate buyer exists
-        buyer = db.query(User).filter(User.id == trade_data.buyer_id).first()
+        # Validate buyer exists by user code
+        buyer = db.query(User).filter(User.user_code == trade_data.buyer_code.upper()).first()
         if not buyer:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Buyer with ID {trade_data.buyer_id} not found"
+                detail=f"Buyer with user code {trade_data.buyer_code} not found"
             )
         if not buyer.is_active:
             raise HTTPException(
@@ -51,12 +51,12 @@ class TradeService:
                 detail=f"Buyer {buyer.name} is inactive and cannot participate in trades"
             )
         
-        # Validate seller exists
-        seller = db.query(User).filter(User.id == trade_data.seller_id).first()
+        # Validate seller exists by user code
+        seller = db.query(User).filter(User.user_code == trade_data.seller_code.upper()).first()
         if not seller:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Seller with ID {trade_data.seller_id} not found"
+                detail=f"Seller with user code {trade_data.seller_code} not found"
             )
         if not seller.is_active:
             raise HTTPException(
@@ -65,16 +65,15 @@ class TradeService:
             )
         
         # Buyer and seller must be different
-        if trade_data.buyer_id == trade_data.seller_id:
+        if buyer.id == seller.id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Buyer and seller cannot be the same user"
             )
         
-        # Permission check: user must be either buyer or seller (unless admin)
         # Permission check: user must be either buyer or seller (unless admin or bank)
         if current_user.role not in [UserRole.ADMIN, UserRole.BANK]:
-            if current_user.id != trade_data.buyer_id and current_user.id != trade_data.seller_id:
+            if current_user.id != buyer.id and current_user.id != seller.id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You can only create trades where you are the buyer or seller"
@@ -90,8 +89,8 @@ class TradeService:
         
         # Create trade
         new_trade = TradeTransaction(
-            buyer_id=trade_data.buyer_id,
-            seller_id=trade_data.seller_id,
+            buyer_id=buyer.id,
+            seller_id=seller.id,
             amount=trade_data.amount,
             currency=trade_data.currency.upper(),
             status=TradeStatus.PENDING.value  # Use .value to get 'pending'
@@ -329,54 +328,58 @@ class TradeService:
         
         # Store old values for audit
         old_values = {
-            "buyer_id": trade.buyer_id,
-            "seller_id": trade.seller_id,
+            "buyer_code": trade.buyer.user_code if trade.buyer else None,
+            "seller_code": trade.seller.user_code if trade.seller else None,
             "amount": str(trade.amount),
             "currency": trade.currency
         }
         
-        # Validate new buyer exists
-        if trade_updates.buyer_id != trade.buyer_id:
-            buyer = db.query(User).filter(User.id == trade_updates.buyer_id).first()
+        # Validate new buyer exists by user code
+        buyer = None
+        if trade_updates.buyer_code:
+            buyer = db.query(User).filter(User.user_code == trade_updates.buyer_code.upper()).first()
             if not buyer:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Buyer with ID {trade_updates.buyer_id} not found"
+                    detail=f"Buyer with code {trade_updates.buyer_code} not found"
                 )
             
             # Validate buyer role
-            if buyer.role not in [UserRole.CORPORATE, UserRole.BANK]:
+            if buyer.role not in [UserRole.CORPORATE]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Buyer must be either Corporate or Bank user"
+                    detail="Buyer must be a Corporate user"
                 )
         
-        # Validate new seller exists
-        if trade_updates.seller_id != trade.seller_id:
-            seller = db.query(User).filter(User.id == trade_updates.seller_id).first()
+        # Validate new seller exists by user code
+        seller = None
+        if trade_updates.seller_code:
+            seller = db.query(User).filter(User.user_code == trade_updates.seller_code.upper()).first()
             if not seller:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Seller with ID {trade_updates.seller_id} not found"
+                    detail=f"Seller with code {trade_updates.seller_code} not found"
                 )
             
             # Validate seller role
-            if seller.role not in [UserRole.CORPORATE, UserRole.BANK]:
+            if seller.role not in [UserRole.CORPORATE]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Seller must be either Corporate or Bank user"
+                    detail="Seller must be a Corporate user"
                 )
         
         # Buyer and seller must be different
-        if trade_updates.buyer_id == trade_updates.seller_id:
+        if buyer and seller and buyer.id == seller.id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Buyer and seller cannot be the same user"
             )
         
         # Update trade details
-        trade.buyer_id = trade_updates.buyer_id
-        trade.seller_id = trade_updates.seller_id
+        if buyer:
+            trade.buyer_id = buyer.id
+        if seller:
+            trade.seller_id = seller.id
         trade.amount = trade_updates.amount
         trade.currency = trade_updates.currency.upper()
         

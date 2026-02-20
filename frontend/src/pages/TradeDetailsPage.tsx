@@ -170,7 +170,7 @@ export default function TradeDetailsPage() {
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
                     <div className="spinner mx-auto mb-4" />
-                    <p className="text-secondary">Loading trade details...</p>
+                    <p className="text-slate-600">Loading trade details...</p>
                 </div>
             </div>
         );
@@ -179,16 +179,16 @@ export default function TradeDetailsPage() {
     if (error && !trade) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <GlassCard className="text-center max-w-md">
+                <div className="bg-white/80 backdrop-blur-xl border-2 border-slate-200 rounded-[28px] p-8 text-center max-w-md">
                     <div className="text-6xl mb-4">⚠️</div>
-                    <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-4">
                         Error Loading Trade
                     </h2>
-                    <p className="text-secondary mb-6">{error}</p>
-                    <button onClick={() => navigate('/trades')} className="btn-primary">
+                    <p className="text-slate-600 mb-6">{error}</p>
+                    <button onClick={() => navigate('/trades')} className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all shadow-lg">
                         Back to Trades
                     </button>
-                </GlassCard>
+                </div>
             </div>
         );
     }
@@ -201,188 +201,232 @@ export default function TradeDetailsPage() {
 
     return (
         <>
-            <div className="fade-in max-w-6xl">
-                {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={() => navigate(user?.role === 'bank' ? '/bank/trades' : '/trades')}
-                        className="text-secondary hover:text-lime transition-colors mb-4 flex items-center gap-2"
-                    >
-                        <span>←</span>
-                        <span>Back to Trades</span>
-                    </button>
-
-                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
-                        <div>
-                            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                Trade #{trade.id}
-                            </h1>
-                            <p className="text-secondary">
-                                Created {formatDate(trade.created_at)}
-                            </p>
-                        </div>
-
-                        <div className={`status-badge status-${config.color}`}>
-                            <span>{config.icon}</span>
-                            <span>{config.label}</span>
-                        </div>
-                    </div>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 fade-in">
+                {/* Ambient Background */}
+                <div className="fixed inset-0 pointer-events-none -z-10">
+                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-100/40 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-100/40 rounded-full blur-[120px]"></div>
                 </div>
 
-                {/* Error Message */}
-                {error && (
-                    <div className="alert alert-error mb-6">
-                        <span className="text-2xl">⚠️</span>
-                        <span>{error}</span>
-                    </div>
-                )}
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <button
+                            onClick={() => navigate(user?.role === 'bank' ? '/bank/trades' : '/trades')}
+                            className="text-black/60 hover:text-black transition-colors mb-6 flex items-center gap-2 font-semibold group"
+                        >
+                            <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                            <span>Back to Trades</span>
+                        </button>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Trade Details Card */}
-                    <GlassCard>
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            <span>💼</span>
-                            <span>Trade Details</span>
-                        </h2>
-
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                                <span className="text-muted">Amount</span>
-                                <span className="text-2xl font-bold text-lime">
-                                    {formatAmount(trade.amount, trade.currency)}
-                                </span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                                <span className="text-muted">Buyer</span>
-                                <div className="text-right">
-                                    <p className="text-white font-semibold">{trade.buyer?.name || 'Unknown'}</p>
-                                    <p className="text-secondary text-sm">
-                                        {trade.buyer?.user_code ? (
-                                            <span className="font-mono text-lime">{trade.buyer.user_code}</span>
-                                        ) : (
-                                            `ID: #${trade.buyer_id}`
-                                        )}
-                                    </p>
+                        {/* Hero Section */}
+                        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-8 border-2 border-blue-200 backdrop-blur-sm mb-8 shadow-lg">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                <div className="flex items-start gap-6 flex-1">
+                                    {/* Trade Icon */}
+                                    <div className="text-7xl p-4 bg-white rounded-2xl backdrop-blur-sm border-2 border-blue-200 shadow-sm">
+                                        💼
+                                    </div>
+                                    
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-blue-700 uppercase tracking-wider mb-2">
+                                            Trade Transaction
+                                        </p>
+                                        <h1 className="text-5xl font-bold text-black mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                            Trade #{trade.id}
+                                        </h1>
+                                        <p className="text-black/60 text-sm">
+                                            Created {formatDate(trade.created_at)}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                                <span className="text-muted">Seller</span>
-                                <div className="text-right">
-                                    <p className="text-white font-semibold">{trade.seller?.name || 'Unknown'}</p>
-                                    <p className="text-secondary text-sm">
-                                        {trade.seller?.user_code ? (
-                                            <span className="font-mono text-lime">{trade.seller.user_code}</span>
-                                        ) : (
-                                            `ID: #${trade.seller_id}`
-                                        )}
-                                    </p>
+                                {/* Status Badge */}
+                                <div className={`px-6 py-3 rounded-2xl font-bold text-lg border-2 shadow-md flex items-center gap-3 ${
+                                    trade.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                                    trade.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-300' :
+                                    trade.status === 'completed' ? 'bg-green-50 text-green-700 border-green-300' :
+                                    trade.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                                    'bg-red-50 text-red-700 border-red-300'
+                                }`}>
+                                    <span className="text-2xl">{config.icon}</span>
+                                    <span>{config.label}</span>
                                 </div>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3 border-b border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                                <span className="text-muted">Currency</span>
-                                <span className="text-white font-semibold">{trade.currency}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center py-3">
-                                <span className="text-muted">Last Updated</span>
-                                <span className="text-secondary text-sm">{formatDate(trade.updated_at)}</span>
                             </div>
                         </div>
-                    </GlassCard>
+                    </div>
 
-                    {/* Status Management / Dispute Card */}
-                    {(canUpdateStatus || canDispute) && (
-                        <GlassCard>
-                            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                <span>{canDispute ? '⚠️' : '🔄'}</span>
-                                <span>{canDispute ? 'Actions' : 'Update Status'}</span>
-                            </h2>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-6 p-4 rounded-xl bg-red-100 border-2 border-red-300 text-red-700 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <span className="text-2xl">⚠️</span>
+                            <span className="flex-1">{error}</span>
+                            <button onClick={() => setError('')} className="hover:text-red-900 text-xl">✕</button>
+                        </div>
+                    )}
 
-                            {/* Corporate Dispute Action */}
-                            {canDispute && (
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-200 mb-4">
-                                        If there is an issue with this trade, you can raise a dispute. This will flag the transaction for risk review.
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                        {/* Trade Details Card - Spans 2 columns */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white/80 backdrop-blur-xl border-2 border-gray-200 rounded-3xl p-8 shadow-lg">
+                                <h2 className="text-3xl font-bold text-black mb-8 flex items-center gap-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                    <span className="text-4xl">💼</span>
+                                    <span>Trade Details</span>
+                                </h2>
+
+                                <div className="space-y-6">
+                                    {/* Amount - Highlighted */}
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
+                                        <span className="text-black/60 text-sm font-semibold uppercase tracking-wider block mb-2">Trade Amount</span>
+                                        <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                            {formatAmount(trade.amount, trade.currency)}
+                                        </span>
                                     </div>
-                                    <button
-                                        onClick={handleDispute}
-                                        disabled={updatingStatus}
-                                        className="btn bg-red-600 hover:bg-red-700 text-white w-full border-0"
-                                    >
-                                        {updatingStatus ? 'Processing...' : '⚠️ Raise Dispute'}
-                                    </button>
+
+                                    {/* Buyer */}
+                                    <div className="flex items-center justify-between py-4 border-b-2 border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-xl border-2 border-blue-200">
+                                                🛒
+                                            </div>
+                                            <div>
+                                                <span className="text-black/60 text-sm font-semibold uppercase tracking-wider block">Buyer</span>
+                                                <p className="text-black font-bold text-lg">{trade.buyer?.name || 'Unknown'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            {trade.buyer?.user_code && (
+                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg font-mono font-semibold text-sm border border-blue-300">
+                                                    {trade.buyer.user_code}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Seller */}
+                                    <div className="flex items-center justify-between py-4 border-b-2 border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-xl border-2 border-green-200">
+                                                🏪
+                                            </div>
+                                            <div>
+                                                <span className="text-black/60 text-sm font-semibold uppercase tracking-wider block">Seller</span>
+                                                <p className="text-black font-bold text-lg">{trade.seller?.name || 'Unknown'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            {trade.seller?.user_code && (
+                                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg font-mono font-semibold text-sm border border-green-300">
+                                                    {trade.seller.user_code}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Currency & Last Updated */}
+                                    <div className="grid grid-cols-2 gap-4 pt-2">
+                                        <div>
+                                            <span className="text-black/60 text-sm font-semibold uppercase tracking-wider block mb-2">Currency</span>
+                                            <span className="text-black font-bold text-xl">{trade.currency}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-black/60 text-sm font-semibold uppercase tracking-wider block mb-2">Last Updated</span>
+                                            <span className="text-black/70 text-sm">{formatDate(trade.updated_at)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Actions & Lifecycle Card */}
+                        <div className="space-y-6">
+                            {/* Actions Card */}
+                            {(canUpdateStatus || canDispute) && (
+                                <div className="bg-white/80 backdrop-blur-xl border-2 border-gray-200 rounded-3xl p-6 shadow-lg">
+                                    <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                        <span className="text-3xl">{canDispute ? '⚠️' : '🔄'}</span>
+                                        <span>{canDispute ? 'Actions' : 'Update Status'}</span>
+                                    </h2>
+
+                                    {/* Corporate Dispute Action */}
+                                    {canDispute && (
+                                        <div className="space-y-4">
+                                            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-sm text-red-700">
+                                                If there is an issue with this trade, you can raise a dispute. This will flag the transaction for risk review.
+                                            </div>
+                                            <button
+                                                onClick={handleDispute}
+                                                disabled={updatingStatus}
+                                                className="w-full px-6 py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white transition-all shadow-md disabled:cursor-not-allowed"
+                                            >
+                                                {updatingStatus ? 'Processing...' : '⚠️ Raise Dispute'}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Bank Status Update Action */}
+                                    {canUpdateStatus && (
+                                        <>
+                                            {!showStatusUpdate ? (
+                                                <button
+                                                    onClick={() => setShowStatusUpdate(true)}
+                                                    className="w-full px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all shadow-md"
+                                                >
+                                                    🔄 Change Status
+                                                </button>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="block text-sm font-semibold text-black mb-2">Select New Status</label>
+                                                        <select
+                                                            value={selectedStatus}
+                                                            onChange={(e) => setSelectedStatus(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white text-black focus:outline-none focus:border-blue-500 transition-all"
+                                                        >
+                                                            <option value="">Choose status...</option>
+                                                            {(nextStatuses[trade.status] ?? []).map((status) => {
+                                                                const cfg = statusConfig[status] ?? { icon: '❓', label: status };
+                                                                return (
+                                                                    <option key={status} value={status}>
+                                                                        {cfg.icon} {cfg.label}
+                                                                    </option>
+                                                                );
+                                                            })}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="flex gap-3">
+                                                        <button
+                                                            onClick={() => {
+                                                                setShowStatusUpdate(false);
+                                                                setSelectedStatus('');
+                                                            }}
+                                                            className="flex-1 px-4 py-2.5 rounded-xl font-semibold bg-gray-200 hover:bg-gray-300 text-black transition-all"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={handleStatusUpdate}
+                                                            disabled={!selectedStatus || updatingStatus}
+                                                            className="flex-1 px-4 py-2.5 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all"
+                                                        >
+                                                            {updatingStatus ? 'Updating...' : 'Update'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             )}
 
-                            {/* Bank Status Update Action */}
-                            {canUpdateStatus && (
-                                <>
-                                    {!showStatusUpdate ? (
-                                        <button
-                                            onClick={() => setShowStatusUpdate(true)}
-                                            className="btn-primary w-full"
-                                        >
-                                            <span>🔄</span>
-                                            <span>Change Status</span>
-                                        </button>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-white mb-2">Select New Status</label>
-                                                <select
-                                                    value={selectedStatus}
-                                                    onChange={(e) => setSelectedStatus(e.target.value)}
-                                                    className="input-field"
-                                                >
-                                                    <option value="">Choose status...</option>
-                                                    {(nextStatuses[trade.status] ?? []).map((status) => {
-                                                        const cfg = statusConfig[status] ?? { icon: '❓', label: status };
-                                                        return (
-                                                            <option key={status} value={status}>
-                                                                {cfg.icon} {cfg.label}
-                                                            </option>
-                                                        );
-                                                    })}
-                                                </select>
-                                            </div>
-
-                                            <div className="flex gap-3">
-                                                <button
-                                                    onClick={() => {
-                                                        setShowStatusUpdate(false);
-                                                        setSelectedStatus('');
-                                                    }}
-                                                    className="btn-secondary flex-1"
-                                                >
-                                                    Cancel
-                                                </button>
-                                                <button
-                                                    onClick={handleStatusUpdate}
-                                                    disabled={!selectedStatus || updatingStatus}
-                                                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {updatingStatus ? (
-                                                        <span className="flex items-center justify-center gap-2">
-                                                            <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
-                                                            Updating...
-                                                        </span>
-                                                    ) : (
-                                                        'Update'
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Status Lifecycle Timeline */}
-                            <div className="mt-8 pt-8 border-t border-opacity-10" style={{ borderColor: 'var(--accent-lime)' }}>
-                                <h3 className="text-sm font-semibold text-white mb-4">Trade Lifecycle</h3>
-                                <div className="space-y-2">
+                            {/* Lifecycle Timeline */}
+                            <div className="bg-white/80 backdrop-blur-xl border-2 border-gray-200 rounded-3xl p-6 shadow-lg">
+                                <h3 className="text-xl font-bold text-black mb-6 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                    <span>📊</span>
+                                    <span>Trade Lifecycle</span>
+                                </h3>
+                                <div className="space-y-3">
                                     {Object.entries(statusConfig).map(([key, cfg], index) => {
                                         const isCurrentStatus = trade.status === key;
                                         const isPastStatus = Object.keys(statusConfig).indexOf(trade.status) > index;
@@ -390,19 +434,24 @@ export default function TradeDetailsPage() {
                                         return (
                                             <div
                                                 key={key}
-                                                className={`flex items-center gap-3 p-2 rounded-lg transition-all ${isCurrentStatus ? 'bg-lime bg-opacity-10' : ''
-                                                    }`}
+                                                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                                    isCurrentStatus ? 'bg-blue-50 border-2 border-blue-300 scale-105' : 
+                                                    isPastStatus ? 'bg-green-50 border-2 border-green-200' :
+                                                    'bg-gray-50 border-2 border-gray-200'
+                                                }`}
                                             >
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentStatus ? 'bg-lime text-primary' :
-                                                    isPastStatus ? 'bg-success bg-opacity-20 text-success' :
-                                                        'bg-secondary bg-opacity-20 text-muted'
-                                                    }`}>
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold border-2 ${
+                                                    isCurrentStatus ? 'bg-blue-600 text-white border-blue-700' :
+                                                    isPastStatus ? 'bg-green-600 text-white border-green-700' :
+                                                    'bg-gray-200 text-gray-500 border-gray-300'
+                                                }`}>
                                                     {isPastStatus ? '✓' : cfg.icon}
                                                 </div>
-                                                <span className={`text-sm ${isCurrentStatus ? 'text-lime font-semibold' :
-                                                    isPastStatus ? 'text-success' :
-                                                        'text-muted'
-                                                    }`}>
+                                                <span className={`text-sm font-semibold ${
+                                                    isCurrentStatus ? 'text-blue-700' :
+                                                    isPastStatus ? 'text-green-700' :
+                                                    'text-gray-500'
+                                                }`}>
                                                     {cfg.label}
                                                 </span>
                                             </div>
@@ -410,208 +459,186 @@ export default function TradeDetailsPage() {
                                     })}
                                 </div>
                             </div>
-                        </GlassCard>
-                    )}
-                </div>
+                        </div>
+                    </div>
 
-                {/* Linked Documents */}
-                <GlassCard>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            <span>📎</span>
-                            <span>Linked Documents</span>
-                        </h2>
+                    {/* Linked Documents */}
+                    <div className="bg-white/80 backdrop-blur-xl border-2 border-gray-200 rounded-3xl p-8 shadow-lg">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-3xl font-bold text-black flex items-center gap-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                <span className="text-4xl">📎</span>
+                                <span>Linked Documents</span>
+                                {documents.length > 0 && (
+                                    <span className="text-lg bg-blue-100 px-3 py-1 rounded-full text-blue-700 font-semibold">
+                                        {documents.length}
+                                    </span>
+                                )}
+                            </h2>
 
-                        {/* Admin Document Management */}
-                        {user?.role === 'admin' && (
-                            <div className="flex gap-3">
+                            {/* Admin Document Management */}
+                            {user?.role === 'admin' && (
                                 <button
                                     onClick={() => {
                                         setShowDocumentManagement(true);
                                         loadAllDocuments();
                                     }}
-                                    className="btn-secondary text-sm"
+                                    className="px-6 py-3 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-md flex items-center gap-2"
                                 >
                                     <span>📎</span>
                                     <span>Manage Documents</span>
                                 </button>
+                            )}
+                        </div>
+
+                        {documents.length === 0 ? (
+                            <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+                                <div className="text-7xl mb-4">📄</div>
+                                <p className="text-black/60 font-medium text-lg">No documents linked to this trade yet</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {documents.map((doc) => (
+                                    <div
+                                        key={doc.id}
+                                        className="group p-5 bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 hover:border-blue-300 rounded-2xl transition-all hover:shadow-lg cursor-pointer"
+                                        onClick={() => navigate(`/documents/${doc.id}`)}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-semibold uppercase">
+                                                        {doc.doc_type.replace(/_/g, ' ')}
+                                                    </span>
+                                                    <span className="text-sm text-black/60">#{doc.id}</span>
+                                                </div>
+                                                <p className="font-bold text-black text-lg mb-1 group-hover:text-blue-700 transition-colors">
+                                                    {doc.doc_number}
+                                                </p>
+                                                <div className="text-xs text-black/60">
+                                                    {doc.owner?.name || doc.owner_name} • {formatDate(doc.uploaded_at || doc.created_at)}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-black/40 group-hover:text-blue-600 transition-colors text-2xl">→</span>
+                                                {user?.role === 'admin' && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveDocument(doc.id);
+                                                        }}
+                                                        className="text-red-400 hover:text-red-600 transition-colors text-xl"
+                                                        title="Remove document from trade"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
 
-                    {documents.length === 0 ? (
-                        <div className="text-center py-12">
-                            <div className="text-6xl mb-4">📄</div>
-                            <p className="text-secondary">No documents linked to this trade yet</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {documents.map((doc) => (
-                                <div
-                                    key={doc.id}
-                                    className="glass-card-flat group hover:border-lime transition-all relative"
-                                >
+                                        {/* Admin Document Management Modal */}
+                    {showDocumentManagement && user?.role === 'admin' && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="bg-white/95 backdrop-blur-xl border-2 border-gray-300 rounded-3xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+                                <div className="p-8 border-b-2 border-gray-200">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex-1">
-                                            <div
-                                                onClick={() => navigate(`/documents/${doc.id}`)}
-                                                className="cursor-pointer group"
-                                            >
-                                                <p className="font-semibold text-white group-hover:text-lime transition-colors">
-                                                    {doc.doc_number}
-                                                </p>
-                                                <p className="text-sm text-secondary">
-                                                    {doc.doc_type.replace(/_/g, ' ')}
-                                                </p>
-                                            </div>
-                                            <div className="text-xs text-secondary mt-1">
-                                                {doc.owner_name} • {formatDate(doc.uploaded_at || doc.created_at)}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-secondary group-hover:text-lime transition-colors text-xl cursor-pointer"
-                                                onClick={() => navigate(`/documents/${doc.id}`)}>→</span>
-                                            {user?.role === 'admin' && (
-                                                <button
-                                                    onClick={() => handleRemoveDocument(doc.id)}
-                                                    className="text-red-400 hover:text-red-300 transition-colors text-lg"
-                                                    title="Remove document from trade"
-                                                >
-                                                    ✕
-                                                </button>
-                                            )}
-                                        </div>
+                                        <h3 className="text-3xl font-bold text-black flex items-center gap-3">
+                                            <span>📎</span>
+                                            <span>Manage Trade Documents</span>
+                                        </h3>
+                                        <button
+                                            onClick={() => {
+                                                setShowDocumentManagement(false);
+                                                setSelectedDocuments([]);
+                                            }}
+                                            className="text-black/60 hover:text-black text-4xl leading-none"
+                                        >
+                                            ×
+                                        </button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </GlassCard>
 
-                {/* Admin Document Management Modal */}
-                {showDocumentManagement && user?.role === 'admin' && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="glass-card max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-white">Manage Trade Documents</h3>
-                                <button
-                                    onClick={() => {
-                                        setShowDocumentManagement(false);
-                                        setSelectedDocuments([]);
-                                    }}
-                                    className="text-secondary hover:text-white text-2xl"
-                                >
-                                    ×
-                                </button>
-                            </div>
+                                <div className="p-8 overflow-y-auto max-h-[calc(80vh-200px)]">
+                                    {loadingAllDocuments ? (
+                                        <div className="text-center py-12">
+                                            <div className="spinner spinner-small mx-auto mb-4"></div>
+                                            <p>Loading documents...</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="text-sm mb-4">
+                                                Select documents to attach to this trade
+                                            </div>
 
-                            {loadingAllDocuments ? (
-                                <div className="text-center py-12">
-                                    <div className="spinner spinner-small mx-auto mb-4"></div>
-                                    <p className="text-secondary">Loading documents...</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="text-sm text-secondary mb-4">
-                                        Select documents to attach to this trade
-                                    </div>
+                                            <div className="max-h-60 overflow-y-auto space-y-2">
+                                                {allDocuments.map((doc) => {
+                                                    const isLinked = documents.some(d => d.id === doc.id);
+                                                    const isSelected = selectedDocuments.includes(doc.id);
 
-                                    <div className="max-h-60 overflow-y-auto space-y-2">
-                                        {allDocuments.map((doc) => {
-                                            const isLinked = documents.some(d => d.id === doc.id);
-                                            const isSelected = selectedDocuments.includes(doc.id);
-
-                                            return (
-                                                <div
-                                                    key={doc.id}
-                                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isLinked
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : 'hover:bg-opacity-10'
-                                                        }`}
-                                                    style={{
-                                                        borderColor: isSelected
-                                                            ? 'var(--accent-neon-purple)'
-                                                            : 'rgba(255, 255, 255, 0.1)',
-                                                        backgroundColor: isSelected
-                                                            ? 'rgba(184, 38, 255, 0.1)'
-                                                            : 'transparent'
-                                                    }}
-                                                    onClick={() => !isLinked && handleDocumentToggle(doc.id)}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        disabled={isLinked}
-                                                        onChange={() => !isLinked && handleDocumentToggle(doc.id)}
-                                                        className="w-4 h-4 rounded"
-                                                        style={{ accentColor: 'var(--accent-neon-purple)' }}
-                                                    />
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-white font-medium">{doc.doc_type}</span>
-                                                            <span className="text-xs text-muted">#{doc.id}</span>
-                                                            {isLinked && (
-                                                                <span className="text-xs text-success">✓ Linked</span>
-                                                            )}
+                                                    return (
+                                                        <div
+                                                            key={doc.id}
+                                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                                isLinked ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'
+                                                            }`}
+                                                            onClick={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                disabled={isLinked}
+                                                                onChange={() => !isLinked && handleDocumentToggle(doc.id)}
+                                                                className="w-4 h-4 rounded"
+                                                            />
+                                                            <div className="flex-1">
+                                                                <div className="font-medium">{doc.doc_type}</div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    {doc.doc_number}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-xs text-secondary mt-1">
-                                                            {doc.doc_number} • {doc.owner_name}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-xs">
-                                                        <span className={`badge ${doc.status === 'verified' ? 'badge-success' : 'badge-warning'}`}>
-                                                            {doc.status}
-                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {selectedDocuments.length > 0 && (
+                                                <div className="pt-4 border-t">
+                                                    <div className="flex gap-3">
+                                                        <button
+                                                            onClick={() => setSelectedDocuments([])}
+                                                            className="flex-1 px-4 py-2 bg-gray-200 rounded"
+                                                        >
+                                                            Clear
+                                                        </button>
+                                                        <button
+                                                            onClick={handleAttachDocuments}
+                                                            disabled={updatingDocuments}
+                                                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+                                                        >
+                                                            {updatingDocuments ? 'Attaching...' : 'Attach'}
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {selectedDocuments.length > 0 && (
-                                        <div className="pt-4 border-t border-opacity-20" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                                            <p className="text-sm text-secondary mb-4">
-                                                <span className="text-neon-purple font-medium">{selectedDocuments.length}</span> document(s) selected
-                                            </p>
-                                            <div className="flex gap-3">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedDocuments([]);
-                                                    }}
-                                                    className="btn-secondary flex-1"
-                                                >
-                                                    Clear Selection
-                                                </button>
-                                                <button
-                                                    onClick={handleAttachDocuments}
-                                                    disabled={updatingDocuments}
-                                                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {updatingDocuments ? (
-                                                        <span className="flex items-center justify-center gap-2">
-                                                            <div className="spinner spinner-small" style={{ borderTopColor: 'var(--bg-primary)' }} />
-                                                            Attaching...
-                                                        </span>
-                                                    ) : (
-                                                        <span>Attach Documents</span>
-                                                    )}
-                                                </button>
-                                            </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
-                            )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Admin Trade Management Section */}
-                {user?.role === 'admin' && (
-                    <div className="mt-8">
-                        <AdminTradeManagement />
-                    </div>
-                )}
-            </div>
+                    {/* Admin Trade Management Section */}
+                    {user?.role === 'admin' && (
+                        <div className="mt-8">
+                            <AdminTradeManagement />
+                        </div>
+                    )}
+                </div> {/* closes max-w-7xl */}
+            </div> {/* closes min-h-screen */}
         </>
     );
 }

@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import List
 from app.models.ledger import LedgerEntry, LedgerAction
@@ -81,14 +81,16 @@ class LedgerService:
     @staticmethod
     def get_document_timeline(db: Session, document_id: int) -> List[LedgerEntry]:
         """Get chronological ledger entries for a document"""
-        return db.query(LedgerEntry).filter(
+        return db.query(LedgerEntry).options(
+            joinedload(LedgerEntry.actor)
+        ).filter(
             LedgerEntry.document_id == document_id
         ).order_by(LedgerEntry.created_at.asc()).all()
 
     @staticmethod
     def get_recent_activity(db: Session, user: User, limit: int = 10) -> List[LedgerEntry]:
         """Get recent ledger entries visible to the user"""
-        query = db.query(LedgerEntry)
+        query = db.query(LedgerEntry).options(joinedload(LedgerEntry.actor))
         
         # Admin and Auditors can see all activity
         if user.role in [UserRole.ADMIN, UserRole.AUDITOR]:

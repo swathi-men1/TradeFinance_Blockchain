@@ -139,12 +139,12 @@ export default function AuditorTradesPage() {
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <span className="text-2xl">💼</span>
-                            <h1 className="text-3xl font-bold text-white">Trade Pipeline</h1>
+                            <h1 className="text-3xl font-bold text-black">Trade Pipeline</h1>
                         </div>
-                        <p className="text-secondary">Read-only audit view — review trade flows and detect irregularities</p>
+                        <p className="text-black">Read-only audit view — review trade flows and detect irregularities</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-secondary bg-lime/10 border border-lime/20 px-3 py-2 rounded-lg">
-                        <span className="text-lime font-bold">🔒</span>
+                    <div className="flex items-center gap-2 text-xs text-black bg-lime/10 border border-lime/20 px-3 py-2 rounded-lg">
+                        <span className="text-black font-bold">🔒</span>
                         <span>Read-only · Auditor Access</span>
                     </div>
                 </div>
@@ -160,15 +160,15 @@ export default function AuditorTradesPage() {
             <GlassCard>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <span className="text-secondary text-sm">Filter by status:</span>
+                        <span className="text-black text-sm">Filter by status:</span>
                         <div className="flex flex-wrap gap-2">
                             {['', 'pending', 'in_progress', 'completed', 'paid', 'disputed'].map(s => (
                                 <button
                                     key={s}
                                     onClick={() => { setFilterStatus(s); setPage(0); }}
                                     className={`px-3 py-1 rounded text-xs font-semibold border transition-all ${filterStatus === s
-                                            ? 'bg-lime/20 text-lime border-lime/40'
-                                            : 'text-secondary border-gray-700 hover:border-gray-500'
+                                            ? 'bg-lime/20 text-black border-lime/40'
+                                            : 'text-black border-gray-700 hover:border-gray-500'
                                         }`}
                                 >
                                     {s === '' ? 'All' : STATUS_CONFIG[s]?.label ?? s.toUpperCase()}
@@ -176,9 +176,9 @@ export default function AuditorTradesPage() {
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-secondary">
+                    <div className="flex items-center gap-4 text-sm text-black">
                         <span>{filtered.length} trade{filtered.length !== 1 ? 's' : ''}</span>
-                        <span className="text-red-400 font-semibold">
+                        <span className="text-red-600 font-semibold">
                             {trades.filter(t => t.status?.toLowerCase() === 'disputed').length} disputed
                         </span>
                     </div>
@@ -205,29 +205,29 @@ export default function AuditorTradesPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-gray-700 text-secondary text-xs uppercase tracking-wider">
+                                    <tr className="border-b border-gray-700 text-black text-xs uppercase tracking-wider">
                                         <th
-                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-white select-none"
+                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-black select-none"
                                             onClick={() => toggleSort('id')}
                                         >
                                             Trade ID <SortIcon field="id" />
                                         </th>
                                         <th className="py-3 px-4 font-semibold">Buyer → Seller</th>
                                         <th
-                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-white select-none"
+                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-black select-none"
                                             onClick={() => toggleSort('amount')}
                                         >
                                             Amount <SortIcon field="amount" />
                                         </th>
                                         <th
-                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-white select-none"
+                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-black select-none"
                                             onClick={() => toggleSort('status')}
                                         >
                                             Status <SortIcon field="status" />
                                         </th>
                                         <th className="py-3 px-4 font-semibold">Created By (Bank)</th>
                                         <th
-                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-white select-none"
+                                            className="py-3 px-4 font-semibold cursor-pointer hover:text-black select-none"
                                             onClick={() => toggleSort('created_at')}
                                         >
                                             Last Updated <SortIcon field="created_at" />
@@ -252,35 +252,35 @@ export default function AuditorTradesPage() {
                                                     onClick={() => handleRowClick(trade)}
                                                 >
                                                     <td className="py-3 px-4">
-                                                        <span className="text-lime font-mono font-bold text-sm">#{trade.id}</span>
+                                                        <span className="text-black font-mono font-bold text-sm">#{trade.id}</span>
                                                     </td>
                                                     <td className="py-3 px-4">
                                                         <div className="flex items-center gap-2 text-sm">
-                                                            <span className="text-white font-medium">
+                                                            <span className="text-black font-medium">
                                                                 {trade.buyer?.name ?? `User #${trade.buyer_id}`}
                                                             </span>
-                                                            <span className="text-secondary text-xs">→</span>
-                                                            <span className="text-white font-medium">
+                                                            <span className="text-black text-xs">→</span>
+                                                            <span className="text-black font-medium">
                                                                 {trade.seller?.name ?? `User #${trade.seller_id}`}
                                                             </span>
                                                         </div>
                                                     </td>
                                                     <td className="py-3 px-4">
-                                                        <span className="text-white font-semibold font-mono text-sm">
+                                                        <span className="text-black font-semibold font-mono text-sm">
                                                             {formatAmount(trade.amount, trade.currency)}
                                                         </span>
                                                     </td>
                                                     <td className="py-3 px-4">
                                                         <StatusBadge status={trade.status} />
                                                     </td>
-                                                    <td className="py-3 px-4 text-secondary text-sm">
+                                                    <td className="py-3 px-4 text-black text-sm">
                                                         {trade.created_by?.name ?? (trade.created_by_id ? `User #${trade.created_by_id}` : '—')}
                                                     </td>
-                                                    <td className="py-3 px-4 text-secondary text-sm font-mono">
+                                                    <td className="py-3 px-4 text-black text-sm font-mono">
                                                         {formatDate(trade.updated_at ?? trade.created_at)}
                                                     </td>
                                                     <td className="py-3 px-4 text-center">
-                                                        <span className={`text-xs text-secondary transition-transform inline-block ${isExpanded ? 'rotate-180' : ''}`}>
+                                                        <span className={`text-xs text-black transition-transform inline-block ${isExpanded ? 'rotate-180' : ''}`}>
                                                             ▼
                                                         </span>
                                                     </td>
@@ -291,7 +291,7 @@ export default function AuditorTradesPage() {
                                                     <tr key={`${trade.id}-detail`} className={isDisputed ? 'bg-red-900/5' : 'bg-dark/30'}>
                                                         <td colSpan={7} className="px-6 py-4">
                                                             {loadingDetail ? (
-                                                                <div className="flex items-center gap-3 text-secondary py-2">
+                                                                <div className="flex items-center gap-3 text-black py-2">
                                                                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-lime border-t-transparent" />
                                                                     <span className="text-sm">Loading transaction timeline...</span>
                                                                 </div>
@@ -307,7 +307,7 @@ export default function AuditorTradesPage() {
                                                                         </div>
                                                                     )}
 
-                                                                    <p className="text-white text-sm font-semibold">Transaction Timeline</p>
+                                                                    <p className="text-black text-sm font-semibold">Transaction Timeline</p>
                                                                     {selectedTrade.timeline.length === 0 ? (
                                                                         <p className="text-secondary text-sm italic">No timeline events recorded.</p>
                                                                     ) : (
@@ -315,10 +315,10 @@ export default function AuditorTradesPage() {
                                                                             {selectedTrade.timeline.map((evt, idx) => (
                                                                                 <div key={idx} className="flex-shrink-0 w-64 bg-dark/50 border border-gray-700/50 rounded-lg p-3">
                                                                                     <div className="flex justify-between items-start mb-2">
-                                                                                        <span className="text-lime text-xs font-bold font-mono">{evt.event_type}</span>
-                                                                                        <span className="text-secondary text-xs">{new Date(evt.timestamp).toLocaleDateString()}</span>
+                                                                                        <span className="text-black text-xs font-bold font-mono">{evt.event_type}</span>
+                                                                                        <span className="text-black text-xs">{new Date(evt.timestamp).toLocaleDateString()}</span>
                                                                                     </div>
-                                                                                    <p className="text-white text-xs mb-1">by <span className="font-semibold">{evt.actor_name}</span></p>
+                                                                                    <p className="text-black text-xs mb-1">by <span className="font-semibold">{evt.actor_name}</span></p>
                                                                                     {evt.details && Object.keys(evt.details).length > 0 && (
                                                                                         <div className="mt-2 text-xs text-gray-400 font-mono bg-black/20 p-2 rounded overflow-hidden">
                                                                                             {Object.entries(evt.details).slice(0, 3).map(([k, v]) => (
@@ -337,7 +337,7 @@ export default function AuditorTradesPage() {
                                                                     {/* Associated documents */}
                                                                     {selectedTrade.associated_documents.length > 0 && (
                                                                         <div>
-                                                                            <p className="text-white text-sm font-semibold mb-2">Associated Documents</p>
+                                                                            <p className="text-black text-sm font-semibold mb-2">Associated Documents</p>
                                                                             <div className="flex flex-wrap gap-2">
                                                                                 {selectedTrade.associated_documents.map(doc => (
                                                                                     <span key={doc.id} className="bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs px-3 py-1.5 rounded font-mono">
@@ -349,7 +349,7 @@ export default function AuditorTradesPage() {
                                                                     )}
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-secondary text-sm italic">No additional details available.</p>
+                                                                <p className="text-black text-sm italic">No additional details available.</p>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -364,21 +364,21 @@ export default function AuditorTradesPage() {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700">
-                                <span className="text-secondary text-sm">
+                                <span className="text-black text-sm">
                                     Page {page + 1} of {totalPages} · {filtered.length} total
                                 </span>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setPage(p => Math.max(0, p - 1))}
                                         disabled={page === 0}
-                                        className="px-3 py-1 rounded text-sm border border-gray-700 text-secondary hover:text-white disabled:opacity-30 transition-colors"
+                                        className="px-3 py-1 rounded text-sm border border-gray-700 text-black hover:text-gray-900 disabled:opacity-30 transition-colors"
                                     >
                                         ← Prev
                                     </button>
                                     <button
                                         onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                                         disabled={page >= totalPages - 1}
-                                        className="px-3 py-1 rounded text-sm border border-gray-700 text-secondary hover:text-white disabled:opacity-30 transition-colors"
+                                        className="px-3 py-1 rounded text-sm border border-gray-700 text-black hover:text-gray-900 disabled:opacity-30 transition-colors"
                                     >
                                         Next →
                                     </button>

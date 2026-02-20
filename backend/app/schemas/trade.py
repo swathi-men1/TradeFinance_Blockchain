@@ -7,8 +7,8 @@ from app.models.trade import TradeStatus
 
 # Request schemas
 class TradeCreate(BaseModel):
-    buyer_id: int = Field(..., description="Buyer user ID")
-    seller_id: int = Field(..., description="Seller user ID")
+    buyer_code: str = Field(..., description="Buyer user code (e.g., CORP-001)")
+    seller_code: str = Field(..., description="Seller user code (e.g., CORP-002)")
     amount: Decimal = Field(..., gt=0, description="Trade amount (must be positive)")
     currency: str = Field(..., min_length=3, max_length=3, description="3-letter currency code (e.g., USD)")
 

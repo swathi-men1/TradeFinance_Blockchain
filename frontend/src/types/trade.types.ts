@@ -23,8 +23,8 @@ export interface Trade {
 }
 
 export interface TradeCreate {
-    buyer_id: number;
-    seller_id: number;
+    buyer_code: string;
+    seller_code: string;
     amount: number;
     currency: string;
 }
