@@ -4,38 +4,54 @@
 
 @layer base {
   body {
-    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
-    color: #1e293b;
-    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
   }
 }
 
 @layer components {
-  .premium-card {
-    @apply bg-white border border-slate-200/60 shadow-sm rounded-xl p-6 transition-all duration-300;
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: 0.3s;
   }
 
-  .premium-card:hover {
-    @apply shadow-md border-blue-200/50 -translate-y-0.5;
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
   }
 
   .btn-primary {
-    @apply bg-blue-600 text-white font-semibold py-2.5 px-6 rounded-lg 
-           hover:bg-blue-700 active:scale-95 transition-all shadow-sm hover:shadow-blue-200/50;
+    background: linear-gradient(to right, #2563eb, #06b6d4);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-primary:hover {
+    opacity: 0.9;
   }
 
-  .input-field {
-    @apply bg-white border border-slate-200 text-slate-900 px-4 py-2.5 rounded-lg w-full 
-           focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400;
+  .input {
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+    transition: 0.3s;
   }
-
-  .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:text-blue-600 
-           hover:bg-blue-50 transition-all cursor-pointer font-medium;
-  }
-
-  .nav-link-active {
-    @apply bg-blue-50 text-blue-600 border-r-4 border-blue-600 rounded-r-none;
+  
+  .input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 
   .stat-label {

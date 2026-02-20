@@ -32,63 +32,65 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex bg-transparent">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-200 bg-white p-6 flex flex-col sticky top-0 h-screen">
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-            <ShieldAlert className="text-white w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">TradeChain</h1>
+      <aside className="w-64 border-r border-[#e5e7eb] bg-white p-5 flex flex-col sticky top-0 h-screen shadow-sm">
+        <div className="mb-10 px-2 flex items-center gap-3">
+          <ShieldAlert className="text-blue-600" size={28} />
+          <h1 className="text-xl font-bold tracking-tight text-[#0f172a]">TradeChain</h1>
         </div>
 
-        <nav className="space-y-1 flex-1">
+        <nav className="space-y-4 flex-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link 
                 key={item.path} 
                 to={item.path}
-                className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
+                className={`flex items-center gap-3 transition-all duration-200 ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600 rounded-md px-3 py-2 font-semibold shadow-sm ring-1 ring-blue-100' 
+                    : 'text-gray-600 hover:text-blue-600 px-3 py-2'
+                }`}
               >
-                <item.icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
+                <item.icon size={20} />
                 <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-slate-100">
+        <div className="mt-auto pt-6 border-t border-gray-100">
           <button 
             onClick={handleLogout}
-            className="nav-link w-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+            className="flex items-center gap-3 text-gray-600 hover:text-red-600 transition-colors w-full px-3 py-2"
           >
             <LogOut size={20} />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <header className="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-          <h2 className="text-lg font-bold text-slate-800">
+        {/* Simple Header */}
+        <header className="h-16 border-b border-[#e5e7eb] bg-white/90 backdrop-blur-sm flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-800">
             {menuItems.find(m => m.path === location.pathname)?.name || "Trade Finance"}
           </h2>
           
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end mr-2">
-              <span className="text-sm font-bold text-slate-900">{user?.name}</span>
-              <span className="text-xs text-slate-500 font-medium capitalize">{user?.role}</span>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-bold text-gray-900">{user?.name}</span>
+              <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm">
-              <User size={20} />
+            <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600">
+              <User size={18} />
             </div>
           </div>
         </header>
 
-        <main className="p-8">
+        <main className="p-[30px] bg-transparent flex-1">
           {children}
         </main>
       </div>
