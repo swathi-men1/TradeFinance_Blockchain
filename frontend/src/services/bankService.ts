@@ -3,7 +3,9 @@ import { apiClient } from './api';
 export interface BankTrade {
     id: number;
     buyer_id: number;
+    buyer_name: string;
     seller_id: number;
+    seller_name: string;
     amount: number;
     currency: string;
     status: string;

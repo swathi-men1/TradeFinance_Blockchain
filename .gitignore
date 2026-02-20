@@ -1,3 +1,9 @@
+# Local documents (folder tracked, files ignored)
+documents_local/*
+!documents_local/.gitkeep
+!documents_local/*/
+!documents_local/*/.gitkeep
+
 # Environment files
 .env
 .env.local

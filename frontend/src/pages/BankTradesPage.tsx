@@ -133,9 +133,9 @@ export default function BankTradesPage() {
                                             </td>
                                             <td className="px-6 py-4 text-slate-700">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium">Buyer #{trade.buyer_id}</span>
+                                                    <span className="font-medium">{trade.buyer_name}</span>
                                                     <span className="text-slate-400">→</span>
-                                                    <span className="font-medium">Seller #{trade.seller_id}</span>
+                                                    <span className="font-medium">{trade.seller_name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right font-mono text-slate-900 font-bold">

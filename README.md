@@ -6,7 +6,6 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=React)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat&logo=TypeScript)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg?style=flat&logo=PostgreSQL)](https://www.postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=flat&logo=Docker)](https://www.docker.com)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://semver.org)
 
 ---
@@ -36,10 +35,12 @@ Trade Finance Blockchain Explorer is a comprehensive platform for managing trade
 
 ## Recent Updates
 
-- Improved UI readability with light-theme styling for audit logs, risk oversight, bank risk monitor, and document details pages.
-- Added consistent light-background tables, badges, and detail panels for better contrast and scannability.
-- Fixed route ordering for trade creation and added missing spinner styling for loading states.
-- Cleaned up cache/log artifacts from the repo for easier handoff.
+- **February 2026**: Updated Bank Trades view to display counterparty names instead of user IDs for better UX
+- Removed unnecessary dashboard quick-action cards for cleaner interface
+- Enhanced test accounts documentation with 7 test users across all roles
+- Improved README with comprehensive role permissions matrix and deployment guide
+- Removed Docker dependency - application runs natively with Python and Node.js
+- Updated API service layer to include user names in trade data responses
 
 ---
 
@@ -249,46 +250,73 @@ TradeFinance_Blockchain/
    - **API Documentation**: http://localhost:8000/docs
 
 ### Default Test Credentials
-```
-Admin:     admin@tradefinance.com / admin123!@#
-Bank:      bank@tradefinance.com / bank123!@#
-Corporate: corporate@tradefinance.com / corporate123!@#
-Auditor:   auditor@tradefinance.com / auditor123!@#
-```
+| Role | Email | Password | User Code | Organization |
+|------|-------|----------|-----------|---------------|
+| Admin | admin@tradefinance.com | admin123!@# | ADM-001 | Trade Finance Platform |
+| Bank 1 | bank@globalbank.com | bank123!@# | BANK-001 | Global Bank Ltd |
+| Bank 2 | bank@europeanbank.com | bank123!@# | BANK-002 | European Bank AG |
+| Corporate 1 | corporate@company.com | corporate123!@# | CORP-001 | Acme Corporation |
+| Corporate 2 | corporate@techcorp.com | corporate123!@# | CORP-002 | Tech Trading Inc |
+| Corporate 3 | corporate@asiacorp.com | corporate123!@# | CORP-003 | Asia Trade Partners |
+| Auditor | auditor@auditfirm.com | auditor123!@# | AUD-001 | Independent Audit Services |
 
 For detailed setup instructions, see [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)
 
 ---
 
-## 👥 User Roles
+## 👥 User Roles & Permissions
 
-| Role | Permissions | Use Case |
-|------|-------------|----------|
-| **Bank** | Upload documents, create trades, view own data, risk scoring | Financial institutions managing trade finance |
-| **Corporate** | Upload documents, create trades, view own data, risk scoring | Businesses engaged in international trade |
-| **Auditor** | Read-only access to all documents and trades, monitoring | Compliance and audit teams |
-| **Admin** | Full system access, user management, logging | System administrators |
+### Role Comparison Matrix
+
+| Feature | Admin | Bank | Corporate | Auditor |
+|---------|:-----:|:----:|:---------:|:-------:|
+| Create Trade | ✅ | ✅ | ❌ | ❌ |
+| Participate in Trade | ✅ | ✅ | ✅ | ❌ |
+| Upload Document | ✅ | ✅ | ✅ | ❌ |
+| Upload LOC | ✅ | ✅ | ❌ | ❌ |
+| View Own Documents | ✅ | ✅ | ✅ | — |
+| View All Documents | ✅ | ❌ | ❌ | ✅ |
+| View Own Risk Score | ✅ | ✅ | ✅ | — |
+| View All Risk Scores | ✅ | ❌ | ❌ | ✅ |
+| View Ledger (Full) | ✅ | Limited | Limited | ✅ |
+| Manage Users | ✅ | ❌ | ❌ | ❌ |
+| Flag Document | ❌ | ❌ | ❌ | ✅ |
+| Verify Document Hash | ✅ | ✅ | ✅ | ✅ |
+| View Audit Logs | ✅ | ❌ | ❌ | ❌ |
 
 ### Role-Specific Features
 
-**Bank & Corporate:**
+**Admin (ADM-001)**
+- Full system access and user management
+- View all documents across all organizations
 - Create and manage trades
-- Upload trade documents
-- View risk scores
-- Access personal dashboards
-- Upload supporting documents
+- Monitor system-wide risks
+- Access complete audit logs
+- Dashboard with system statistics
 
-**Auditor:**
-- View all documents (read-only)
-- Access monitoring dashboard
-- Review audit logs
+**Bank Users (BANK-001, BANK-002)**
+- Create and manage trades between corporates
+- Upload financial documents (LOCs, invoices, bills of lading)
+- View own documents and trades
+- Monitor own risk scores
+- Limited ledger access for related trades
+- Risk monitoring across portfolio
+
+**Corporate Users (CORP-001, CORP-002, CORP-003)**
+- Participate in trades created by banks
+- Upload supporting documents (invoices, bills of lading)
+- View own documents and trades
+- Monitor own risk scores
+- Limited ledger access
+- Dashboard with trade status
+
+**Auditor (AUD-001)**
+- Read-only access to all documents and trades
+- View complete ledger and transaction history
+- Monitor compliance alerts
+- Flag suspicious documents
 - Generate compliance reports
-
-**Admin:**
-- User management (CRUD)
-- Trade management (CRUD)
-- System monitoring
-- Access all features
+- Risk monitoring dashboard (read-only)
 
 ---
 
@@ -573,53 +601,115 @@ alembic history
 
 ## 🚀 Deployment
 
-### Development Deployment
-The application is ready to run on a local machine with Python and Node.js installed.
+### Development (Local Environment)
+The application is ready to run on a local machine with Python and Node.js installed. Follow the [Quick Start](#-quick-start) section above for setup.
 
-### Production Considerations
+### Production Deployment
 
-1. **Environment Configuration**
-   - Create `.env` file with production values:
-     ```
-     DATABASE_URL=postgresql://user:password@prod-db:5432/trade_finance
-     SECRET_KEY=your-strong-secret-key-here
-     ALGORITHM=HS256
-     ACCESS_TOKEN_EXPIRE_MINUTES=30
-     ```
+#### 1. Environment Configuration
+Create `.env` file in `backend/` with production values:
+```
+DATABASE_URL=postgresql://user:password@prod-db-host:5432/trade_finance
+SECRET_KEY=your-strong-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+S3_ENDPOINT_URL=https://s3.amazonaws.com
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=trade-finance-docs
+```
 
-2. **Database**
-   - Use managed PostgreSQL service (AWS RDS, Azure Database, etc.)
-   - Enable SSL/TLS connections
-   - Configure automated backups
-   - Run migrations: `alembic upgrade head`
+#### 2. Database Setup
+Use managed PostgreSQL service (AWS RDS, Azure Database, Google Cloud SQL, etc.):
+- Enable SSL/TLS connections
+- Configure automated backups
+- Run migrations: `alembic upgrade head`
+- Seed test data: `python seed_database.py` (recommended for initial setup only)
 
-3. **Backend Deployment**
-   - Use production WSGI server (Gunicorn, Daphne, etc.)
-   ```bash
-   gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-   ```
-   - Enable HTTPS with SSL certificates
-   - Configure firewall rules
-   - Set up process monitor (systemd, supervisor, etc.)
+#### 3. Backend Deployment
+Option A: Using Gunicorn (Recommended)
+```bash
+pip install gunicorn
+gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+```
 
-4. **Frontend Deployment**
-   - Build for production: `npm run build`
-   - Deploy `dist/` folder to web server (Nginx, Apache, etc.)
-   - Configure CORS to allow API domain requests
-   - Enable CDN for static assets
+Option B: Using Uvicorn directly
+```bash
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+```
 
-5. **Security Hardening**
-   - Rotate `SECRET_KEY` regularly
-   - Implement rate limiting on API endpoints
-   - Enable CORS with strict origins
-   - Use strong database passwords
-   - Implement request validation
-   - Set up monitoring and alerting
-   - Regular security audits
-   - Keep dependencies updated
+#### 4. Frontend Deployment
+Build for production:
+```bash
+cd frontend
+npm run build
+```
 
-### Optional: Docker Support
-To containerize the application, create `Dockerfile` and `docker-compose.yml` files. See existing deployment guidelines for templates.
+Deploy the `dist/` folder to a web server:
+- **Nginx** - Proxy requests to backend, serve static assets
+- **Apache** - Static file hosting with reverse proxy
+- **CDN** - Optional for global distribution
+- **Cloud Platforms** - AWS S3 + CloudFront, Vercel, Netlify, etc.
+
+#### 5. Security Hardening
+
+**Backend Security:**
+- Rotate `SECRET_KEY` regularly (breaks all existing tokens, users must re-login)
+- Implement rate limiting on API endpoints (consider using Slowapi)
+- Enable CORS with strict origins (not `*`)
+- Use strong database passwords (20+ characters, mixed case)
+- Implement request validation and sanitization
+- Set up comprehensive logging and monitoring
+- Keep Python dependencies updated: `pip list --outdated`
+- Enable HTTPS with valid SSL certificates
+- Configure firewall rules to restrict database access
+
+**Frontend Security:**
+- Use HTTPS for all requests
+- Set security headers: `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`
+- Implement Content Security Policy (CSP)
+- Keep npm dependencies updated: `npm audit fix`
+- Minify and obfuscate production builds
+
+**Database Security:**
+- Enable SSL/TLS for database connections
+- Use strong authentication
+- Implement regular backups (daily minimum)
+- Test backup restoration regularly
+- Monitor for unauthorized access
+
+**Application Monitoring:**
+- Set up error tracking (Sentry, etc.)
+- Enable request logging
+- Monitor database performance
+- Set up alerts for high error rates
+- Regular security audits and penetration testing
+
+#### 6. Infrastructure Recommendations
+
+**Virtual Machines / Servers:**
+- **OS**: Ubuntu 20.04 LTS or later
+- **Python**: 3.9+ (use system Python or pyenv for management)
+- **Node.js**: 16+ LTS (for building frontend only)
+- **Process Manager**: systemd (built-in), supervisor, or similar
+- **Reverse Proxy**: Nginx or Apache
+- **SSL Certificates**: Let's Encrypt (free) or commercial certificates
+
+**Cloud Deployment:**
+- **Compute**: AWS EC2, Azure VMs, Google Compute Engine, DigitalOcean
+- **Database**: AWS RDS PostgreSQL, Azure Database, Google Cloud SQL
+- **Storage**: AWS S3, Azure Blob, Google Cloud Storage (for MinIO S3-compatible endpoint)
+- **CDN**: CloudFront, Azure CDN, Cloudflare
+
+**Example: AWS Deployment**
+1. EC2 instance (Ubuntu 20.04, t3.medium+)
+2. RDS PostgreSQL (Multi-AZ for HA)
+3. S3 bucket for document storage (enable versioning/MFA delete)
+4. CloudFront for CDN
+5. Route 53 for DNS
+6. CloudWatch for monitoring
 
 ---
 
@@ -639,53 +729,126 @@ For questions or support, please open an issue in the repository.
 
 ## 📞 Support & Resources
 
+### Getting Started
+1. **[QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)** - Complete step-by-step setup (5-10 minutes)
+2. **[TEST_ACCOUNTS.md](TEST_ACCOUNTS.md)** - All test user credentials and usage examples
+3. **Setup Script** - Run `run-app.bat` (Windows) for automated setup
+
 ### Documentation
-- **[QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)** - Step-by-step setup instructions
-- **[TEST_ACCOUNTS.md](TEST_ACCOUNTS.md)** - Default test user credentials
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture details
-- **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API documentation
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture, data flows, and design decisions
+- **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API endpoint documentation
 - **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Contribution guidelines
 
+### Interactive Documentation
+- **Swagger UI**: http://localhost:8000/docs (after backend starts)
+- **ReDoc**: http://localhost:8000/redoc (alternative API documentation)
+
 ### Helpful Commands
+
+**Backend Development**
 ```bash
-# Backend development
 cd backend
-venv\Scripts\activate          # Activate virtual environment (Windows)
-python -m uvicorn app.main:app --reload  # Start with hot reload
 
-# Frontend development
+# Activate virtual environment
+venv\Scripts\activate              # Windows
+source venv/bin/activate           # Mac/Linux
+
+# Start server with hot reload
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Check database connection
+python test_db_connection.py
+
+# Seed test data
+python seed_database.py
+
+# Run specific migration
+alembic upgrade head
+alembic downgrade -1
+```
+
+**Frontend Development**
+```bash
 cd frontend
-npm run dev                    # Start development server with Vite
-npm run build                  # Build for production
-npm run lint                   # Check code quality
 
-# Database management
-alembic current                # Check current migration
-alembic history                # View migration history
-psql -U postgres -d trade_finance  # Connect to database directly
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Check code quality
+npm run lint
+```
+
+**Database Management**
+```bash
+# Connect to database
+psql -U postgres -d trade_finance
+
+# View users
+SELECT id, user_code, email, role FROM users;
+
+# View trades
+SELECT id, buyer_id, seller_id, amount, currency, status FROM trade_transactions;
+
+# View documents
+SELECT id, filename, hash, owner_id FROM documents;
 ```
 
 ### Development Tips
-1. **Keep terminals organized**: Use separate terminals for backend, frontend, and database
-2. **Watch logs**: Monitor terminal output for errors and status messages
-3. **Use API docs**: Visit http://localhost:8000/docs to explore and test API endpoints
-4. **Database reset**: Run `python seed_database.py` to restore test data
-5. **Browser DevTools**: Use for debugging frontend issues and network requests
+1. **Use separate terminals** - Backend, frontend, and database management each in their own terminal
+2. **Watch logs** - Monitor terminal output for errors and status messages
+3. **API exploration** - Visit http://localhost:8000/docs to test endpoints interactively
+4. **Network debugging** - Use browser DevTools (F12) to inspect network requests
+5. **Database inspection** - Use `psql` to query the database directly
+6. **Hot reload** - Both backend (Uvicorn) and frontend (Vite) support live code reloading
 
-### Technologies & Learning Resources
-- **FastAPI Documentation**: https://fastapi.tiangolo.com/
-- **React Documentation**: https://react.dev/
-- **PostgreSQL Documentation**: https://www.postgresql.org/docs/
-- **SQLAlchemy Documentation**: https://docs.sqlalchemy.org/
-- **Vite Documentation**: https://vitejs.dev/
+### Test Account Usage Examples
+
+**Login as Admin:**
+```bash
+Email: admin@tradefinance.com
+Password: admin123!@#
+Access: All features, user management, audit logs
+```
+
+**Create a Trade (as Bank):**
+```bash
+1. Login as bank@globalbank.com / bank123!@#
+2. Navigate to /bank/trades
+3. Click "Create Trade"
+4. Enter: Buyer Code = CORP-001, Seller Code = CORP-002, Amount = 50000, Currency = USD
+```
+
+**Test Document Upload:**
+```bash
+1. Login as any Bank or Corporate user
+2. Go to Documents section
+3. Upload a PDF file
+4. Verify the document hash integrity
+```
+
+### Technology References
+- **FastAPI**: https://fastapi.tiangolo.com/ - Modern Python web framework
+- **React**: https://react.dev/ - UI library documentation
+- **PostgreSQL**: https://www.postgresql.org/docs/ - Database documentation
+- **SQLAlchemy**: https://docs.sqlalchemy.org/ - Python ORM
+- **Vite**: https://vitejs.dev/ - Frontend build tool
+- **Tailwind CSS**: https://tailwindcss.com/ - Utility CSS framework
 
 ### Reporting Issues
-When reporting issues, include:
-- Error message and stack trace
-- Steps to reproduce
-- Python version and OS
-- Output of `npm --version` and `node --version`
-- Recent changes made
+When reporting bugs or requesting features, include:
+- Error message and full stack trace
+- Steps to reproduce the issue
+- Python version: `python --version`
+- Node.js version: `node --version`
+- Operating system and browser (for frontend issues)
+- Recent code changes or configuration modifications
+- Output from relevant logs or console messages
 
 ---
 

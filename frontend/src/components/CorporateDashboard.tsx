@@ -119,29 +119,6 @@ export default function CorporateDashboard() {
                     </GlassCard>
                 </div>
 
-                {/* 3. Quick Actions */}
-                <div className="lg:col-span-1 space-y-6">
-                    <Link to="/documents" className="block group">
-                        <GlassCard className="h-full flex flex-col items-center text-center p-8 active:scale-95 transition-transform hover:bg-slate-50/50">
-                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-lg shadow-indigo-200 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                                📤
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Submit Document</h3>
-                            <p className="text-slate-500 text-sm">Upload Invoices, Bills of Lading, or LOCs to the ledger.</p>
-                        </GlassCard>
-                    </Link>
-
-                    <Link to="/trades" className="block group">
-                        <GlassCard className="h-full flex flex-col items-center text-center p-8 active:scale-95 transition-transform hover:bg-slate-50/50">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg shadow-blue-200 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                                👀
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Track Trades</h3>
-                            <p className="text-slate-500 text-sm">Monitor timeline and status history of active transactions.</p>
-                        </GlassCard>
-                    </Link>
-                </div>
-
                 {/* 4. Risk Insight Section */}
                 <div className="lg:col-span-1">
                     {riskScore ? (

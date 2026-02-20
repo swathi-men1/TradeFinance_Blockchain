@@ -18,8 +18,28 @@ from app.config import settings
 
 class BankService:
     @staticmethod
-    def get_all_trades(db: Session, skip: int = 0, limit: int = 100) -> List[TradeTransaction]:
-        return db.query(TradeTransaction).offset(skip).limit(limit).all()
+    def get_all_trades(db: Session, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        trades = db.query(TradeTransaction).offset(skip).limit(limit).all()
+        results = []
+        
+        for trade in trades:
+            buyer = db.query(User).filter(User.id == trade.buyer_id).first()
+            seller = db.query(User).filter(User.id == trade.seller_id).first()
+            
+            results.append({
+                "id": trade.id,
+                "buyer_id": trade.buyer_id,
+                "buyer_name": buyer.name if buyer else f"User #{trade.buyer_id}",
+                "seller_id": trade.seller_id,
+                "seller_name": seller.name if seller else f"User #{trade.seller_id}",
+                "amount": trade.amount,
+                "currency": trade.currency,
+                "status": str(trade.status),
+                "created_at": trade.created_at.isoformat() if trade.created_at else None,
+                "updated_at": trade.updated_at.isoformat() if trade.updated_at else None,
+            })
+            
+        return results
 
     @staticmethod
     def update_trade_status(db: Session, trade_id: int, status: str, user_id: int) -> TradeTransaction:
