@@ -137,21 +137,21 @@ POST	/login	Authenticate user and generate session
 
 **Trade Management APIs**
 
-**Method	Endpoint	Description**
+**Method	Endpoint	           Description**
 
 POST	/create-trade	Create a new trade record
 GET	/view-trades	View all trades (role-based access)
-GET	/my-trades	View trades created by logged-in corporate user
+GET	/my-trades	           View trades created by logged-in corporate user
 
  **Document Management APIs**
 
-**Method	Endpoint	Description**
+**Method	Endpoint	                      Description**
 
-POST	/upload-document	Upload trade-related document
-GET	/documents	            View all uploaded documents
-GET	/my-documents	View documents uploaded by logged-in user
+POST	/upload-document	           Upload trade-related document
+GET	/documents	                      View all uploaded documents
+GET	/my-documents	           View documents uploaded by logged-in user
 GET	/documents/{doc_id}/preview	Preview uploaded document
-DELETE	/documents/{doc_id}	Soft delete a document
+DELETE	/documents/{doc_id}	           Soft delete a document
 PUT	/documents/{doc_id}/restore	Restore deleted document
 
 
@@ -161,29 +161,29 @@ PUT	/documents/{doc_id}/restore	Restore deleted document
 
 PUT	/documents/{doc_id}/status	Verify and update document status (ACCEPTED / REJECTED)
 
- Blockchain Ledger APIs
+ **Blockchain Ledger APIs**
 
-Method	Endpoint	               	Description
+**Method	               Endpoint	               	Description**
 
-GET		/ledger	View                              complete ledger entries
-GET		/documents/{doc_id}/ledger	View ledger history for a document
+GET		/ledger	                                  View complete ledger entries
+GET		/documents/{doc_id}/ledger	            View ledger history for a document
 
 **Risk Analysis APIs**
 
-**Method	Endpoint				          Description**
+**Method	               Endpoint		           Description**
 
-GET		/risk-score				              Get risk score of logged-in user
-GET		/risk-summary				            Get aggregated corporate risk data
-GET		/users/{username}/risk-score		Get risk score of a specific user
+GET		/risk-score		        Get risk score of logged-in user
+GET		/risk-summary		        Get aggregated corporate risk data
+GET		/users/{username}/risk-score	        Get risk score of a specific user
 
 
 **Dashboard APIs**
 
-**Method	Endpoint			    Description**
+**Method	                 Endpoint	                      Description**
 
-GET		/dashboard/summary		Fetch dashboard analytics data
+GET		/dashboard/summary		  Fetch dashboard analytics data
 GET		/dashboard/trades		  Trade statistics for dashboard
-GET			/dashboard/risk	    Risk visualization data
+GET		/dashboard/risk	             Risk visualization data
 
 **Frontend Pages**
 
@@ -211,10 +211,14 @@ Trade Management Page
 Ledger View
 
 /screenshots
- ├── dashboard.png
- ├── risk_chart.png
- ├── trades.png
- └── ledger.png
+1) Admin1.png
+2) Admin2.png
+3) Auditor.png
+4) Bank.png
+5) Corporate.png
+6) Signin.png
+7) Signup.png
+ 
 
 **How to Run Locally**
 
