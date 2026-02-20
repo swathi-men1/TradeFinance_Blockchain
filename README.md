@@ -147,12 +147,13 @@ The Trade Finance Blockchain Explorer is a secure web-based application designed
            + (Trade Count × Weight) 
            + (Ledger Events × Weight)
 
-## **Risk Levels**
+## **Risk Levels :**
 
-- Score Range	Risk Level
-0 – 39	-- Low Risk
-40 – 69 -- Medium Risk
-70 – 100 -- High Risk
+| Score Range | Risk Level   |
+|------------|--------------|
+| 0 – 39     | Low Risk     |
+| 40 – 69    | Medium Risk  |
+| 70 – 100   | High Risk    |
 
 ## **Risk score is recalculated when:**
 
