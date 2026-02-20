@@ -7,3 +7,5 @@ sqlalchemy
 psycopg2-binary
 python-multipart
 boto3
+pydantic[email]
+email-validator
