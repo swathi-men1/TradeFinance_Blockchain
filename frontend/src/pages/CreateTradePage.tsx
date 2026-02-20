@@ -7,8 +7,8 @@ import { Document } from '../types/document.types';
 import { formatDate } from '../utils';
 
 export default function CreateTradePage() {
-    const [buyerId, setBuyerId] = useState('');
-    const [sellerId, setSellerId] = useState('');
+    const [buyerCode, setBuyerCode] = useState('');
+    const [sellerCode, setSellerCode] = useState('');
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('USD');
     const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export default function CreateTradePage() {
         setError('');
 
         // Validation
-        if (!buyerId || !sellerId || !amount) {
+        if (!buyerCode || !sellerCode || !amount) {
             setError('All fields are required');
             return;
         }
@@ -61,23 +61,25 @@ export default function CreateTradePage() {
             return;
         }
 
-        if (buyerId === sellerId) {
+        if (buyerCode.toUpperCase() === sellerCode.toUpperCase()) {
             setError('Buyer and seller must be different users');
             return;
         }
 
         // Role validation
-        const currentUserId = user?.id?.toString();
+        const currentUserCode = user?.user_code?.toUpperCase();
+        const buyerCodeUpper = buyerCode.toUpperCase();
+        const sellerCodeUpper = sellerCode.toUpperCase();
 
         if (user?.role === 'bank') {
-            if (buyerId === currentUserId || sellerId === currentUserId) {
-                setError("Bank users cannot be parties (buyer/seller) in a trade. Please enter Corporate User IDs.");
+            if (buyerCodeUpper === currentUserCode || sellerCodeUpper === currentUserCode) {
+                setError("Bank users cannot be parties (buyer/seller) in a trade. Please enter Corporate User Codes (e.g., CORP-001, CORP-002).");
                 return;
             }
         } else if (user?.role !== 'admin') {
             // Corporate users must be one of the parties
-            if (buyerId !== currentUserId && sellerId !== currentUserId) {
-                setError(`You must be either the buyer or seller. Your User ID is: ${currentUserId}`);
+            if (buyerCodeUpper !== currentUserCode && sellerCodeUpper !== currentUserCode) {
+                setError(`You must be either the buyer or seller. Your User Code is: ${currentUserCode}`);
                 return;
             }
         }
@@ -85,8 +87,8 @@ export default function CreateTradePage() {
         try {
             setLoading(true);
             const tradeData = await tradeService.createTrade({
-                buyer_id: parseInt(buyerId),
-                seller_id: parseInt(sellerId),
+                buyer_code: buyerCodeUpper,
+                seller_code: sellerCodeUpper,
                 amount: parseFloat(amount),
                 currency: currency
             });
@@ -142,19 +144,22 @@ export default function CreateTradePage() {
                     <div className="flex-1">
                         <p className="font-bold text-slate-900 mb-2">Your Information</p>
                         <p className="text-slate-700 text-sm">
-                            You are creating this trade as: <strong>{user?.name}</strong>
+                            <strong>Name:</strong> {user?.name}
                         </p>
-                        <p className="text-slate-700 text-sm mt-2">
-                            <strong>Your User Code: <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300">{user?.user_code}</span></strong>
+                        <p className="text-slate-700 text-sm mt-1">
+                            <strong>Your Numeric User ID:</strong> <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300 font-bold text-base">{user?.id}</span>
+                        </p>
+                        <p className="text-slate-700 text-sm mt-1">
+                            <strong>Your User Code:</strong> <span className="font-mono bg-white px-3 py-1 rounded border-2 border-blue-300 font-bold">{user?.user_code}</span>
                         </p>
                         {user?.role === 'bank' ? (
                             <div className="mt-3 text-sm text-emerald-700 bg-emerald-50 p-3 rounded-lg border-2 border-emerald-200">
-                                <strong>Note:</strong> This trade will be created between two Corporate Users. You are acting as the facilitating bank.
+                                <strong>Note:</strong> This trade will be created between two Corporate Users. You are acting as the facilitating bank. Use Corporate IDs (14, 15, or 16).
                             </div>
                         ) : user?.role !== 'admin' && (
                             <p className="text-slate-700 text-sm mt-3 flex items-start gap-2">
                                 <span>⚠️</span>
-                                <span><strong>Important:</strong> You must be either the buyer or seller in this trade. Reference your User Code: <span className="font-mono bg-white px-2 py-1 rounded border border-amber-300">{user?.user_code}</span></span>
+                                <span><strong>Important:</strong> You must be either the buyer or seller in this trade. Use your numeric ID: <span className="font-mono bg-white px-2 py-1 rounded border border-amber-300 font-bold">{user?.id}</span> and your partner's ID (or another corporate user ID).</span>
                             </p>
                         )}
                     </div>
@@ -174,19 +179,19 @@ export default function CreateTradePage() {
                     {/* Buyer ID */}
                     <div>
                         <label className="block text-sm font-bold text-slate-900 mb-2">
-                            Buyer User ID *
+                            Buyer User ID (Numeric) *
                         </label>
                         <input
                             type="text"
                             value={buyerId}
                             onChange={(e) => setBuyerId(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all"
-                            placeholder={user?.role !== 'admin' ? `Enter ${user?.id} (your ID) or partner's ID` : 'Enter buyer user ID'}
+                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.id} (your ID) or partner's ID like 14, 15, 16` : 'E.g., 14, 15, 16 (corporate users)'}
                             required
                         />
                         <p className="mt-2 text-xs text-slate-600">
                             {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'Must be a Corporate User ID'
+                                ? 'Use Corporate User IDs: 14 (CORP-001), 15 (CORP-002), 16 (CORP-003)'
                                 : `Use your ID (${user?.id}) here if you're the buyer`}
                         </p>
                     </div>
@@ -194,19 +199,19 @@ export default function CreateTradePage() {
                     {/* Seller ID */}
                     <div>
                         <label className="block text-sm font-bold text-slate-900 mb-2">
-                            Seller User ID *
+                            Seller User ID (Numeric) *
                         </label>
                         <input
                             type="text"
                             value={sellerId}
                             onChange={(e) => setSellerId(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white/95 transition-all"
-                            placeholder={user?.role !== 'admin' ? `Enter ${user?.id} (your ID) or partner's ID` : 'Enter seller user ID'}
+                            placeholder={user?.role !== 'admin' ? `E.g., ${user?.id} (your ID) or partner's ID like 14, 15, 16` : 'E.g., 14, 15, 16 (corporate users)'}
                             required
                         />
                         <p className="mt-2 text-xs text-slate-600">
                             {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'Must be different from buyer and a Corporate User ID'
+                                ? 'Use Corporate User IDs: 14 (CORP-001), 15 (CORP-002), 16 (CORP-003)'
                                 : `Use your ID (${user?.id}) here if you're the seller`}
                         </p>
                     </div>
@@ -389,15 +394,90 @@ export default function CreateTradePage() {
             <div className="bg-white/80 backdrop-blur-xl border-2 border-slate-200 rounded-[28px] p-8">
                 <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                     <span>❓</span>
-                    <span>Frequently Asked Questions</span>
+                    <span>User Directory & Reference</span>
                 </h3>
-                <div className="space-y-6 text-sm text-slate-700">
+                
+                {/* User Code Reference Table */}
+                <div className="mb-8">
+                    <h4 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <span>👥</span>
+                        <span>Available Users & Their IDs</span>
+                    </h4>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b-2 border-slate-300 bg-slate-50">
+                                    <th className="text-left px-4 py-3 font-bold text-slate-900">User Code</th>
+                                    <th className="text-left px-4 py-3 font-bold text-slate-900">User ID</th>
+                                    <th className="text-left px-4 py-3 font-bold text-slate-900">Name</th>
+                                    <th className="text-left px-4 py-3 font-bold text-slate-900">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                                <tr className="hover:bg-blue-50">
+                                    <td className="px-4 py-3 font-mono font-bold text-blue-600">ADM-001</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">11</td>
+                                    <td className="px-4 py-3 text-slate-700">System Administrator</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-bold">Admin</span></td>
+                                </tr>
+                                <tr className="hover:bg-blue-50">
+                                    <td className="px-4 py-3 font-mono font-bold text-green-600">BANK-001</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">12</td>
+                                    <td className="px-4 py-3 text-slate-700">Sarah Banking</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Bank</span></td>
+                                </tr>
+                                <tr className="hover:bg-blue-50">
+                                    <td className="px-4 py-3 font-mono font-bold text-green-600">BANK-002</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">13</td>
+                                    <td className="px-4 py-3 text-slate-700">David European Bank</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Bank</span></td>
+                                </tr>
+                                <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
+                                    <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-001</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">14</td>
+                                    <td className="px-4 py-3 text-slate-700">John Corporate</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
+                                </tr>
+                                <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
+                                    <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-002</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">15</td>
+                                    <td className="px-4 py-3 text-slate-700">Emily Tech Trading</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
+                                </tr>
+                                <tr className="hover:bg-cyan-50 border-2 border-cyan-300">
+                                    <td className="px-4 py-3 font-mono font-bold text-cyan-600">CORP-003</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">16</td>
+                                    <td className="px-4 py-3 text-slate-700">Lisa Asia Trade</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-bold">Corporate</span></td>
+                                </tr>
+                                <tr className="hover:bg-orange-50">
+                                    <td className="px-4 py-3 font-mono font-bold text-orange-600">AUD-001</td>
+                                    <td className="px-4 py-3 font-bold text-slate-900">17</td>
+                                    <td className="px-4 py-3 text-slate-700">Michael Auditor</td>
+                                    <td className="px-4 py-3"><span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-bold">Auditor</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* FAQs */}
+                <div className="space-y-6 text-sm text-slate-700 border-t-2 border-slate-200 pt-8">
                     <div>
                         <p className="text-slate-900 font-bold mb-2">Q: What IDs should I use?</p>
                         <p className="text-slate-700">
-                            A: Your User Code is <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">{user?.user_code}</span>.
+                            A: Use the <strong>numeric User ID</strong> (e.g., <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">14</span>), not the user code. Your User Code is <span className="font-mono bg-blue-50 px-2 py-1 rounded border border-blue-300">{user?.user_code}</span>.
                             {user?.role !== 'admin' && user?.role !== 'bank' && ' Please provide this to your trading partner.'}
-                            {' '}Contact your trading partner for their User Code for trade setup.
+                            {' '}See the table above to find user IDs.
+                        </p>
+                    </div>
+
+                    <div>
+                        <p className="text-slate-900 font-bold mb-2">Q: Which users can participate in trades?</p>
+                        <p className="text-slate-700">
+                            <strong>Corporate users (CORP-001, CORP-002, CORP-003)</strong> can be buyers and sellers. 
+                            {user?.role === 'bank' && ' As a Bank, you cannot be a party but you can create trades between corporates.'}
+                            Use their numeric IDs: <span className="font-mono bg-cyan-50 px-2 py-1 rounded border border-cyan-300">14, 15, 16</span>
                         </p>
                     </div>
 
@@ -405,14 +485,14 @@ export default function CreateTradePage() {
                         <p className="text-slate-900 font-bold mb-2">Q: Why am I getting "forbidden" errors?</p>
                         <p className="text-slate-700">
                             A: {user?.role === 'admin' || user?.role === 'bank'
-                                ? 'As Bank/Admin, ensure buyer and seller are valid Corporate User IDs.'
-                                : `You must be either the buyer or seller. Your User Code is ${user?.user_code}.`}
+                                ? 'As Bank/Admin, ensure buyer and seller are valid Corporate User IDs (14, 15, or 16).'
+                                : `You must be either the buyer or seller. Your User ID is ${user?.id}. Use your ID and a trading partner's ID.`}
                         </p>
                     </div>
 
                     <div>
                         <p className="text-slate-900 font-bold mb-2">Q: Can I modify a trade after creation?</p>
-                        <p className="text-slate-700">A: You can update the trade status but not the parties or amount after creation.</p>
+                        <p className="text-slate-700">You can update the trade status but not the parties or amount after creation.</p>
                     </div>
                 </div>
             </div>

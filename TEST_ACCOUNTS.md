@@ -1,7 +1,7 @@
 # 🔐 Test Accounts - Trade Finance Blockchain
 
 > **Last Updated:** February 20, 2026 15:04:54 UTC  
-> **Status:** 7 fresh accounts with clean database
+> **Status:** 7 test accounts with user IDs #11-#17
 
 ---
 
@@ -13,7 +13,7 @@ Use these credentials to test the application at **http://localhost:5173**
 ```
 Email:    admin@tradefinance.com
 Password: admin123!@#
-User ID:  #1 (ADM-001)
+User ID:  #11 (ADM-001)
 Org:      Trade Finance Platform
 ```
 
@@ -21,13 +21,13 @@ Org:      Trade Finance Platform
 ```
 Email:    bank@globalbank.com
 Password: bank123!@#
-User ID:  #2 (BANK-001)
+User ID:  #12 (BANK-001)
 Org:      Global Bank Ltd
 ```
 ```
 Email:    bank@europeanbank.com
 Password: bank123!@#
-User ID:  #3 (BANK-002)
+User ID:  #13 (BANK-002)
 Org:      European Bank AG
 ```
 
@@ -35,19 +35,19 @@ Org:      European Bank AG
 ```
 Email:    corporate@company.com
 Password: corporate123!@#
-User ID:  #4 (CORP-001)
+User ID:  #14 (CORP-001)
 Org:      Acme Corporation
 ```
 ```
 Email:    corporate@techcorp.com
 Password: corporate123!@#
-User ID:  #5 (CORP-002)
+User ID:  #15 (CORP-002)
 Org:      Tech Trading Inc
 ```
 ```
 Email:    corporate@asiacorp.com
 Password: corporate123!@#
-User ID:  #6 (CORP-003)
+User ID:  #16 (CORP-003)
 Org:      Asia Trade Partners
 ```
 
@@ -55,7 +55,7 @@ Org:      Asia Trade Partners
 ```
 Email:    auditor@auditfirm.com
 Password: auditor123!@#
-User ID:  #7 (AUD-001)
+User ID:  #17 (AUD-001)
 Org:      Independent Audit Services
 ```
 
@@ -65,52 +65,52 @@ Org:      Independent Audit Services
 
 | ID | User Code | Name | Email | Password | Role | Organization |
 |---|---|---|---|---|---|---|
-| #1 | ADM-001 | System Administrator | admin@tradefinance.com | `admin123!@#` | **admin** | Trade Finance Platform |
-| #2 | BANK-001 | Sarah Banking | bank@globalbank.com | `bank123!@#` | **bank** | Global Bank Ltd |
-| #3 | BANK-002 | David European Bank | bank@europeanbank.com | `bank123!@#` | **bank** | European Bank AG |
-| #4 | CORP-001 | John Corporate | corporate@company.com | `corporate123!@#` | **corporate** | Acme Corporation |
-| #5 | CORP-002 | Emily Tech Trading | corporate@techcorp.com | `corporate123!@#` | **corporate** | Tech Trading Inc |
-| #6 | CORP-003 | Lisa Asia Trade | corporate@asiacorp.com | `corporate123!@#` | **corporate** | Asia Trade Partners |
-| #7 | AUD-001 | Michael Auditor | auditor@auditfirm.com | `auditor123!@#` | **auditor** | Independent Audit Services |
+| #11 | ADM-001 | System Administrator | admin@tradefinance.com | `admin123!@#` | **admin** | Trade Finance Platform |
+| #12 | BANK-001 | Sarah Banking | bank@globalbank.com | `bank123!@#` | **bank** | Global Bank Ltd |
+| #13 | BANK-002 | David European Bank | bank@europeanbank.com | `bank123!@#` | **bank** | European Bank AG |
+| #14 | CORP-001 | John Corporate | corporate@company.com | `corporate123!@#` | **corporate** | Acme Corporation |
+| #15 | CORP-002 | Emily Tech Trading | corporate@techcorp.com | `corporate123!@#` | **corporate** | Tech Trading Inc |
+| #16 | CORP-003 | Lisa Asia Trade | corporate@asiacorp.com | `corporate123!@#` | **corporate** | Asia Trade Partners |
+| #17 | AUD-001 | Michael Auditor | auditor@auditfirm.com | `auditor123!@#` | **auditor** | Independent Audit Services |
 
 ---
 
 ## 🧪 Testing Workflows
 
-### Test Admin (ID #1)
+### Test Admin (ID #11)
 1. Login with **admin@tradefinance.com / admin123!@#**
 2. Access: Dashboard, Documents, Risk Oversight, User Management, Audit Logs
 3. Can: View all documents, manage users, configure system, view all risks
 
-### Test Bank User 1 (ID #2): Global Bank
+### Test Bank User 1 (ID #12): Global Bank
 1. Login with **bank@globalbank.com / bank123!@#**
 2. Access: Dashboard, Documents, Trades, Risk Score
 3. Can: Create trades, upload documents (including LOC), manage documents, view risk score
 
-### Test Bank User 2 (ID #3): European Bank
+### Test Bank User 2 (ID #13): European Bank
 1. Login with **bank@europeanbank.com / bank123!@#**
 2. Access: Dashboard, Documents, Trades, Risk Score
 3. Can: Create trades, upload documents (including LOC), manage documents, view risk score
 4. **Use for multi-bank scenarios**
 
-### Test Corporate User 1 (ID #4): Acme Corporation
+### Test Corporate User 1 (ID #14): Acme Corporation
 1. Login with **corporate@company.com / corporate123!@#**
 2. Access: Dashboard, Documents, Trades, Risk Score
 3. Can: Participate in trades, upload documents (except LOC), view their risk score
 
-### Test Corporate User 2 (ID #5): Tech Trading
+### Test Corporate User 2 (ID #15): Tech Trading
 1. Login with **corporate@techcorp.com / corporate123!@#**
 2. Access: Dashboard, Documents, Trades, Risk Score
 3. Can: Participate in trades, upload documents (except LOC), view their risk score
 4. **Use for multi-party trade scenarios**
 
-### Test Corporate User 3 (ID #6): Asia Trade
+### Test Corporate User 3 (ID #16): Asia Trade
 1. Login with **corporate@asiacorp.com / corporate123!@#**
 2. Access: Dashboard, Documents, Trades, Risk Score
 3. Can: Participate in trades, upload documents (except LOC), view their risk score
 4. **Use for three-party trade scenarios**
 
-### Test Auditor (ID #7)
+### Test Auditor (ID #17)
 1. Login with **auditor@auditfirm.com / auditor123!@#**
 2. Access: Dashboard, Documents (read-only), Ledger, Risk Monitor, Alerts, Reports
 3. Can: View all documents, verify hashes, review ledger, flag documents, view all risks
@@ -204,7 +204,40 @@ This will:
 2. **This is for development/testing only** - Do not use in production
 3. **All accounts are initially ACTIVE** - No approval needed
 4. **Passwords follow pattern:** `[role]123!@#` (e.g., `admin123!@#`, `bank123!@#`)
-5. **To create new users:** Use Admin dashboard at http://localhost:5173/admin/users
+5. **User IDs start at #11** - Previous test accounts or migrations may have used IDs 1-10
+6. **To create new users:** Use Admin dashboard at http://localhost:5173/admin/users
+
+---
+
+## 🎯 Example Trade Scenarios
+
+### Two-Party Trade (Corporate-to-Corporate)
+**Scenario:** Buyer (Corporate #14) wants to buy from Seller (Corporate #15)
+
+**Steps:**
+1. Login as Corporate #14
+2. Go to http://localhost:5173/trades/create
+3. Enter: Buyer ID = **14**, Seller ID = **15**, Amount = **50000**, Currency = **USD**
+4. Click "Create Trade"
+5. Both parties can view the trade and update its status
+
+### Bank-Facilitated Trade
+**Scenario:** Bank #12 facilitates trade between Corporate #14 and Corporate #16
+
+**Steps:**
+1. Login as Bank #12
+2. Go to http://localhost:5173/trades/create
+3. Enter: Buyer ID = **14**, Seller ID = **16**, Amount = **100000**, Currency = **USD**
+4. Click "Create Trade"
+5. Bank can upload documents and manage trade status
+
+### Multi-Party Scenario
+**Setup:** Test corporate integration with different parties
+- **Party 1:** Corporate #14 (Acme Corporation)
+- **Party 2:** Corporate #15 (Tech Trading Inc)
+- **Party 3:** Corporate #16 (Asia Trade Partners)
+- **Bank:** Bank #12 or #13
+- **Auditor:** Auditor #17 (can view all but cannot participate)
 
 ---
 
