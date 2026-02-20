@@ -274,15 +274,28 @@ Include screenshots of:
 - Trade Management Page
 - Ledger View
 
-/screenshots
+## 📸 Screenshots
 
- ├── dashboard.png
- 
- ├── risk_chart.png
- 
- ├── trades.png
- 
- └── ledger.png
+### Admin Dashboard - View 1
+![Admin Dashboard 1](Screenshots/admin-1.png)
+
+### Admin Dashboard - View 2
+![Admin Dashboard 2](Screenshots/admin-2.png)
+
+### Auditor Panel
+![Auditor](Screenshots/auditor.png)
+
+### Bank Dashboard
+![Bank](Screenshots/bank.png)
+
+### Corporate Dashboard
+![Corporate](Screenshots/corporate.png)
+
+### Sign In Page
+![Sign In](Screenshots/signin.png)
+
+### Sign Up Page
+![Sign Up](Screenshots/signup.png)
 
 ---
 
