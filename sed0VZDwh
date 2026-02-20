@@ -1,0 +1,13 @@
+modules = ["python-3.11", "nodejs-20", "web"]
+
+run = "sh start.sh"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
+
+[nix]

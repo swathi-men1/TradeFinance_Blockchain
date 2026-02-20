@@ -14,40 +14,53 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!user) return <Navigate to="/login" />;
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      <nav style={{ width: "200px", borderRight: "1px solid #ccc", padding: "1rem" }}>
+      <nav
+        style={{
+          width: "200px",
+          borderRight: "1px solid #ccc",
+          padding: "1rem",
+        }}
+      >
         <h3>Menu</h3>
         <ul style={{ listStyle: "none", padding: 0 }}>
-          <li><Link to="/">Dashboard</Link></li>
-          <li><Link to="/documents">Documents</Link></li>
-          <li><Link to="/transactions">Transactions</Link></li>
-          <li><Link to="/risk">Risk Analysis</Link></li>
-          <li><Link to="/logs">System Logs</Link></li>
+          <li>
+            <Link to="/">Dashboard</Link>
+          </li>
+          <li>
+            <Link to="/documents">Documents</Link>
+          </li>
+          <li>
+            <Link to="/transactions">Transactions</Link>
+          </li>
+          <li>
+            <Link to="/risk">Risk Analysis</Link>
+          </li>
+          <li>
+            <Link to="/logs">System Logs</Link>
+          </li>
         </ul>
-        <button onClick={() => {
-          localStorage.removeItem("access_token");
-          window.location.href = "/login";
-        }}>Logout</button>
+        <button
+          onClick={() => {
+            localStorage.removeItem("access_token");
+            window.location.href = "/login";
+          }}
+        >
+          Logout
+        </button>
       </nav>
-      <main style={{ flex: 1, padding: "2rem" }}>
-        {children}
-      </main>
+      <main style={{ flex: 1, padding: "2rem" }}>{children}</main>
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
-          <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-          <Route path="/risk" element={<ProtectedRoute><RiskPage /></ProtectedRoute>} />
-          <Route path="/logs" element={<ProtectedRoute><LogsPage /></ProtectedRoute>} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/risk" element={<RiskPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

@@ -32,17 +32,17 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0b1220] text-slate-200">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-white/5 bg-[#080e1a] p-6 flex flex-col">
+      <aside className="w-64 border-r border-slate-200 bg-white p-6 flex flex-col sticky top-0 h-screen">
         <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-8 h-8 bg-cyan-500 rounded-lg glow-cyan flex items-center justify-center">
-            <ShieldAlert className="text-[#0b1220] w-5 h-5" />
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+            <ShieldAlert className="text-white w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">TradeChain</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">TradeChain</h1>
         </div>
 
-        <nav className="space-y-2 flex-1">
+        <nav className="space-y-1 flex-1">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -51,20 +51,20 @@ export default function Layout({ children }: LayoutProps) {
                 to={item.path}
                 className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
               >
-                <item.icon size={20} />
-                <span className="font-medium">{item.name}</span>
+                <item.icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
+                <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-white/5">
+        <div className="mt-auto pt-6 border-t border-slate-100">
           <button 
             onClick={handleLogout}
-            className="nav-link w-full text-red-400/80 hover:text-red-400 hover:bg-red-400/5"
+            className="nav-link w-full text-slate-500 hover:text-red-600 hover:bg-red-50"
           >
             <LogOut size={20} />
-            <span className="font-medium">Logout</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -72,23 +72,23 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Topbar */}
-        <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0b1220]/50 backdrop-blur-md sticky top-0 z-10">
-          <h2 className="text-lg font-semibold text-white">
+        <header className="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+          <h2 className="text-lg font-bold text-slate-800">
             {menuItems.find(m => m.path === location.pathname)?.name || "Trade Finance"}
           </h2>
           
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end mr-2">
-              <span className="text-sm font-medium text-white">{user?.name}</span>
-              <span className="text-xs text-slate-500 capitalize">{user?.role}</span>
+              <span className="text-sm font-bold text-slate-900">{user?.name}</span>
+              <span className="text-xs text-slate-500 font-medium capitalize">{user?.role}</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm">
               <User size={20} />
             </div>
           </div>
         </header>
 
-        <main className="p-8 overflow-y-auto">
+        <main className="p-8">
           {children}
         </main>
       </div>

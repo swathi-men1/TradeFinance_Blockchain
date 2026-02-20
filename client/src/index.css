@@ -4,50 +4,45 @@
 
 @layer base {
   body {
-    background-color: #0b1220;
-    color: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+    color: #1e293b;
     font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer components {
-  .glass-card {
-    background: rgba(17, 24, 39, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    @apply shadow-2xl rounded-2xl;
+  .premium-card {
+    @apply bg-white border border-slate-200/60 shadow-sm rounded-xl p-6 transition-all duration-300;
   }
 
-  .glass-card-hover {
-    @apply transition-all duration-300;
+  .premium-card:hover {
+    @apply shadow-md border-blue-200/50 -translate-y-0.5;
   }
 
-  .glass-card-hover:hover {
-    border-color: rgba(34, 211, 238, 0.3);
-    box-shadow: 0 0 30px rgba(34, 211, 238, 0.15);
-    transform: translateY(-2px);
-  }
-
-  .glow-cyan {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-  }
-
-  .btn-gradient {
-    @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-2 px-6 rounded-xl 
-           hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-cyan-500/20;
+  .btn-primary {
+    @apply bg-blue-600 text-white font-semibold py-2.5 px-6 rounded-lg 
+           hover:bg-blue-700 active:scale-95 transition-all shadow-sm hover:shadow-blue-200/50;
   }
 
   .input-field {
-    @apply bg-white/5 border border-white/10 text-white px-4 py-2.5 rounded-xl w-full 
-           focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all;
+    @apply bg-white border border-slate-200 text-slate-900 px-4 py-2.5 rounded-lg w-full 
+           focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400;
   }
 
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-cyan-400 
-           hover:bg-white/5 transition-all cursor-pointer;
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:text-blue-600 
+           hover:bg-blue-50 transition-all cursor-pointer font-medium;
   }
 
   .nav-link-active {
-    @apply bg-cyan-500/10 text-cyan-400 border border-cyan-500/20;
+    @apply bg-blue-50 text-blue-600 border-r-4 border-blue-600 rounded-r-none;
+  }
+
+  .stat-label {
+    @apply text-slate-500 text-xs font-bold uppercase tracking-wider;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold text-slate-900;
   }
 }
