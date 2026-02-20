@@ -5,6 +5,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     postgresql-client \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
@@ -21,6 +22,7 @@ EXPOSE 8000
 
 # Copy and set up the wait script
 COPY wait-for-db.sh /app/wait-for-db.sh
+RUN dos2unix /app/wait-for-db.sh
 RUN chmod +x /app/wait-for-db.sh
 
 # Use the wait script
