@@ -3,7 +3,7 @@ import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -11,25 +11,24 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      // FastAPI OAuth2 expects form data
+      // ✅ OAuth2 requires FORM DATA
       const formData = new URLSearchParams();
-      formData.append("username", email);
+      formData.append("username", username);
       formData.append("password", password);
 
-      const res = await API.post("/token", formData, {
+      const res = await API.post("/auth/login", formData, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
 
-      // save JWT token
       localStorage.setItem("token", res.data.access_token);
 
       alert("Login Successful ✅");
       navigate("/dashboard");
 
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data);
       alert("Login Failed ❌");
     }
   };
@@ -40,8 +39,8 @@ export default function Login() {
 
       <form onSubmit={handleLogin}>
         <input
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Username"
+          onChange={(e) => setUsername(e.target.value)}
         />
 
         <input
