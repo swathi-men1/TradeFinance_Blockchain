@@ -15,6 +15,12 @@
 
 Trade Finance Blockchain Explorer is a comprehensive platform for managing trade finance operations with cryptographic integrity, immutable audit trails, and intelligent risk assessment. Built for banks, corporations, auditors, and administrators to streamline international trade workflows.
 
+**Current Version**: 1.0.0  
+**Status**: Development & Testing  
+**Database**: PostgreSQL 12+  
+**Python**: 3.9+  
+**Node.js**: 16+
+
 ### Key Capabilities
 
 - **Document Management** - Secure upload, storage, and verification of trade documents (Letter of Credit, Invoices, Bills of Lading)
@@ -42,57 +48,87 @@ Trade Finance Blockchain Explorer is a comprehensive platform for managing trade
 ### Core Functionality
 - ✅ **JWT Authentication** - Secure token-based authentication with role management
 - ✅ **User Code System** - Professional 6-character user identification (e.g., `JOH847`)
-- ✅ **Document Upload** - S3-compatible storage with automatic hash generation
+- ✅ **Document Upload** - File storage with automatic SHA-256 hash generation
 - ✅ **Trade Management** - Complete CRUD operations for trade transactions
-- ✅ **Risk Scoring** - Automated risk category assessment (LOW/MEDIUM/HIGH) with AI verification
+- ✅ **Risk Scoring** - Automated risk category assessment (LOW/MEDIUM/HIGH)
 - ✅ **Ledger Tracking** - Immutable record of all document and trade actions
 - ✅ **Hash Verification** - Real-time integrity validation
-- ✅ **Admin Activity Logging** - Complete tracking of admin login/logout with immutable audit trail
+- ✅ **Admin Activity Logging** - Complete tracking of admin actions with immutable audit trail
+- ✅ **Background Tasks** - Scheduled tasks using APScheduler
+- ✅ **Compliance Alerts** - Automated compliance monitoring
 
 ### User Experience
-- 🎨 **Modern UI** - Sleek glassmorphism design with neon gradients and Tailwind CSS
-- 🔄 **Visual Workflow** - Interactive diagrams illustrating the trade finance process
+- 🎨 **Modern UI** - Clean, responsive design with Tailwind CSS
 - 📱 **Responsive** - Mobile-friendly interface with adaptive layouts
-- 🌍 **Timezone Aware** - Automatic local timezone detection and display
-- 🔔 **Real-time Notifications** - Instant feedback for all operations
-- 📊 **Interactive Dashboards** - Role-specific analytics and insights
+- 🌍 **Role-Based Dashboards** - Customized views per user role
+- 🔔 **Real-time Feedback** - Instant operation status notifications
+- 📊 **Data Visualization** - Interactive charts and statistics
 
 ### Security & Compliance
-- 🔐 **Password Hashing** - Bcrypt encryption for user credentials
-- 🔑 **JWT Tokens** - Secure session management
-- 🛡️ **RBAC** - Role-based access control enforced at API and UI levels
+- 🔐 **Password Hashing** - Bcrypt encryption for credentials
+- 🔑 **JWT Tokens** - Stateless session management
+- 🛡️ **RBAC** - Role-based access control at API and UI levels
 - 📝 **Audit Logging** - Complete action history for compliance
 - 🔗 **Hash Chains** - Linked ledger entries for tamper detection
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Environment Setup
+
+Before starting development, you need to set up your local environment:
+
+### Required Software
+1. **PostgreSQL** (12+) - Download from [postgresql.org](https://www.postgresql.org/download/)
+   - Start PostgreSQL service
+   - Create database: `createdb -U postgres trade_finance`
+
+2. **Python** (3.9+) - Download from [python.org](https://www.python.org/downloads/)
+   - Verify: `python --version`
+
+3. **Node.js** (16+) - Download from [nodejs.org](https://nodejs.org/)
+   - Verify: `node --version` and `npm --version`
+
+4. **Git** - Download from [git-scm.com](https://git-scm.com/)
+
+### Environment Variables
+Create a `.env` file in the `backend/` directory:
+```
+DATABASE_URL=postgresql://postgres:password@localhost/trade_finance
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+---
 
 ### Backend
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | FastAPI | 0.109.0 | High-performance async API framework |
-| PostgreSQL | 14+ | Relational database |
+| PostgreSQL | 12+ | Relational database |
 | SQLAlchemy | 2.0.25 | ORM and query builder |
-| Alembic | Latest | Database migrations |
-| MinIO | Latest | S3-compatible object storage |
-| Python | 3.11 | Runtime environment |
+| Alembic | 1.13.1 | Database migrations |
+| Passlib + Bcrypt | 1.7.4 / 4.0.1 | Password hashing and authentication |
+| Python-Jose | 3.3.0 | JWT token generation and validation |
+| Boto3 | 1.34.22 | S3-compatible file storage (MinIO) |
+| APScheduler | 3.10.4 | Task scheduling |
+| Python | 3.9+ | Runtime environment |
 
 ### Frontend
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| React | 18 | UI framework |
-| TypeScript | 5 | Type-safe development |
-| Vite | 5 | Build tool and dev server |
-| CSS3 | - | Styling (Glassmorphism) |
-| Axios | Latest | HTTP client |
-| React Router | 6 | Client-side routing |
+| React | 18.2.0 | UI framework |
+| TypeScript | 5.2.2 | Type-safe development |
+| Vite | 5.0.8 | Build tool and dev server |
+| React Router | 6.21.1 | Client-side routing |
+| Axios | 1.6.5 | HTTP client |
+| Tailwind CSS | 3.4.0 | Utility-first CSS framework |
+| Lucide React | 0.263.1 | Icon library |
 
 ### Infrastructure
-- **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
-- **Nginx** - Frontend web server
-- **MinIO** - S3-compatible storage
+- **PostgreSQL** - Relational database
+- **Alembic** - Database migration management
+- **Uvicorn** - WSGI server for FastAPI
 
 ---
 
@@ -103,42 +139,57 @@ TradeFinance_Blockchain/
 ├── backend/                      # FastAPI Backend
 │   ├── app/
 │   │   ├── api/                 # REST API endpoints
-│   │   │   ├── auth.py         # Authentication routes
+│   │   │   ├── auth.py         # Authentication & JWT
+│   │   │   ├── admin.py        # Admin operations
+│   │   │   ├── auditor.py      # Auditor features
+│   │   │   ├── bank.py         # Bank operations
+│   │   │   ├── corporate.py    # Corporate operations
 │   │   │   ├── documents.py    # Document management
 │   │   │   ├── trades.py       # Trade operations
 │   │   │   ├── risk.py         # Risk scoring
 │   │   │   ├── ledger.py       # Ledger operations
-│   │   │   └── admin.py        # Admin operations
+│   │   │   ├── monitoring.py   # System monitoring
+│   │   │   ├── consistency.py  # Data consistency checks
+│   │   │   └── deps.py         # Dependency injection
 │   │   ├── core/               # Core utilities
 │   │   │   ├── security.py    # JWT & password hashing
-│   │   │   └── hashing.py     # SHA-256 file hashing
+│   │   │   ├── hashing.py     # SHA-256 file hashing
+│   │   │   ├── risk_rules.py  # Risk assessment logic
+│   │   │   ├── scheduler.py   # Background tasks
+│   │   │   └── middleware.py  # HTTP middleware
 │   │   ├── db/                 # Database configuration
-│   │   ├── models/             # SQLAlchemy models
-│   │   ├── schemas/            # Pydantic schemas
+│   │   ├── models/             # SQLAlchemy database models
+│   │   ├── schemas/            # Pydantic validation schemas
 │   │   ├── services/           # Business logic layer
-│   │   └── utils/              # Helper functions
+│   │   ├── utils/              # Helper functions
+│   │   └── main.py             # FastAPI app initialization
 │   ├── alembic/                # Database migrations
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── wait-for-db.sh         # Startup script
-├── frontend/                    # React Frontend
+│   ├── requirements.txt         # Python dependencies
+│   ├── .env.example           # Environment template
+│   └── seed_database.py       # Test data seeding
+├── frontend/                    # React + TypeScript Frontend
 │   ├── src/
 │   │   ├── components/         # Reusable UI components
 │   │   ├── context/            # React context providers
 │   │   ├── pages/              # Page components
-│   │   ├── services/           # API integration
+│   │   ├── services/           # API integration (Axios)
 │   │   ├── types/              # TypeScript definitions
 │   │   ├── utils/              # Utility functions
 │   │   ├── App.tsx             # Main application
 │   │   └── index.css           # Global styles
-│   ├── public/                 # Static assets
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── Dockerfile
-├── docker-compose.yml           # Container orchestration
-├── README.md                    # This file
-└── QUICKSTART_GUIDE.md         # Quick start instructions
-
+│   ├── package.json            # npm dependencies
+│   ├── vite.config.ts         # Vite build config
+│   ├── tsconfig.json          # TypeScript config
+│   └── tailwind.config.js     # Tailwind CSS config
+├── docs/                        # Documentation
+│   ├── ARCHITECTURE.md         # System architecture
+│   ├── API_REFERENCE.md        # API documentation
+│   ├── DEPLOYMENT.md           # Deployment guide
+│   └── CONTRIBUTING.md         # Contribution guidelines
+├── QUICKSTART_GUIDE.md         # Step-by-step setup
+├── TEST_ACCOUNTS.md            # Test user credentials
+├── README.md                   # This file
+└── LICENSE                     # MIT License
 ```
 
 ---
@@ -146,41 +197,63 @@ TradeFinance_Blockchain/
 ## 🚦 Quick Start
 
 ### Prerequisites
-- Docker Desktop (v20.10+)
-- Docker Compose (v2.0+)
-- 4GB RAM minimum
-- Ports available: 80, 8000, 5432, 9000, 9001
+- **Python** 3.9+ with pip
+- **Node.js** 16+ with npm
+- **PostgreSQL** 12+ (running locally or remote)
+- **Git** installed
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/swathi-men1/TradeFinance_Blockchain.git
    cd TradeFinance_Blockchain
    ```
 
-2. **Start all services**
+2. **Setup Backend**
    ```bash
-   docker-compose up --build
+   cd backend
+   python -m venv venv
+   
+   # Activate virtual environment
+   # Windows:
+   venv\Scripts\activate
+   # Mac/Linux:
+   source venv/bin/activate
+   
+   # Install dependencies
+   pip install -r requirements.txt
+   
+   # Run database migrations
+   alembic upgrade head
+   
+   # Seed test users
+   python seed_database.py
    ```
 
-3. **Access the application**
-   - **Frontend**: http://localhost
+3. **Start Backend Server** (keep running in first terminal)
+   ```bash
+   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+4. **Setup Frontend** (in new terminal)
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+5. **Access the application**
+   - **Frontend**: http://localhost:5173
    - **Backend API**: http://localhost:8000
    - **API Documentation**: http://localhost:8000/docs
-   - **MinIO Console**: http://localhost:9001
 
-4. **Default credentials** (for testing)
-   - Register a new user via the UI
-   - Or use API: `POST /api/v1/auth/register`
-   - **Admin User**: `admin@tradefinance.com` / `admin123` (pre-configured)
-   - **Admin Login**: Creates immutable ledger entry with login timestamp
-   - **Admin Logout**: Creates immutable ledger entry with logout timestamp
-   - **Ledger Viewer**: Access via `/ledger` route (Admin/Auditor only)
-
-### Stopping the Application
-```bash
-docker-compose down
+### Default Test Credentials
+```
+Admin:     admin@tradefinance.com / admin123!@#
+Bank:      bank@tradefinance.com / bank123!@#
+Corporate: corporate@tradefinance.com / corporate123!@#
+Auditor:   auditor@tradefinance.com / auditor123!@#
 ```
 
 For detailed setup instructions, see [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)
@@ -352,108 +425,201 @@ GET    /api/v1/admin/audit-logs      # View audit logs
 
 ## 🧪 Testing
 
-### Manual Testing
-1. Register users with different roles
-2. Upload various document types
-3. Create trades and link documents
-4. Verify hash integrity
-5. Check ledger entries
-6. Test role-based access restrictions
+### Backend Testing
+```bash
+cd backend
+python -m pytest tests/ -v
+```
 
-### API Testing
+### Manual API Testing
 Use the interactive Swagger UI at http://localhost:8000/docs
+
+### Test Endpoints
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Login and get token
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@tradefinance.com","password":"admin123!@#"}'
+
+# Get current user
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8000/api/v1/auth/me
+```
+
+### Database Testing
+```bash
+# Verify seeded users
+psql -U postgres -d trade_finance -c "SELECT id, user_code, email, role FROM users;"
+
+# Check tables
+psql -U postgres -d trade_finance -c "\dt"
+```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Database Setup Issues
 
-**Containers won't start:**
+**Issue: "Database does not exist"**
 ```bash
-docker-compose down -v
-docker-compose up --build
+# Create database manually
+createdb -U postgres trade_finance
+
+# Then run migrations
+cd backend
+alembic upgrade head
 ```
 
-**Database migration errors:**
+**Issue: "Password authentication failed"**
+- Ensure PostgreSQL is running
+- Check `.env` file has correct `DATABASE_URL`
+- Default: `postgresql://postgres:password@localhost/trade_finance`
+
+**Issue: "Module not found"**
+- Ensure virtual environment is activated
+- Reinstall dependencies: `pip install -r requirements.txt`
+
+### Backend Issues
+
+**Port 8000 already in use:**
 ```bash
-docker-compose exec backend alembic upgrade head
+python -m uvicorn app.main:app --reload --port 8001
 ```
 
-**MinIO connection issues:**
-- Check MinIO console: http://localhost:9001
-- Default credentials: minioadmin / minioadmin
-
-**Frontend not loading:**
-- Clear browser cache
-- Check console for errors
-- Verify backend is running on port 8000
-
-**CORS errors:**
-- Ensure frontend is accessed via http://localhost (not 127.0.0.1)
-- Check backend CORS settings
-
-### Logs
+**Alembic migration errors:**
 ```bash
-# View all logs
-docker-compose logs -f
+alembic current          # Check current revision
+alembic upgrade head     # Apply all migrations
+```
 
-# View specific service logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
+**Database connection issues:**
+```bash
+python test_db_connection.py  # Test connection
+```
+
+### Frontend Issues
+
+**Dependencies won't install:**
+```bash
+npm cache clean --force
+npm install
+```
+
+**Port 5173 already in use:**
+- Vite will auto-increment port
+- Check terminal output for actual URL
+
+**Cannot connect to backend:**
+- Ensure backend is running on port 8000
+- Check `axios` baseURL in frontend services
+- Verify API endpoint in browser network tab
+
+### Common Environment Issues
+
+**Issue: "No module named 'app'"**
+```bash
+# Ensure you're in the backend directory
+cd backend
+# Activate venv
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Mac/Linux
+```
+
+**Issue: "psycopg2 installation fails"**
+```bash
+# On Windows, may need PostgreSQL dev files installed
+# Alternatively, reinstall:
+pip uninstall psycopg2-binary
+pip install psycopg2-binary==2.9.9
 ```
 
 ---
 
 ## 🔄 Database Migrations
 
+Migrations are managed using Alembic. Ensure PostgreSQL is running before running migrations.
+
 ### View migration status
 ```bash
-docker-compose exec backend alembic current
+cd backend
+alembic current
+```
+
+### Apply all pending migrations
+```bash
+alembic upgrade head
 ```
 
 ### Create new migration
 ```bash
-docker-compose exec backend alembic revision -m "description"
+alembic revision --autogenerate -m "description of change"
 ```
 
-### Apply migrations
+### Rollback one migration
 ```bash
-docker-compose exec backend alembic upgrade head
+alembic downgrade -1
 ```
 
-### Rollback migration
+### View migration history
 ```bash
-docker-compose exec backend alembic downgrade -1
+alembic history
 ```
 
 ---
 
 ## 🚀 Deployment
 
+### Development Deployment
+The application is ready to run on a local machine with Python and Node.js installed.
+
 ### Production Considerations
 
-1. **Environment Variables**
-   - Set strong `SECRET_KEY` for JWT
-   - Configure `DATABASE_URL` for production database
-   - Update `CORS_ORIGINS` to actual frontend domain
-   - Set `MINIO_ENDPOINT` to production storage
+1. **Environment Configuration**
+   - Create `.env` file with production values:
+     ```
+     DATABASE_URL=postgresql://user:password@prod-db:5432/trade_finance
+     SECRET_KEY=your-strong-secret-key-here
+     ALGORITHM=HS256
+     ACCESS_TOKEN_EXPIRE_MINUTES=30
+     ```
 
 2. **Database**
-   - Use managed PostgreSQL service
-   - Enable SSL connections
-   - Configure backups
+   - Use managed PostgreSQL service (AWS RDS, Azure Database, etc.)
+   - Enable SSL/TLS connections
+   - Configure automated backups
+   - Run migrations: `alembic upgrade head`
 
-3. **Object Storage**
-   - Use AWS S3 or production MinIO cluster
-   - Enable encryption at rest
-   - Configure bucket policies
+3. **Backend Deployment**
+   - Use production WSGI server (Gunicorn, Daphne, etc.)
+   ```bash
+   gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+   ```
+   - Enable HTTPS with SSL certificates
+   - Configure firewall rules
+   - Set up process monitor (systemd, supervisor, etc.)
 
-4. **Security**
-   - Enable HTTPS (TLS/SSL certificates)
-   - Implement rate limiting
-   - Set up monitoring and alerts
+4. **Frontend Deployment**
+   - Build for production: `npm run build`
+   - Deploy `dist/` folder to web server (Nginx, Apache, etc.)
+   - Configure CORS to allow API domain requests
+   - Enable CDN for static assets
+
+5. **Security Hardening**
+   - Rotate `SECRET_KEY` regularly
+   - Implement rate limiting on API endpoints
+   - Enable CORS with strict origins
+   - Use strong database passwords
+   - Implement request validation
+   - Set up monitoring and alerting
    - Regular security audits
+   - Keep dependencies updated
+
+### Optional: Docker Support
+To containerize the application, create `Dockerfile` and `docker-compose.yml` files. See existing deployment guidelines for templates.
 
 ---
 
@@ -471,12 +637,55 @@ For questions or support, please open an issue in the repository.
 
 ---
 
-## 📞 Support
+## 📞 Support & Resources
 
-For technical support or questions:
-- Review the [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)
-- Check API documentation at http://localhost:8000/docs
-- Review troubleshooting section above
+### Documentation
+- **[QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md)** - Step-by-step setup instructions
+- **[TEST_ACCOUNTS.md](TEST_ACCOUNTS.md)** - Default test user credentials
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture details
+- **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API documentation
+- **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Contribution guidelines
+
+### Helpful Commands
+```bash
+# Backend development
+cd backend
+venv\Scripts\activate          # Activate virtual environment (Windows)
+python -m uvicorn app.main:app --reload  # Start with hot reload
+
+# Frontend development
+cd frontend
+npm run dev                    # Start development server with Vite
+npm run build                  # Build for production
+npm run lint                   # Check code quality
+
+# Database management
+alembic current                # Check current migration
+alembic history                # View migration history
+psql -U postgres -d trade_finance  # Connect to database directly
+```
+
+### Development Tips
+1. **Keep terminals organized**: Use separate terminals for backend, frontend, and database
+2. **Watch logs**: Monitor terminal output for errors and status messages
+3. **Use API docs**: Visit http://localhost:8000/docs to explore and test API endpoints
+4. **Database reset**: Run `python seed_database.py` to restore test data
+5. **Browser DevTools**: Use for debugging frontend issues and network requests
+
+### Technologies & Learning Resources
+- **FastAPI Documentation**: https://fastapi.tiangolo.com/
+- **React Documentation**: https://react.dev/
+- **PostgreSQL Documentation**: https://www.postgresql.org/docs/
+- **SQLAlchemy Documentation**: https://docs.sqlalchemy.org/
+- **Vite Documentation**: https://vitejs.dev/
+
+### Reporting Issues
+When reporting issues, include:
+- Error message and stack trace
+- Steps to reproduce
+- Python version and OS
+- Output of `npm --version` and `node --version`
+- Recent changes made
 
 ---
 
