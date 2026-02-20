@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Verification Result</h2>
+
+    <p><strong>File:</strong> {{ document.file.name }}</p>
+    <p><strong>Status:</strong> {{ status }}</p>
+
+    <p style="font-size:13px;">
+        <strong>Original Hash:</strong><br>
+        {{ document.file_hash }}
+    </p>
+
+    <p style="font-size:13px;">
+        <strong>Current Hash:</strong><br>
+        {{ current_hash }}
+    </p>
+
+    <a class="btn" href="/documents/list/">Back to Documents</a>
+</div>
+{% endblock %}

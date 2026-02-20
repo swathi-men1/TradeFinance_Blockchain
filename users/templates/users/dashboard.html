@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>Welcome {{ request.user.username }}</h2>
+    <p><strong>Role:</strong> {{ role|title }}</p>
+</div>
+
+<div class="grid">
+
+    {% if role == "bank" %}
+    <div class="card">
+        <h3>🏦 Bank Responsibilities</h3>
+        <ul>
+            <li>Upload and review trade documents</li>
+            <li>Verify document integrity</li>
+            <li>Approve valid documents</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Document Actions</h3>
+        <p>
+            Upload new trade documents or review submitted ones.
+        </p>
+        <a class="btn" href="/documents/upload/">Upload Documents</a>
+        <a class="btn" href="/documents/list/">View Documents</a>
+    </div>
+
+    <div class="card">
+        <h3>Ledger Access</h3>
+        <p>
+            View immutable transaction records after verification.
+        </p>
+        <a class="btn" href="/ledger/">View Ledger</a>
+    </div>
+    {% endif %}
+
+    {% if role == "corporate" %}
+    <div class="card">
+        <h3>🏢 Corporate Responsibilities</h3>
+        <ul>
+            <li>Upload trade finance documents</li>
+            <li>Maintain document authenticity</li>
+            <li>Participate in trade transactions</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Document Submission</h3>
+        <p>
+            Upload documents for bank verification.
+            Any modification after upload will be detected as tampering.
+        </p>
+        <p>
+        <strong>Type:</strong>
+        {{ request.user.profile.corporate_type|title }}
+        </p>
+        <a class="btn" href="/documents/upload/">Upload Documents</a>
+        <a class="btn" href="/documents/my-documents/">My Documents</a>
+
+    </div>
+    {% endif %}
+
+
+    {% if role == "auditor" %}
+    <div class="card">
+        <h3>🕵️ Auditor Responsibilities</h3>
+        <ul>
+            <li>Review ledger entries</li>
+            <li>Verify document integrity results</li>
+            <li>Ensure compliance and traceability</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Audit Tools</h3>
+        <p>
+            Access ledger timeline and verification results.
+        </p>
+        <a class="btn" href="/ledger/">Audit Ledger</a>
+        <a class="btn" href="/documents/list/">View Documents</a>
+    </div>
+    {% endif %}
+
+</div>
+
+<div style="margin-top:25px; text-align:center;">
+    <a class="btn" href="/logout/">Logout</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="max-width:500px; margin:auto;">
+    <h2>Upload Trade Document</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if request.user.profile.role == "bank" %}
+
+        <label>Select Corporate User</label>
+
+        <select name="corporate_id"
+                required
+                style="width:100%; padding:10px; margin-bottom:15px;">
+
+            <option value="">-- Choose Corporate --</option>
+
+            {% for corp in corporates %}
+                <option value="{{ corp.id }}">
+                    {{ corp.username }}
+                </option>
+            {% endfor %}
+
+        </select>
+
+        {% endif %}
+
+        <input type="file"
+               name="document"
+               required
+               style="margin-bottom:15px;">
+
+        <button class="btn" type="submit">
+            Upload
+        </button>
+
+    </form>
+
+    <p style="margin-top:10px; font-size:14px; color:#555;">
+        Once uploaded, any modification to this document will be detected.
+    </p>
+
+</div>
+{% endblock %}

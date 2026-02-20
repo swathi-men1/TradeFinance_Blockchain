@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>👥 Pending User Approvals</h2>
+</div>
+
+<table style="width:100%;border-collapse:collapse;">
+    <tr style="background:#f2f2f2;">
+        <th>Username</th>
+        <th>Assign Role</th>
+        <th>Action</th>
+    </tr>
+
+{% for profile in pending_profiles %}
+<tr>
+    <td>{{ profile.user.username }}</td>
+
+    <td>
+        {{ profile.role|title }}
+        {% if profile.role == "corporate" %}
+            ({{ profile.corporate_type|title }})
+        {% endif %}
+    </td>
+
+    <td>
+        <form method="post" action="/system/approve/{{ profile.user.id }}/">
+            {% csrf_token %}
+            <button class="btn" type="submit">Approve</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+
+
+</table>
+
+{% endblock %}

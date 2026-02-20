@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Trade Finance Explorer{% endblock %}
+
+{% block content %}
+
+
+<div class="card" style="text-align:center;">
+    <h1>Trade Finance Blockchain Explorer</h1>
+
+    <p>
+        A secure platform to manage trade finance documents,
+        ledger monitoring, risk analysis, and trade lifecycle.
+    </p>
+
+    {% if not request.user.is_authenticated %}
+        <div style="margin-top:15px;">
+            <a class="btn" href="/login/" style="font-size:16px; padding:12px 24px;">
+                Get Started
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+
+{% if request.user.is_authenticated %}
+
+
+{% if is_admin %}
+
+<div class="card">
+    <h2>👑 Admin Home</h2>
+    <p>Quick system control shortcuts.</p>
+
+    <a class="btn" href="{% url 'system_dashboard' %}">System Dashboard</a>
+    <a class="btn" href="/system/pending/">Pending Users</a>
+    <a class="btn" href="/system/users/">All Users</a>
+    <a class="btn" href="/ledger/">Ledger</a>
+    <a class="btn" href="{% url 'trade_list' %}">Trades</a>
+</div>
+
+{% endif %}
+
+
+{% if not is_admin %}
+    <div class="grid">
+
+        {% if show_documents %}
+        <div class="card">
+            <h3>Documents</h3>
+            <p>Upload and verify trade documents.</p>
+
+            {% if request.user.profile.role == "corporate" %}
+                <a class="btn" href="{% url 'my_documents' %}">My Documents</a>
+                <a class="btn" href="{% url 'upload_document' %}">Upload</a>
+
+            {% elif request.user.profile.role == "bank" %}
+                <a class="btn" href="{% url 'document_list' %}">Verify Docs</a>
+                <a class="btn" href="{% url 'upload_document' %}">Upload</a>
+
+            {% endif %}
+        </div>
+        {% endif %}
+
+
+        {% if show_ledger %}
+        <div class="card">
+            <h3>Ledger</h3>
+            <p>Immutable audit trail of events.</p>
+            <a class="btn" href="/ledger/">Open</a>
+        </div>
+        {% endif %}
+
+        {% if show_risk %}
+        <div class="card">
+            <h3>Risk Analysis</h3>
+            <p>View calculated risk scores.</p>
+            <a class="btn" href="{% url 'risk_dashboard' %}">Open</a>
+        </div>
+        {% endif %}
+
+        {% if show_transactions %}
+        <div class="card">
+            <h3>Trade Transactions</h3>
+            <p>Manage trade lifecycle.</p>
+            <a class="btn" href="{% url 'trade_list' %}">Open</a>
+        </div>
+        {% endif %}
+
+        </div>
+    </div>
+{% endif %}
+
+
+{% else %}
+
+
+<div class="grid">
+
+    <div class="card">
+        <h3>📄 Document Management</h3>
+        <p>Secure document hashing and verification.</p>
+    </div>
+
+    <div class="card">
+        <h3>🔗 Ledger Monitoring</h3>
+        <p>Blockchain-style audit trail.</p>
+    </div>
+
+    <div class="card">
+        <h3>📊 Risk Intelligence</h3>
+        <p>Smart monitoring of risk behaviour.</p>
+    </div>
+
+    <div class="card">
+        <h3>💼 Trade Automation</h3>
+        <p>End-to-end transaction lifecycle.</p>
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

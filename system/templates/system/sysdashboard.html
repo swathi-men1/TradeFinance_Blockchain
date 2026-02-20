@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>⚙️ System Admin Dashboard</h2>
+    <p>System monitoring and audit overview.</p>
+    <a class="btn" href="/system/pending/">Manage Users</a>
+    <a class="btn" href="/system/users/">View All Users</a>
+
+</div>
+
+<div class="grid">
+
+    <div class="card">
+    <h3>Recent Ledger Activity</h3>
+
+    {% for entry in recent_ledger %}
+        <p style="
+            word-break: break-word;
+            line-height:1.6;
+            margin-bottom:12px;
+        ">
+            <strong>{{ entry.action }}</strong> -
+            <span style="color:#1b5e20;">
+                {{ entry.document.file.name }}
+            </span>
+            by {{ entry.performed_by.username }}
+        </p>
+        {% empty %}
+            <p>No ledger entries.</p>
+        {% endfor %}
+    </div>
+
+
+    <div class="card">
+        <h3>High Risk Users</h3>
+        {% for risk in high_risk_users %}
+            <p>
+                {{ risk.user.username }} — Score: {{ risk.score }}
+            </p>
+        {% empty %}
+            <p>No high-risk users.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Tampered Documents</h3>
+        {% for doc in tampered_docs %}
+            <p>{{ doc.file.name }} ({{ doc.owner.username }})</p>
+        {% empty %}
+            <p>No tampered documents.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Recent Trades</h3>
+
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+
+            {% for t in recent_trades %}
+            <tr>
+                <td>{{ t.buyer }}</td>
+                <td>{{ t.seller }}</td>
+                <td>{{ t.amount }}</td>
+                <td>{{ t.status }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No recent trades.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{% endblock %}

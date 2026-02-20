@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>👥 All Users</h2>
+</div>
+
+<table style="width:100%;border-collapse:collapse;">
+<tr style="background:#f2f2f2;">
+    <th>Username</th>
+    <th>Role</th>
+    <th>Action</th>
+    <th>Approved</th>
+    <th>Status</th>
+    
+</tr>
+
+{% for profile in profiles %}
+<tr>
+    <td>{{ profile.user.username }}</td>
+    <td>{{ profile.role|default:"-" }}</td>
+    <td>
+    <form method="post" action="/system/toggle/{{ profile.user.id }}/">
+        {% csrf_token %}
+        {% if profile.user.is_active %}
+            <button class="btn" style="background:#c0392b;">Disapprove</button>
+        {% else %}
+            <button class="btn">Approve</button>
+        {% endif %}
+    </form>
+    </td>
+    <td>{{ profile.is_approved }}</td>
+    <td>
+        {% if profile.user.is_active %}
+            Active
+        {% else %}
+            Pending
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
+
+
+
+

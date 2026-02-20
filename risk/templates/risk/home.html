@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Risk Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h2>Risk Analysis Module</h2>
+    <p>
+        This section displays calculated risk scores based on
+        document integrity and ledger activity.
+    </p>
+</div>
+
+<style>
+.high-risk { border-left:6px solid #d32f2f; }
+.medium-risk { border-left:6px solid #f57c00; }
+.low-risk { border-left:6px solid #2e7d32; }
+</style>
+
+<div class="grid">
+
+{% for risk in risks %}
+
+    <div class="card
+        {% if risk.category == 'HIGH' %}
+            high-risk
+        {% elif risk.category == 'MEDIUM' %}
+            medium-risk
+        {% else %}
+            low-risk
+        {% endif %}">
+
+        <h3>
+            {% if risk.user %}
+                {{ risk.user.username }}
+            {% else %}
+                Unknown User
+            {% endif %}
+        </h3>
+
+        <p><strong>Score:</strong> {{ risk.score }}</p>
+        <p><strong>Category:</strong> {{ risk.category }}</p>
+
+        <p>{{ risk.explanation }}</p>
+
+        <p style="font-size:12px;color:#666;">
+            Updated: {{ risk.updated_at|date:"M d, Y H:i" }}
+        </p>
+
+    </div>
+
+{% empty %}
+
+    <div class="card">
+        <p>No risk data available.</p>
+    </div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

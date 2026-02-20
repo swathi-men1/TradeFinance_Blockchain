@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Trade Transactions{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>Trade Transactions</h2>
+
+    {% if request.user.profile.role == "corporate" %}
+    <a href="{% url 'create_trade' %}" class="btn">
+        + Create Trade
+    </a>
+    {% endif %}
+
+
+</div>
+
+<div class="card">
+
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for t in trades %}
+            <tr>
+                <td>{{ t.buyer }}</td>
+                <td>{{ t.seller }}</td>
+                <td>{{ t.amount }}</td>
+                <td>
+                    {% if t.status == "completed" %}
+                        <span style="color:green; font-weight:bold;">Completed</span>
+
+                    {% elif t.status == "in_progress" %}
+                        <span style="color:orange; font-weight:bold;">In Progress</span>
+
+                    {% else %}
+                        <span style="color:gray;">Pending</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No transactions available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

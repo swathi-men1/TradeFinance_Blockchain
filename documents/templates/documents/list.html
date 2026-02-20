@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>Uploaded Documents</h2>
+</div>
+
+<div class="card">
+
+<table style="width:100%; border-collapse: collapse;">
+
+    <thead>
+        <tr style="background:#f2f2f2; text-align:left;">
+            <th style="padding:12px;">File</th>
+            <th style="padding:12px;">Owner</th>
+            <th style="padding:12px;">Uploaded At</th>
+            <th style="padding:12px;">Status</th>
+            <th style="padding:12px;">Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for doc in documents %}
+    <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:12px; word-break:break-word;">
+            {{ doc.file.name }}
+        </td>
+
+        <td style="padding:12px;">
+            {{ doc.owner.username }}
+        </td>
+
+        <td style="padding:12px;">
+            {{ doc.uploaded_at }}
+        </td>
+
+        <td style="padding:12px;">
+            {% if doc.is_verified %}
+                <span style="color:green; font-weight:600;">Verified</span>
+            {% else %}
+                <span style="color:orange;">Not Verified</span>
+            {% endif %}
+        </td>
+
+        <td style="padding:12px;">
+            <a class="btn"
+               href="/documents/verify/{{ doc.id }}/"
+               style="white-space:nowrap;">
+                Verify
+            </a>
+        </td>
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="5" style="padding:15px;">
+            No documents uploaded.
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

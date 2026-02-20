@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>📜 Ledger Timeline</h2>
+    <p>
+        Immutable record of all document actions.
+        Each entry represents a verified system event.
+    </p>
+</div>
+
+{% for entry in entries %}
+<div class="card" style="border-left:6px solid #2e7d32;">
+    <h3>{{ entry.action }}</h3>
+
+    <p><strong>Document:</strong> {{ entry.document.file.name }}</p>
+    <p><strong>Performed By:</strong> {{ entry.performed_by.username }}</p>
+    <p><strong>Time:</strong> {{ entry.timestamp }}</p>
+
+    <p style="color:#555;">
+        {{ entry.remarks }}
+    </p>
+</div>
+{% empty %}
+<div class="card">
+    <p>No ledger entries yet.</p>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>📄 My Uploaded Documents</h2>
+</div>
+
+<div class="grid">
+
+{% for doc in documents %}
+<div class="card">
+
+    <h3>{{ doc.file.name|cut:"documents/" }}</h3>
+
+    <p>Uploaded: {{ doc.uploaded_at }}</p>
+
+    {% if doc.is_verified %}
+        <p style="color:green;">✔ Verified</p>
+    {% else %}
+        <p style="color:#c0392b;">Pending / Not Verified</p>
+    {% endif %}
+
+    <div style="margin-top:10px;">
+        <a class="btn" href="{{ doc.file.url }}" target="_blank">
+            Open
+        </a>
+
+        <form method="post"
+              action="/documents/delete/{{ doc.id }}/"
+              style="display:inline;">
+            {% csrf_token %}
+            <button class="btn"
+                    style="background:#c0392b;">
+                Delete
+            </button>
+        </form>
+    </div>
+
+</div>
+{% empty %}
+<div class="card">
+    <p>No documents uploaded yet.</p>
+</div>
+{% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Trade Finance Blockchain Explorer{% endblock %}</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #f8faf8; 
+            color: #2f3e2f;
+        }
+
+        .navbar {
+            background-color: #1b5e20;
+            padding: 15px 40px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+
+        .container {
+            width: 80%;
+            margin: 40px auto;
+        }
+
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+
+        .btn {
+            background-color: #2e7d32; 
+            color: white;
+            padding: 10px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #1b5e20;
+        }
+
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div><strong>Trade Finance Explorer</strong></div>
+    <div>
+        <a href="/">Home</a>
+
+        {% if request.user.is_authenticated %}
+            <span style="margin-left:15px;">
+                Welcome {{ request.user.username }}
+                ({{ request.user.profile.role|title }})
+            </span>
+
+            <a class="btn" href="{% url 'logout' %}" style="margin-left:20px;">
+                Logout
+            </a>
+        {% else %}
+            <a href="/login/">Login/Register</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="container">
+    {% if messages %}
+    {% for message in messages %}
+        <div style="
+            background:#e8f5e9;
+            color:#1b5e20;
+            padding:12px;
+            margin-bottom:15px;
+            border-radius:6px;
+            font-weight:500;
+        ">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
+
+
+
