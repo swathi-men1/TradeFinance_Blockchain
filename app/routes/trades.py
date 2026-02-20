@@ -60,4 +60,11 @@ def create_trade_endpoint(
     calculate_user_risk(username)
     calculate_user_risk(data.seller)
 
+    @router.get("/trades")
+    def get_trades():
+        return [
+            {"id": 1, "seller": "ABC Corp", "amount": 50000},
+            {"id": 2, "seller": "XYZ Ltd", "amount": 120000},
+        ]
+
     return trade

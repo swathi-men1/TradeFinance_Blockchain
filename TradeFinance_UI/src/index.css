@@ -1,0 +1,40 @@
+body {
+    font-family: Arial;
+    background: #f4f6f8;
+    margin: 0;
+  }
+  
+  .navbar {
+    background: #0a2540;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .card-grid {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  table {
+    width: 90%;
+    margin: 20px;
+    background: white;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+  
