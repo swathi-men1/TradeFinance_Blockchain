@@ -240,6 +240,60 @@ The Trade Finance Blockchain Explorer is a secure web-based application designed
 
 ---
 
+## 📁 Project Structure
+
+TRADE FINANCE BLOCKCHAIN EXPLORER
+│
+├── .vscode
+│   └── launch.json
+│
+├── Backend
+│   ├── __pycache__
+│   ├── .gitignore
+│   ├── chaindocs.db
+│   ├── database.py
+│   ├── main.py
+│   └── models.py
+│
+├── Screenshots
+│   ├── admin-1.png
+│   ├── admin-2.png
+│   ├── auditor.png
+│   ├── bank.png
+│   ├── corporate.png
+│   ├── signin.png
+│   └── signup.png
+│
+├── admin.html
+├── admin.js
+├── blocks.html
+├── CONTRACT.docx
+├── CONTRACT.pdf
+├── create_trade.html
+├── dashboard.html
+├── index.html
+├── INVOICE-2.docx
+├── INVOICE.docx
+├── INVOICE.pdf
+├── ledger.html
+├── LICENSE
+├── login.html
+├── README.md
+├── risk_utils.py
+├── risk.html
+├── risk.js
+├── SHIPPING.docx
+├── SHIPPING.pdf
+├── signin.js
+├── signup.html
+├── signup.js
+├── trade.css
+├── upload_document.html
+├── verify.html
+└── view_trades.html
+
+---
+
 ### **Frontend Pages**
 
 - login.html
