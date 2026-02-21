@@ -6,14 +6,20 @@ def home(request):
     show_ledger = False
     show_risk = False
     show_transactions = False
-    is_admin = False   
+    is_admin = False
+
+    role = None   # default role
 
     if request.user.is_authenticated:
 
-        role = request.user.profile.role.lower()
+        # 🔥 SAFE PROFILE ACCESS (NO CRASH)
+        if hasattr(request.user, "profile"):
+            role = request.user.profile.role.lower()
+        else:
+            role = "corporate"   # default fallback role
 
         if role == "admin":
-            is_admin = True 
+            is_admin = True
 
         show_documents = True
 
@@ -31,7 +37,7 @@ def home(request):
         "show_ledger": show_ledger,
         "show_risk": show_risk,
         "show_transactions": show_transactions,
-        "is_admin": is_admin, 
+        "is_admin": is_admin,
     }
 
     return render(request, "home.html", context)
