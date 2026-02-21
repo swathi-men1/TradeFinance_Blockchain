@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-hvy#=8-ivaugh#=qmmm_k*upzg8kuk019e(qp6gjwv%rnkct#r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['trade-finance-blockchain.onrender.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
