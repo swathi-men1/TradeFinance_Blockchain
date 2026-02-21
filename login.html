@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<h2 class="logintitle">Login Page</h2>
+
+<div class="container">
+    <!-- Left Section -->
+    <div class="left">
+        <h2>Sign In</h2>
+
+        <label>USERNAME</label>
+        <input type="text" id="username" placeholder="Username">
+        <small id="userError" class="error"></small>
+
+        <label>PASSWORD</label>
+        <input type="password" id="password" placeholder="Password">
+        <small id="passError" class="error"></small>
+
+        <!-- Login Button -->
+		<button class="signin-btn" onclick="loginUser()">Sign In</button>
+
+
+
+        <div class="options">
+            <label>
+                <input type="checkbox"> Remember Me
+            </label>
+            <a href="#">Forgot Password</a>
+        </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right">
+        <h2>Welcome to login</h2>
+        <p>Don't have an account?</p>
+		<button class="signup-btn" onclick="window.location.href='signup.html'">
+            Sign Up
+        </button>
+
+    </div>
+</div>
+
+<script src="signin.js"></script>
+
+</body>
+</html>
