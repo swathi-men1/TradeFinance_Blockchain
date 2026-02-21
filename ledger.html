@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ledger</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+<body>
+
+<h1>Ledger</h1>
+
+<button onclick="openLogoutModal()" class="logout-btn">
+    Logout
+</button>
+
+<table class="trades-table" id="ledgerTable">
+    <tr>
+        <th>Action</th>
+        <th>Details</th>
+        <th>Time</th>
+    </tr>
+</table>
+
+<!-- LOGOUT MODAL -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Logout</h3>
+        <p>Do you really want to logout?</p>
+        <div class="modal-buttons">
+            <button class="btn-yes" onclick="logoutYes()">Yes</button>
+            <button class="btn-no" onclick="logoutNo()">No</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const role = localStorage.getItem("role");
+
+if (role !== "auditor") {
+    window.location.href = "login.html";
+}
+
+function openLogoutModal() {
+    document.getElementById("logoutModal").style.display = "block";
+}
+
+function logoutYes() {
+    localStorage.clear();
+    window.location.href = "login.html";
+}
+
+function logoutNo() {
+    document.getElementById("logoutModal").style.display = "none";
+}
+</script>
+
+<script>
+async function loadLedger() {
+    const res = await fetch("http://127.0.0.1:8000/ledger");
+    const ledger = await res.json();
+    const table = document.getElementById("ledgerTable");
+
+    ledger.reverse().forEach(l => {
+       const row = table.insertRow();
+
+const actionCell = row.insertCell();
+const detailsCell = row.insertCell();
+const timeCell = row.insertCell();
+
+actionCell.innerText = l.action;
+detailsCell.innerText = l.details;
+timeCell.innerText = l.timestamp || "—";
+
+// 🔴 Highlight TAMPER rows
+if (l.action === "TAMPER_DETECTED") {
+    actionCell.style.color = "red";
+    actionCell.style.fontWeight = "bold";
+
+    detailsCell.style.color = "red";
+    detailsCell.style.fontWeight = "bold";
+}
+    });
+}
+
+window.onload = loadLedger;
+</script>
+
+</body>
+</html>
