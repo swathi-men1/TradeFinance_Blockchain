@@ -1,0 +1,83 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #0f172a;
+  color: #e5e7eb;
+}
+
+.header {
+  background: #020617;
+  padding: 20px 40px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+}
+
+.dashboard {
+  padding: 30px 40px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: #020617;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #94a3b8;
+}
+
+.card .value {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+.section h2 {
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #020617;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table th,
+table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #1e293b;
+}
+
+table th {
+  background: #020617;
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+table tr:hover {
+  background: #020617;
+}
