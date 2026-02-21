@@ -1,705 +1,316 @@
-# Deployment Guide
+# Deployment Guide — Trade Finance Blockchain Explorer
 
-## Overview
-
-This guide covers deployment of the Trade Finance Blockchain Explorer in various environments, from local development to production.
-
-## Prerequisites
-
-### System Requirements
-- **CPU**: 2+ cores recommended
-- **Memory**: 4GB+ RAM recommended
-- **Storage**: 20GB+ available space
-- **Operating System**: Linux (Ubuntu 20.04+), macOS, Windows 10+
-
-### Software Requirements
-- **Docker**: 20.10+ and Docker Compose 2.0+
-- **Git**: For source code management
-- **Domain**: Custom domain for production (optional)
-
-### Environment Variables
-Create `.env` file in project root:
-
-```bash
-# Database Configuration
-DATABASE_URL=postgresql://tradefinance:password@localhost:5432/tradefinance
-POSTGRES_USER=tradefinance
-POSTGRES_PASSWORD=password
-POSTGRES_DB=tradefinance
-
-# MinIO/S3 Configuration
-S3_ENDPOINT_URL=http://localhost:9000
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=minioadmin
-S3_BUCKET_NAME=tradefinance-docs
-
-# Application Configuration
-JWT_SECRET_KEY=your-super-secret-jwt-key-here
-DEBUG=false
-CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
-
-# Production Settings (uncomment for production)
-# SSL_CERT_PATH=/path/to/ssl/cert.pem
-# SSL_KEY_PATH=/path/to/ssl/key.pem
-```
+This document covers all deployment scenarios: local Docker development and free-tier production cloud deployment.
 
 ---
 
-## Local Development
+## 📋 Deployment Options
+
+| Method | Use Case | Cost |
+|---|---|---|
+| [Docker Compose (Local)](#local-docker-deployment) | Development & testing | Free |
+| [Cloud (Render + Netlify + Supabase)](#cloud-deployment-free-tier) | Production, public access | Free |
+
+---
+
+## 🐳 Local Docker Deployment
+
+### Prerequisites
+- Docker 20.10+ and Docker Compose 2.0+
+- Git
 
 ### Quick Start
+
 ```bash
-# Clone repository
+# Clone the repository
 git clone <repository-url>
 cd TradeFinance_Blockchain
 
-# Set up environment
-cp .env.example .env
-# Edit .env with your local settings
+# Start all services (database, storage, backend, frontend)
+docker compose up --build
 
-# Start all services
-docker-compose up --build
+# Run in background
+docker compose up --build -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
+
+# Stop all services
+docker compose down
 ```
 
-### Development Workflow
+### Service URLs (Local)
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:80 |
+| Backend API | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/api/v1/docs |
+| MinIO Console | http://localhost:9401 |
+
+### Database Migrations (Local)
+
 ```bash
-# Frontend development (hot reload)
+# Apply all migrations
+docker compose exec backend alembic upgrade head
+
+# Create a new migration after model changes
+docker compose exec backend alembic revision --autogenerate -m "Description"
+
+# Rollback one migration
+docker compose exec backend alembic downgrade -1
+```
+
+### Database Backup & Restore (Local)
+
+```bash
+# Backup
+docker compose exec db pg_dump -U postgres trade_finance > backup_$(date +%Y%m%d).sql
+
+# Restore
+docker compose exec -T db psql -U postgres trade_finance < backup_20240101.sql
+```
+
+### Development Without Docker
+
+```bash
+# Frontend (hot reload on http://localhost:5173)
 cd frontend
 npm install
 npm run dev
-# Runs on http://localhost:5173
 
-# Backend development (auto reload)
+# Backend (auto reload on http://localhost:8000)
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-# Runs on http://localhost:8000
-
-# Database only
-docker-compose up -d db minio
-```
-
-### Database Setup (Local)
-```bash
-# Start PostgreSQL container
-docker-compose up -d db
-
-# Run database migrations
-docker-compose exec backend alembic upgrade head
-
-# Create admin user (optional)
-docker-compose exec backend python -c "
-from app.db.session import SessionLocal
-from app.services.user_service import UserService
-from app.models.user import UserRole
-
-db = SessionLocal()
-admin_user = UserService.create_user(
-    db=db,
-    email='admin@example.com',
-    name='System Admin',
-    password='admin123',
-    role=UserRole.ADMIN,
-    org_name='System',
-    is_active=True
-)
-print(f'Admin user created: {admin_user.email}')
-"
 ```
 
 ---
 
-## Docker Deployment
+## ☁️ Cloud Deployment (Free Tier)
 
-### Development Environment
-```bash
-# Build and start all services
-docker-compose up --build
+This is the **recommended production setup**. No credit card required.
 
-# Detached mode
-docker-compose up --build -d
+### Architecture
 
-# Stop services
-docker-compose down
-
-# Rebuild specific service
-docker-compose up --build backend
-
-# View resource usage
-docker stats
+```
+User Browser
+     │
+     ▼
+blockchain.serali.tech  ──── Netlify (React SPA)
+     │
+     │  HTTPS REST API
+     ▼
+trade-finance-backend.onrender.com  ──── Render (FastAPI)
+     │                    │
+     ▼                    ▼
+Supabase PostgreSQL    Supabase Storage (S3)
+(trade_finance DB)     (trade-finance-documents)
 ```
 
-### Production Environment
-Create `docker-compose.prod.yml`:
+### Platform Summary
 
-```yaml
-version: '3.8'
+| Layer | Platform | Free Tier |
+|---|---|---|
+| Frontend | [Netlify](https://netlify.com) | Unlimited static sites |
+| Backend | [Render](https://render.com) | 1 web service (sleeps after 15 min idle) |
+| Database | [Supabase](https://supabase.com) | 500MB PostgreSQL |
+| Storage | Supabase Storage | 1GB object storage |
 
-services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      target: production
-    ports:
-      - "443:443"
-    volumes:
-      - ./ssl:/etc/nginx/ssl:ro
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - backend
-    restart: unless-stopped
+---
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-    depends_on:
-      - db
-      - minio
-    restart: unless-stopped
+### Step 1 — Supabase (Database & Storage)
 
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backups:/backups
-    restart: unless-stopped
+**1.1 Create a Project**
+1. Sign in to [Supabase](https://supabase.com) with GitHub.
+2. Click **New Project** and set:
+   - **Name**: `trade-finance-db`
+   - **Password**: Create a strong password. **Write it down immediately!**
+   - **Region**: Choose closest to your users.
+3. Wait 2–3 minutes for provisioning.
 
-  minio:
-    image: minio/minio:latest
-    environment:
-      - MINIO_ROOT_USER=${AWS_ACCESS_KEY_ID}
-      - MINIO_ROOT_PASSWORD=${AWS_SECRET_ACCESS_KEY}
-    volumes:
-      - minio_data:/data
-    restart: unless-stopped
+**1.2 Get the Database Connection URL**
+1. Go to **Project Settings → Database**.
+2. Under **Connection String**, click the **Method** dropdown.
+3. Select **Session Pooler** *(not "Direct connection" — that is IPv6 only and incompatible with Render's free tier)*.
+4. Copy the **URI**. It will look like:
+   ```
+   postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
+   ```
+5. Replace `[YOUR-PASSWORD]` with your actual password. Save this as `DATABASE_URL`.
 
-volumes:
-  postgres_data:
-  minio_data:
-  ssl:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./ssl
+**1.3 Create the Storage Bucket**
+1. Go to **Storage → New Bucket**.
+2. Name: `trade-finance-documents`
+3. Toggle **Public bucket** ON.
+4. Click **Save**.
+
+**1.4 Get S3 Credentials**
+1. Go to **Project Settings → Storage**.
+2. Scroll to **S3 Credentials**.
+3. Save these 4 values:
+
+| Variable | Description |
+|---|---|
+| `S3_ENDPOINT_URL` | e.g. `https://xxxxx.supabase.co/storage/v1/s3` |
+| `AWS_REGION` | e.g. `eu-central-1` |
+| `AWS_ACCESS_KEY_ID` | Your S3 access key |
+| `AWS_SECRET_ACCESS_KEY` | Your S3 secret key |
+
+---
+
+### Step 2 — Render (Backend API)
+
+**2.1 Create a Web Service**
+1. Sign in to [Render](https://render.com) with GitHub.
+2. Click **New + → Web Service** and connect your GitHub repository.
+
+**2.2 Configure the Service**
+
+| Field | Value |
+|---|---|
+| Root Directory | `backend` |
+| Runtime | Python 3 |
+| Build Command | `pip install -r requirements.txt && alembic upgrade head` |
+| Start Command | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| Instance Type | **Free** |
+
+**2.3 Environment Variables**
+
+Add all of the following in the **Environment** tab:
+
+| Variable | Value |
+|---|---|
+| `PYTHON_VERSION` | `3.11.0` |
+| `DATABASE_URL` | Supabase Session Pooler URI from Step 1.2 |
+| `AWS_ACCESS_KEY_ID` | From Step 1.4 |
+| `AWS_SECRET_ACCESS_KEY` | From Step 1.4 |
+| `AWS_REGION` | From Step 1.4 |
+| `S3_ENDPOINT_URL` | From Step 1.4 |
+| `S3_BUCKET_NAME` | `trade-finance-documents` |
+| `SECRET_KEY` | Any random 32+ character string |
+| `CORS_ORIGINS` | `["https://blockchain.serali.tech","https://your-app.netlify.app","http://localhost:5173"]` |
+
+> ⚠️ **Important**: Set `PYTHON_VERSION=3.11.0`. Render defaults to Python 3.14 which causes build failures with pydantic.
+
+**2.4 Deploy**
+Click **Create Web Service**. The build will install dependencies and run database migrations automatically. When done, your backend URL will be:
+`https://trade-finance-backend.onrender.com`
+
+> ⚠️ **Free Tier Note**: Render free tier spins down after 15 minutes of inactivity. The first request after idle will take ~30 seconds to wake up.
+
+---
+
+### Step 3 — Create the First Admin User
+
+After the backend deploys, the database has tables but no users. Run this in **Supabase → SQL Editor**:
+
+```sql
+INSERT INTO users (name, email, password, role, org_name, user_code, is_active)
+VALUES (
+    'System Admin',
+    'admin@tradefinance.com',
+    '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.',
+    'admin',
+    'TradeFinance HQ',
+    'ADM001',
+    true
+);
 ```
 
-### Production Commands
-```bash
-# Deploy with production configuration
-docker-compose -f docker-compose.prod.yml up --build -d
+> Default password for this hash is `password`. **Change it after first login.**
 
-# Scale services (if needed)
-docker-compose -f docker-compose.prod.yml up --build -d --scale backend=3
+---
 
-# Update services
-docker-compose -f docker-compose.prod.yml pull
-docker-compose -f docker-compose.prod.yml up -d --no-deps backend
+### Step 4 — Netlify (Frontend)
+
+**4.1 Create a Site**
+1. Sign in to [Netlify](https://netlify.com) with GitHub.
+2. Click **Add new site → Import an existing project → GitHub**.
+3. Select your repository.
+
+**4.2 Build Settings**
+
+| Field | Value |
+|---|---|
+| Base directory | `frontend` |
+| Build command | `npm run build` |
+| Publish directory | `frontend/dist` |
+
+**4.3 Environment Variable**
+
+| Key | Value |
+|---|---|
+| `VITE_API_BASE_URL` | `https://trade-finance-backend.onrender.com/api/v1` |
+
+**4.4 SPA Routing Fix**
+
+Ensure the file `frontend/public/_redirects` exists with this content:
+```
+/* /index.html 200
+```
+This is required for React Router. Without it, directly visiting any URL (e.g., `/login`) returns a 404.
+
+**4.5 Deploy**
+Click **Deploy site**. Once published, Netlify gives you a URL like `https://your-app.netlify.app`.
+
+---
+
+### Step 5 — Custom Domain (`blockchain.serali.tech`)
+
+1. In Netlify, go to your site → **Domain Management → Add a domain**.
+2. Enter `blockchain.serali.tech` and click **Verify → Add domain**.
+3. At your DNS provider (where `serali.tech` is managed), add:
+
+| Type | Name | Value |
+|---|---|---|
+| `CNAME` | `blockchain` | `your-app.netlify.app` |
+
+4. Back in Netlify, click **Verify DNS configuration** (allow 5–30 minutes for DNS to propagate).
+5. Click **Provision SSL Certificate** to enable HTTPS.
+
+---
+
+## 🔑 Environment Variables Reference
+
+### Backend (Render)
+```env
+PYTHON_VERSION=3.11.0
+DATABASE_URL=postgresql://postgres.xxxxx:PASSWORD@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
+AWS_ACCESS_KEY_ID=your_key
+AWS_SECRET_ACCESS_KEY=your_secret
+AWS_REGION=eu-central-1
+S3_ENDPOINT_URL=https://xxxxx.supabase.co/storage/v1/s3
+S3_BUCKET_NAME=trade-finance-documents
+SECRET_KEY=your-secure-32-char-secret
+CORS_ORIGINS=["https://blockchain.serali.tech","https://your-app.netlify.app"]
+```
+
+### Frontend (Netlify)
+```env
+VITE_API_BASE_URL=https://trade-finance-backend.onrender.com/api/v1
 ```
 
 ---
 
-## SSL/HTTPS Setup
+## 🔄 Updating the Deployment
 
-### SSL Certificate Configuration
-```bash
-# Generate self-signed certificate (development)
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout ssl/private.key -out ssl/certificate.crt
+Push to `main` on GitHub:
+- **Netlify** auto-rebuilds the frontend within 1 minute.
+- **Render** auto-rebuilds the backend and runs any new Alembic migrations.
 
-# Or use Let's Encrypt (production)
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx certonly -d yourdomain.com
-```
-
-### Nginx Configuration
-Create `nginx.conf` for production:
-
-```nginx
-events {
-    worker_connections 1024;
-}
-
-http {
-    upstream backend {
-        server backend:8000;
-    }
-
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=10m rate=10r/s;
-
-    server {
-        listen 443 ssl http2;
-        server_name yourdomain.com;
-
-        ssl_certificate /etc/nginx/ssl/certificate.crt;
-        ssl_certificate_key /etc/nginx/ssl/private.key;
-
-        # Security headers
-        add_header X-Frame-Options DENY;
-        add_header X-Content-Type-Options nosniff;
-        add_header X-XSS-Protection "1; mode=block";
-
-        # Rate limiting
-        limit_req zone=10m burst=20 nodelay;
-
-        # Frontend static files
-        location / {
-            root /usr/share/nginx/html;
-            index index.html;
-            try_files $uri $uri/ /index.html;
-        }
-
-        # API proxy
-        location /api/ {
-            limit_req zone=10m burst=20 nodelay;
-            proxy_pass http://backend:8000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Health check
-        location /health {
-            access_log off;
-            return 200 "healthy\n";
-            add_header Content-Type text/plain;
-        }
-    }
-}
-```
+No manual steps are required.
 
 ---
 
-## Database Management
-
-### Database Migrations
-```bash
-# Create new migration
-docker-compose exec backend alembic revision --autogenerate -m "Description of changes"
-
-# Apply migrations
-docker-compose exec backend alembic upgrade head
-
-# Check migration status
-docker-compose exec backend alembic current
-
-# Rollback migration (if needed)
-docker-compose exec backend alembic downgrade -1
-```
-
-### Database Backup
-```bash
-# Manual backup
-docker-compose exec db pg_dump -U postgres tradefinance > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Automated backup script
-cat > backup.sh << 'EOF'
-#!/bin/bash
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="/backups/backup_$DATE.sql"
-docker-compose exec -T db pg_dump -U postgres tradefinance > $BACKUP_FILE
-echo "Backup completed: $BACKUP_FILE"
-EOF
-
-chmod +x backup.sh
-# Add to crontab for daily backups at 2 AM
-0 2 * * * /path/to/backup.sh
-```
-
-### Database Restore
-```bash
-# Restore from backup
-docker-compose exec -T db psql -U postgres tradefinance < backup_20240101_020000.sql
-
-# Stop services, restore data, restart
-docker-compose down
-docker volume rm tradefinance_postgres_data
-docker-compose up -d db
-# Wait for database to be ready
-sleep 10
-docker-compose exec -T db psql -U postgres tradefinance < backup_file.sql
-docker-compose up -d
-```
-
----
-
-## Monitoring & Logging
-
-### Application Logs
-```bash
-# View all service logs
-docker-compose logs
-
-# Follow specific service logs
-docker-compose logs -f backend
-
-# Export logs
-docker-compose logs --no-color > application.log 2>&1
-
-# Log rotation (add to docker-compose.yml)
-logging:
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
-```
-
-### Health Checks
-```bash
-# Check service health
-curl http://localhost:8000/health
-
-# Check database connection
-docker-compose exec backend python -c "
-from app.db.session import SessionLocal
-try:
-    db = SessionLocal()
-    db.execute('SELECT 1')
-    print('Database: OK')
-except Exception as e:
-    print(f'Database: ERROR - {e}')
-"
-
-# Check MinIO connection
-curl http://localhost:9000/minio/health/live
-```
-
-### Performance Monitoring
-```bash
-# Container resource usage
-docker stats --no-stream
-
-# System resource usage
-htop
-iostat -x 1
-df -h
-
-# Application performance metrics
-curl -H "Authorization: Bearer <token>" \
-     http://localhost:8000/api/v1/admin/analytics
-```
-
----
-
-## Security Configuration
-
-### Firewall Setup
-```bash
-# Ubuntu UFW
-sudo ufw allow 22/tcp    # SSH
-sudo ufw allow 80/tcp    # HTTP
-sudo ufw allow 443/tcp   # HTTPS
-sudo ufw enable
-
-# CentOS/RHEL firewalld
-sudo firewall-cmd --permanent --add-service=http
-sudo firewall-cmd --permanent --add-service=https
-sudo firewall-cmd --reload
-```
-
-### Security Hardening
-```bash
-# Remove unnecessary services
-sudo systemctl disable apache2
-sudo systemctl disable sendmail
-
-# Secure SSH access
-sudo nano /etc/ssh/sshd_config
-# Add: PermitRootLogin no, PasswordAuthentication no
-
-# File permissions
-chmod 600 .env
-chmod 700 logs/
-chmod 755 scripts/
-
-# Docker security
-docker-compose exec backend python -c "
-import subprocess
-subprocess.run(['chmod', '600', '/app/.env'])
-"
-```
-
-### Access Control
-```bash
-# Create restricted admin user
-adduser --system --group docker adminadmin
-
-# Set file permissions
-chown -R root:root /opt/tradefinance
-chmod 750 /opt/tradefinance
-
-# Docker daemon security
-echo '{"live-restore": true}' > /etc/docker/daemon.json
-systemctl restart docker
-```
-
----
-
-## CI/CD Pipeline
-
-### GitHub Actions Example
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          pip install -r backend/requirements.txt
-      - name: Run tests
-        run: |
-          pytest backend/tests/
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Deploy to server
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-        run: |
-          # Deploy commands
-          ssh $DEPLOY_USER@$DEPLOY_HOST 'cd /opt/tradefinance && git pull && docker-compose -f docker-compose.prod.yml up --build -d'
-```
-
-### Deployment Script
-Create `deploy.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-echo "Starting deployment..."
-
-# Pull latest code
-git pull origin main
-
-# Backup current version
-docker-compose exec db pg_dump -U postgres tradefinance > "backups/pre_deploy_$(date +%Y%m%d_%H%M%S).sql"
-
-# Build and deploy
-docker-compose -f docker-compose.prod.yml down
-docker-compose -f docker-compose.prod.yml build
-docker-compose -f docker-compose.prod.yml up -d
-
-# Health check
-sleep 30
-if curl -f http://localhost/health; then
-    echo "✅ Deployment successful"
-else
-    echo "❌ Deployment failed - rolling back"
-    # Rollback logic here
-fi
-
-echo "Deployment completed at $(date)"
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### Port Conflicts
-```bash
-# Check port usage
-netstat -tulpn | grep :80
-netstat -tulpn | grep :443
-netstat -tulpn | grep :8000
-
-# Kill conflicting processes
-sudo kill -9 <PID>
-```
-
-#### Database Issues
-```bash
-# Check database logs
-docker-compose logs db
-
-# Reset database connection
-docker-compose restart db
-
-# Rebuild database container
-docker-compose up -d --force-recreate db
-```
-
-#### SSL Certificate Issues
-```bash
-# Check certificate validity
-openssl x509 -in ssl/certificate.crt -text -noout
-
-# Test SSL configuration
-nginx -t -c /etc/nginx/nginx.conf
-
-# Regenerate certificate if needed
-sudo certbot certonly --nginx -d yourdomain.com --force-renewal
-```
-
-#### Performance Issues
-```bash
-# Check container resources
-docker stats
-
-# Optimize database
-docker-compose exec backend alembic upgrade head
-
-# Clear application cache
-docker-compose restart backend
-```
-
-### Debug Mode
-```bash
-# Enable debug logging
-echo "DEBUG=true" >> .env
-docker-compose restart backend
-
-# Access container shell
-docker-compose exec backend bash
-
-# View application logs in detail
-docker-compose logs -f --tail=100 backend
-```
-
----
-
-## Scaling Considerations
-
-### Horizontal Scaling
-```yaml
-# docker-compose.scale.yml
-version: '3.8'
-
-services:
-  backend:
-    build: ./backend
-    environment:
-      - DATABASE_URL=postgresql://postgres:5432/tradefinance
-    depends_on:
-      - db
-    deploy:
-      replicas: 3
-
-  load-balancer:
-    image: nginx:alpine
-    ports:
-      - "443:443"
-    volumes:
-      - ./nginx-lb.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - backend
-```
-
-### Database Scaling
-```bash
-# Read replica configuration
-# Add to postgresql.conf
-wal_level = replica
-archive_mode = on
-archive_command = 'cp %p /var/lib/postgresql/archive/%f'
-max_wal_senders = 3
-
-# Connection pooling in backend
-# sqlalchemy.engine.url = DATABASE_URL?pool_size=20&max_overflow=30
-```
-
-### Caching Strategy
-```python
-# Redis caching (optional)
-import redis
-from fastapi_cache import FastAPICache
-
-cache = FastAPICache(backend="redis", expire=300)
-
-@cache(expire=60)
-def get_documents():
-    # Cache expensive database queries
-    pass
-```
-
----
-
-## Maintenance
-
-### Regular Maintenance Tasks
-```bash
-#!/bin/bash
-# maintenance.sh
-
-echo "Starting maintenance..."
-
-# Clean up old logs
-find logs/ -name "*.log" -mtime +30 -delete
-
-# Clean up Docker images
-docker image prune -f
-
-# Update SSL certificates
-certbot renew
-
-# Database maintenance
-docker-compose exec backend alembic upgrade head
-docker-compose exec db psql -U postgres -d tradefinance -c "VACUUM ANALYZE;"
-
-echo "Maintenance completed at $(date)"
-```
-
-### Backup Strategy
-```bash
-# 3-2-1 backup rule
-- 3 copies: 1 daily, 1 weekly, 1 monthly
-- Keep for: 1 month
-- Off-site: Weekly to cloud storage
-
-# Automated backup script
-cat > backup_strategy.sh << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/backups"
-DATE=$(date +%Y%m%d)
-
-# Daily incremental backup
-pg_dump --format=custom --snapshot=freeze -f /backups/$DATE.snapshot \
-  tradefinance > $BACKUP_DIR/daily_$DATE.sql
-
-# Weekly full backup
-if [ $(date +%u) -eq 0 ]; then
-    pg_dump tradefinance > $BACKUP_DIR/weekly_$DATE.sql
-fi
-EOF
-```
-
-This deployment guide provides comprehensive instructions for deploying the Trade Finance Blockchain Explorer in various environments with proper security, monitoring, and maintenance procedures.
+## 🛠️ Troubleshooting
+
+| Problem | Cause | Fix |
+|---|---|---|
+| Render build fails with Rust/cargo errors | Python 3.14 used by default | Add `PYTHON_VERSION=3.11.0` env var |
+| `Network is unreachable` in Render logs | Using Direct Connection URL (IPv6) | Switch to Session Pooler URL in Supabase |
+| `Page not found` on Netlify for `/login` | Missing SPA redirect rule | Ensure `frontend/public/_redirects` exists |
+| Login returns CORS error in browser console | Netlify URL not in `CORS_ORIGINS` | Add Netlify URL to `CORS_ORIGINS` in Render |
+| First API request takes ~30 seconds | Render free tier wake-up | Expected; subsequent calls are fast |
+| Login fails with correct credentials | Wrong bcrypt hash in DB | Re-insert user with valid bcrypt hash |
+| Port conflicts on local Docker | Another service using 80/8000 | Change ports in `docker-compose.yml` |
