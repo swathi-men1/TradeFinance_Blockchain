@@ -21,26 +21,13 @@ The backend is located in `backend/app`.
 
 - Python 3.11
 - FastAPI, SQLAlchemy, Alembic (for migrations)
-- SQLite (or whatever `DATABASE_URL` is configured in `core/config.py`)
+- PostgreSQL (configured via `core/config.py`)
 - JWT authentication with OAuth2PasswordBearer
 
-### Available routes
-
-| Method | Path                        | Roles allowed                | Description |
-|--------|-----------------------------|------------------------------|-------------|
-| GET    | `/`                         | anyone                       | health check
-| POST   | `/register`                 | public                       | create a new user
-| POST   | `/login`                    | public                       | login; returns `access_token`
-| GET    | `/me`                       | auth token required          | get current user info (name, email, role)
-| POST   | `/upload-document`          | corporate only               | upload a new document; creates a ledger entry
-| POST   | `/amend-document/{id}`      | corporate only               | update an existing document (if not verified)
-| GET    | `/document/{id}`            | any authenticated role       | fetch metadata for a document
-| GET    | `/document/{id}/history`    | admin/bank/auditor           | ledger history for a document
-| GET    | `/document/{id}/validate-chain` | admin/bank/auditor     | verify blockchain integrity
-| GET    | `/ledger`                   | admin/bank/auditor           | list all ledger entries
-| POST   | `/verify-document/{id}`     | bank only                    | mark document as verified
-| POST   | `/reject-document/{id}`     | bank only                    | reject a pending document
-| POST   | `/create-org`               | public                       | bootstrap default organization
+> A variety of API endpoints exist for user registration/login, document
+> upload/amend/verification, ledger inspection and chain validation. See the
+> `backend/app/main.py` source for the full list; the project intentionally
+> avoids hard‑coding a routes table to keep documentation in sync with code.
 
 > **Note:** the repository currently has no routers sub‑package; all endpoints
 > are defined in `main.py`. If you plan to extend the API with trades, risk,
