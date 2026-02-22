@@ -100,7 +100,7 @@ class UserRole(str, enum.Enum):
 | **Bank** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Corporate** | ❌ | ✅ (own trades) | ❌ | ✅ (own trades) | ❌ |
 | **Auditor** | ❌ | ❌ | ✅ | ✅ (global) | ❌ |
-| **Admin** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Admin** | ✅| ✅|✅ | ✅ | ✅ |
 
 RBAC is enforced at two layers:
 - **Backend**: FastAPI `Depends(require_role([...]))` intercepts and rejects unauthorized requests with `403 Forbidden` *before* controller logic runs.
