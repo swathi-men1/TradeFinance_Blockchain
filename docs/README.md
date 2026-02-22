@@ -1,5 +1,7 @@
 # Trade Finance Blockchain Explorer - Development Documentation
 
+**🌐 Live Demo:** [https://showcasego.netlify.app](https://showcasego.netlify.app)
+
 ## Table of Contents
 
 1. [System Overview](#system-overview)

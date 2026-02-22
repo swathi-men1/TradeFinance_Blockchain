@@ -370,19 +370,23 @@ class DocumentService:
         
         # Extract filename
         import os
+        from botocore.config import Config
         basename = os.path.basename(document.file_url)
         if '_' in basename:
             filename = basename.split('_', 1)[1]
         else:
             filename = basename
+            
+        endpoint_to_use = settings.S3_PUBLIC_ENDPOINT_URL if settings.S3_PUBLIC_ENDPOINT_URL else settings.S3_ENDPOINT_URL
         
         # Generate presigned URL (valid for 1 hour)
         s3_client = boto3.client(
             's3',
-            endpoint_url=settings.S3_ENDPOINT_URL,
+            endpoint_url=endpoint_to_use,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_REGION
+            region_name=settings.AWS_REGION,
+            config=Config(signature_version='s3v4', s3={'addressing_style': 'path'})
         )
         
         try:
@@ -397,10 +401,6 @@ class DocumentService:
                 },
                 ExpiresIn=3600  # URL valid for 1 hour
             )
-
-            # Replace internal endpoint with public endpoint if set
-            if settings.S3_PUBLIC_ENDPOINT_URL and settings.S3_ENDPOINT_URL:
-                presigned_url = presigned_url.replace(settings.S3_ENDPOINT_URL, settings.S3_PUBLIC_ENDPOINT_URL)
             
             return {
                 "url": presigned_url,

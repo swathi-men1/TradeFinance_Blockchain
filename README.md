@@ -2,6 +2,8 @@
 
 > A modern, blockchain-inspired trade finance platform with immutable ledger tracking, document management, and intelligent automated risk assessment.
 
+**🌐 Live Demo:** [https://showcasego.netlify.app](https://showcasego.netlify.app)
+
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=React)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat&logo=TypeScript)](https://www.typescriptlang.org)
