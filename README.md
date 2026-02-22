@@ -4,6 +4,9 @@
 
 **🌐 Live Demo:** [https://showcasego.netlify.app](https://showcasego.netlify.app)
 
+**🎥 Watch Demo Video:**
+<iframe width="560" height="315" src="https://www.youtube.com/embed/OvYt7StlAz4?si=wxHIzkUIVHHzHt2E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=React)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=flat&logo=TypeScript)](https://www.typescriptlang.org)
