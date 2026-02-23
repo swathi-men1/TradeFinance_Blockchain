@@ -1,70 +1,165 @@
-# Getting Started with Create React App
+# Trade Finance Blockchain Explorer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A ledger-style web application for transparent, tamper-evident tracking of trade finance documents (Letters of Credit, Invoices, Shipping Docs) with counterparty risk scoring and audit trails.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Deployment Link
 
-### `npm start`
+> **Live App:** `https://your-deployment-link-here.com`
+> *(Replace this with your Vercel / Netlify / Render URL after deploying)*
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📌 What This Project Does
 
-### `npm test`
+This application provides a full trade finance management interface with five core modules:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Module | Description |
+|--------|-------------|
+| **Auth & Roles** | Login with role-based access (Bank, Corporate, Auditor, Admin) |
+| **Document Repository** | Upload trade documents with auto-generated SHA-256 hashes |
+| **Ledger Explorer** | Tamper-proof, chronological timeline of all document lifecycle events |
+| **Transactions & Risk** | Trade transaction tracking with automated counterparty risk scoring |
+| **Analytics** | Live charts for trade volume, document integrity, and ledger events |
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠 Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React.js (Create React App) |
+| Styling | Inline styles + CSS-in-JS (no external CSS framework) |
+| State | React Hooks (useState) |
+| Auth | Role-based session state (JWT-ready structure) |
+| Hashing | SHA-256 simulated (ready to connect to real crypto API) |
+| Storage | In-memory (ready to connect to PostgreSQL + S3) |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 📁 Project Structure
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+src/
+└── App.js          # All modules in one file (Login, Dashboard, Documents,
+                    # Ledger, Transactions, Risk, Analytics, Users)
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## ⚙️ How to Run Locally
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+**Requirements:** Node.js (v16+) — download from [nodejs.org](https://nodejs.org)
 
-## Learn More
+```bash
+# 1. Create a new React app
+npx create-react-app trade-finance-explorer
+cd trade-finance-explorer
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# 2. Replace the default App.js with the project file
+cp path/to/trade-finance-explorer.jsx src/App.js
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# 3. Clear default styles
+echo "" > src/index.css
 
-### Code Splitting
+# 4. Start the development server
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+App will open at `http://localhost:3000`
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🔑 How to Use the App
 
-### Making a Progressive Web App
+1. **Sign In** — Enter your name, email, choose a role, and org name
+2. **Admin role** — Can create/manage users across all organizations
+3. **Bank / Corporate role** — Can upload documents and create transactions
+4. **Auditor role** — Read-only access to ledger and risk reports
+5. **Upload a document** → SHA-256 hash is auto-generated + ledger entry created
+6. **Create a transaction** → Link it to a document; change status to trigger ledger events
+7. **View Risk Scores** → Auto-calculated for Corporate users based on:
+   - Document integrity (40%)
+   - Ledger activity (25%)
+   - Transaction disputes (25%)
+   - External trade data signals (10%)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## 🧮 Risk Scoring Logic
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Risk scores range from **0 (safe) to 100 (high risk)** and are rule-based (no ML):
 
-### Deployment
+```
+Final Score = (Doc Failures / Total Docs) × 40
+            + (Failed Ledger Events / Total Events) × 25
+            + (Disputed Transactions / Total Transactions) × 25
+            + External Signal × 10
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Category:
+  0–29  → LOW
+  30–59 → MEDIUM
+  60+   → HIGH
+```
 
-### `npm run build` fails to minify
+All calculations happen in the frontend service layer, ready to be moved to a FastAPI backend.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## 📸 Screenshots
+
+> Add screenshots to a `/screenshots` folder in this repo and link them below:
+
+```
+screenshots/
+├── 01-login.png
+├── 02-dashboard.png
+├── 03-documents.png
+├── 04-ledger.png
+├── 05-transactions.png
+├── 06-risk-scores.png
+└── 07-analytics.png
+```
+
+| Screen | Preview |
+|--------|---------|
+| Login | ![Login](screenshots/01-login.png) |
+| Dashboard | ![Dashboard](screenshots/02-dashboard.png) |
+| Documents | ![Documents](screenshots/03-documents.png) |
+| Ledger | ![Ledger](screenshots/04-ledger.png) |
+| Transactions | ![Transactions](screenshots/05-transactions.png) |
+| Risk Scores | ![Risk](screenshots/06-risk-scores.png) |
+| Analytics | ![Analytics](screenshots/07-analytics.png) |
+
+---
+
+## 🗄 Database Schema (Planned Backend)
+
+| Table | Key Fields |
+|-------|-----------|
+| `Users` | id, name, email, role (bank/corporate/auditor/admin), org_name |
+| `Documents` | id, owner_id, doc_type, doc_number, file_url, hash, verified |
+| `LedgerEntries` | id, document_id, action, actor_id, metadata, created_at |
+| `TradeTransactions` | id, buyer_id, seller_id, amount, currency, status |
+| `RiskScores` | id, user_id, score, category, rationale, last_updated |
+| `AuditLogs` | id, admin_id, action, target_type, target_id, timestamp |
+
+---
+
+## 🗓 8-Week Milestone Plan
+
+| Milestone | Weeks | Output |
+|-----------|-------|--------|
+| Auth & Org Setup | 1–2 | Secure multi-role login, org context |
+| Documents & Ledger | 3–4 | SHA-256 hashing, ledger timeline view |
+| Transactions & Integrity | 5–6 | Trade flow, automated integrity checks |
+| Risk & Analytics | 7–8 | Risk dashboards, CSV/PDF exports |
+
+---
+
+## 👤 Author
+
+**Vrinda R Menon**
+Branch: `TF_Blockchain-VrindaRMenon`
+Repo: [TradeFinance_Blockchain](https://github.com/swathi-men1/TradeFinance_Blockchain)
