@@ -6,7 +6,7 @@ A ledger-style web application for transparent, tamper-evident tracking of trade
 
 ## 🚀 Deployment Link
 
-> **Live App:** `hhttps://trade-finance-explorer.vercel.app`
+> **Live App:** `https://trade-finance-explorer.vercel.app`
 
 
 ---
