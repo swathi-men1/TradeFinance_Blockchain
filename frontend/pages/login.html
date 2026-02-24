@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Trade Finance Blockchain</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Welcome Back</h2>
+            <p>Login to your Trade Finance account</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@company.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="auth-btn">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="signup.html">Create one here</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const API_BASE = (window.location.port === "8001")
+                ? ""
+                : (window.location.hostname && window.location.hostname !== 'null')
+                    ? `http://${window.location.hostname}:8001`
+                    : 'http://127.0.0.1:8001';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+
+                    // Fetch real user data to sync localStorage
+                    const meRes = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+                    const userData = await meRes.json();
+
+                    if (meRes.ok && userData.authenticated) {
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        console.error("Session failed. userData:", userData);
+                        alert("Session initialization failed. \n\nIMPORTANT: If you are using port 5500 (Live Server), please switch to port 8001 (http://127.0.0.1:8001/index.html) to ensure cookies work correctly.");
+                    }
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Login failed.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error. Is the backend running?');
+            }
+        });
+
+        // Clear session on login page load to ensure fresh start
+        localStorage.removeItem('user');
+    </script>
+
+</body>
+
+</html>

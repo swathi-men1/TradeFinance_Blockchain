@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Document - Trade Finance Blockchain</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-placeholder"></div>
+        <div class="nav-center">
+            <a href="dashboard.html" class="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="profile-trigger" id="profileTrigger">
+                <span id="userNameDisplay">Loading...</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="dropdown-menu" id="profileDropdown">
+                <div class="user-info-item">
+                    <span class="info-label">Name</span>
+                    <span class="info-value" id="dropName"></span>
+                </div>
+                <div class="user-info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="dropEmail"></span>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="auth-container" style="margin-top: 50px; max-width: 600px;">
+            <div class="auth-header">
+                <h2>Document Verification</h2>
+                <p>Verify the authenticity of a document using its ID or SHA-256 Hash</p>
+            </div>
+
+            <form id="verifyForm">
+                <div class="form-group">
+                    <label for="docId">Document ID or Hash</label>
+                    <input type="text" id="docId" placeholder="Enter ID (DOC-...) or full SHA-256 Hash" required>
+                </div>
+
+                <button type="submit" class="auth-btn">Verify Integrity</button>
+            </form>
+
+            <div id="result"></div>
+        </div>
+    </main>
+
+    <script src="../js/roleGuard.js"></script>
+    <script src="../js/documents.js"></script>
+    <script>
+        requireRole(["corporate", "auditor", "admin"]);
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('userNameDisplay').textContent = user.name;
+            document.getElementById('dropName').textContent = user.name;
+            document.getElementById('dropEmail').textContent = user.email;
+        }
+
+        const API_BASE = (window.location.port === "8001")
+            ? ""
+            : (window.location.hostname && window.location.hostname !== 'null')
+                ? `http://${window.location.hostname}:8001`
+                : 'http://127.0.0.1:8001';
+        const trigger = document.getElementById('profileTrigger');
+        const dropdown = document.getElementById('profileDropdown');
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+        document.addEventListener('click', () => dropdown.classList.remove('active'));
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

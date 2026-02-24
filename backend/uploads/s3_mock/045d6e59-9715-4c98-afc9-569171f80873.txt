@@ -1,0 +1,14 @@
+To insatll trade finance blockchain
+
+cd Trade_Finance_Blockchain
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+
+pip install fastapi[all] uvicorn sqlalchemy passlib[bcrypt] itsdangerous python-dotenv pydantic-settings
+
+pip freeze > requirements.txt
+
+python -m uvicorn app:app --reload
+
+
+optional :py -3.11 -m venv .venv

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Document - Trade Finance Blockchain</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-placeholder"></div>
+        <div class="nav-center">
+            <a href="dashboard.html" class="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="profile-trigger" id="profileTrigger">
+                <span id="userNameDisplay">Loading...</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="dropdown-menu" id="profileDropdown">
+                <div class="user-info-item">
+                    <span class="info-label">Name</span>
+                    <span class="info-value" id="dropName"></span>
+                </div>
+                <div class="user-info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="dropEmail"></span>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="auth-container" style="margin-top: 50px;">
+            <div class="auth-header">
+                <h2>Upload Document</h2>
+                <p>Securely add a new document to the blockchain</p>
+            </div>
+
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="documentName">Document Name</label>
+                    <input type="text" id="documentName" placeholder="Invoice #12345" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="documentType">Document Type</label>
+                    <select id="documentType" required>
+                        <option value="" disabled selected>Select type</option>
+                        <option value="Invoice">Invoice</option>
+                        <option value="Bill of Lading">Bill of Lading</option>
+                        <option value="Letter of Credit">Letter of Credit</option>
+                        <option value="Insurance Policy">Insurance Policy</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="file">Select File</label>
+                    <input type="file" id="file" required>
+                </div>
+
+                <button type="submit" class="auth-btn">Upload to Ledger</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="../js/roleGuard.js"></script>
+    <script>
+        // --- State & Initialization ---
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = 'login.html';
+
+        requireRole(["corporate"]);
+
+        const API_BASE = (window.location.port === "8001")
+            ? ""
+            : (window.location.hostname && window.location.hostname !== 'null')
+                ? `http://${window.location.hostname}:8001`
+                : 'http://127.0.0.1:8001';
+
+        // --- Profile Logic ---
+        function initProfile() {
+            document.getElementById('userNameDisplay').textContent = user.name;
+            document.getElementById('dropName').textContent = user.name;
+            document.getElementById('dropEmail').textContent = user.email;
+
+            const trigger = document.getElementById('profileTrigger');
+            const dropdown = document.getElementById('profileDropdown');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', () => dropdown.classList.remove('active'));
+
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // --- SHA-256 Generation (Mock for demo) ---
+        async function generateHash(text) {
+            const msgUint8 = new TextEncoder().encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- Upload Logic ---
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const docType = document.getElementById('documentType').value;
+            const fileInput = document.getElementById('file');
+
+            if (!fileInput.files.length) {
+                alert("Please select a file.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document_type', docType);
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const res = await fetch(`${API_BASE}/documents/upload`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    alert('Document uploaded successfully to the blockchain! ID: ' + result.document_id);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Upload failed.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error. Is the backend running?');
+            }
+        });
+
+        initProfile();
+    </script>
+
+</body>
+
+</html>

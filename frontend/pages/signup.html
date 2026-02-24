@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Trade Finance Blockchain</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join the Trade Finance network</p>
+        </div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="John Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@company.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label for="organization">Organization</label>
+                <input type="text" id="organization" placeholder="Global Trade Corp" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Network Role</label>
+                <select id="role" required>
+                    <option value="" disabled selected>Select your role</option>
+                    <option value="corporate">Corporate</option>
+                    <option value="auditor">Auditor</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <button type="submit" class="auth-btn">Register</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="login.html">Sign in here</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const API_BASE = (window.location.port === "8001")
+                ? ""
+                : (window.location.hostname && window.location.hostname !== 'null')
+                    ? `http://${window.location.hostname}:8001`
+                    : 'http://127.0.0.1:8001';
+
+            const data = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                organization: document.getElementById('organization').value.trim(),
+                role: document.getElementById('role').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    alert('Registration successful! Redirecting to login.');
+                    window.location.href = 'login.html';
+                } else {
+                    const err = await res.json();
+                    console.error('Signup Error Detail:', err); // LOG FOR DEBUGGING
+                    alert(err.detail || 'Signup failed.');
+                }
+            } catch (err) {
+                console.error('Connection/Fetch Error:', err);
+                alert('Connection error.');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

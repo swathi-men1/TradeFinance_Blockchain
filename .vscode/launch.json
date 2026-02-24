@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Backend: TradeChain FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8001"
+            ],
+            "jinja": true,
+            "cwd": "${workspaceFolder}/Trade_Finance_Blockchain/backend",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/Trade_Finance_Blockchain/backend"
+            }
+        },
+        {
+            "name": "Frontend: Launch index.html",
+            "type": "msedge",
+            "request": "launch",
+            "file": "${workspaceFolder}/Trade_Finance_Blockchain/frontend/index.html"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack: Backend + Frontend",
+            "configurations": [
+                "Backend: TradeChain FastAPI",
+                "Frontend: Launch index.html"
+            ]
+        }
+    ]
+}

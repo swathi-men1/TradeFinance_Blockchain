@@ -1,0 +1,18 @@
+BUYER KYC DOCUMENT
+
+Name           : Ganga Vangala
+Email          : gangavangala754@gmail.com
+Role           : Buyer
+Organization   : XYZ Imports Pvt Ltd
+Address        : Hyderabad, Telangana, India
+Phone Number   : 9XXXXXXXXX
+PAN Number     : ABCDE1234F
+Aadhaar Number : 1234 5678 9012
+
+Declaration:
+I hereby declare that the above information is true and correct
+to the best of my knowledge.
+
+Signature:
+Ganga Vangala
+Date: 18-01-2026

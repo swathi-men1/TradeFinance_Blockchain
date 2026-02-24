@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledger Audit - Trade Finance Blockchain</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-placeholder"></div>
+        <div class="nav-center">
+            <a href="dashboard.html" class="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="profile-trigger" id="profileTrigger">
+                <span id="userNameDisplay">Loading...</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="dropdown-menu" id="profileDropdown">
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Blockchain Audit Ledger</h1>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="verifyIntegrity()" class="btn-primary">🔍 Verify Integrity</button>
+                <div class="status-pill">Immutable Logs</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Reference</th>
+                        <th>Action</th>
+                        <th>Role</th>
+                        <th>Previous Hash</th>
+                        <th>Entry Hash</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerBody">
+                    <!-- Logs will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // --- Core & Auth ---
+        const API_BASE = (window.location.port === "8001")
+            ? ""
+            : (window.location.hostname && window.location.hostname !== 'null')
+                ? `http://${window.location.hostname}:8001`
+                : 'http://127.0.0.1:8001';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || (user.role !== 'admin' && user.role !== 'auditor')) {
+            alert("Access Denied");
+            window.location.href = 'dashboard.html';
+        }
+        document.getElementById('userNameDisplay').textContent = user.name;
+        document.getElementById('logoutBtn').onclick = () => {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        };
+
+        // --- Ledger Logic ---
+        async function loadLedger() {
+            try {
+                const res = await fetch(`${API_BASE}/ledger/`, { credentials: 'include' });
+                if (!res.ok) throw new Error("Failed to fetch ledger");
+                const entries = await res.json();
+
+                const tbody = document.getElementById('ledgerBody');
+                tbody.innerHTML = '';
+
+                entries.forEach(e => {
+                    const tr = document.createElement('tr');
+                    const ref = e.document_id ? `Doc: ${e.document_id.substring(0, 8)}...` : (e.transaction_id ? `Txn: ${e.transaction_id}` : 'N/A');
+
+                    tr.innerHTML = `
+                        <td>${e.id}</td>
+                        <td title="${e.document_id || e.transaction_id || ''}">${ref}</td>
+                        <td><span class="status-pill">${e.action}</span></td>
+                        <td>${e.role.toUpperCase()}</td>
+                        <td class="hash-cell" title="${e.previous_hash}">${e.previous_hash.substring(0, 10)}...</td>
+                        <td class="hash-cell" title="${e.entry_hash}">${e.entry_hash.substring(0, 10)}...</td>
+                        <td>${new Date(e.timestamp).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Error loading ledger");
+            }
+        }
+
+        async function verifyIntegrity() {
+            try {
+                const res = await fetch(`${API_BASE}/ledger/verify`, { credentials: 'include' });
+                const result = await res.json();
+
+                if (result.status === 'ok') {
+                    alert("✅ INTEGRITY VERIFIED\n\nAll blocks are valid and linked correctly.");
+                } else {
+                    alert(`❌ DATA CORRUPTION DETECTED\n\n${result.message}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Verification failed (Network Error)");
+            }
+        }
+
+        loadLedger();
+    </script>
+</body>
+
+</html>

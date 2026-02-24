@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeChain - Next-Gen Trade Finance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hero {
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.15), transparent),
+        radial-gradient(circle at bottom left, rgba(129, 140, 248, 0.15), transparent);
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .cta-primary {
+      background: var(--accent);
+      color: var(--bg-deep);
+      padding: 1rem 2.5rem;
+      border-radius: 99px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+    }
+
+    .cta-secondary {
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 1rem 2.5rem;
+      border-radius: 99px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .cta-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: var(--accent);
+      filter: blur(120px);
+      opacity: 0.15;
+      border-radius: 50%;
+      animation: move 20s infinite alternate;
+    }
+
+    @keyframes move {
+      from {
+        transform: translate(-10%, -10%);
+      }
+
+      to {
+        transform: translate(20%, 20%);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glass-background">
+    <div class="blob"></div>
+  </div>
+
+  <nav style="background: transparent; border: none;">
+    <div class="logo" style="font-weight: 800; font-size: 1.5rem; color: var(--accent);">TradeChain</div>
+    <div class="nav-right">
+      <a href="pages/login.html" class="nav-link"
+        style="color: var(--text-primary); margin-right: 2rem; text-decoration: none; font-weight: 500;">Login</a>
+      <a href="pages/signup.html" class="upload-btn">Get Started</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Secure. Transparent. <br> Immutable.</h1>
+    <p>The global standard for blockchain-powered trade finance. Revolutionizing supply chains with instant verification
+      and absolute security.</p>
+    <div class="cta-group">
+      <a href="pages/signup.html" class="cta-primary">Launch Platform</a>
+      <a href="#features" class="cta-secondary">View Network Status</a>
+    </div>
+  </header>
+
+</body>
+
+</html>

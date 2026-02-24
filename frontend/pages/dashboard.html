@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corporate Dashboard - Trade Finance Blockchain</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-placeholder">
+    </div>
+    <div class="nav-center">
+      <div class="nav-links-container">
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="transactions.html" class="nav-link" id="transactionsLink" style="display: none;">Transactions</a>
+        <a href="upload.html" class="nav-link" id="uploadLink" style="display: none;">Upload</a>
+        <a href="verify.html" class="nav-link" id="verifyLink" style="display: none;">Verify</a>
+        <a href="ledger.html" class="nav-link" id="ledgerLink" style="display: none;">Ledger</a>
+        <a href="analytics.html" class="nav-link" id="analyticsLink" style="display: none;">Analytics</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="profile-trigger" id="profileTrigger">
+        <span id="userNameDisplay">Loading...</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="dropdown-menu" id="profileDropdown">
+        <div class="user-info-item">
+          <span class="info-label">Name</span>
+          <span class="info-value" id="dropName"></span>
+        </div>
+        <div class="user-info-item">
+          <span class="info-label">Email</span>
+          <span class="info-value" id="dropEmail"></span>
+        </div>
+        <div class="user-info-item">
+          <span class="info-label">Organization</span>
+          <span class="info-value" id="dropOrg"></span>
+        </div>
+        <div class="user-info-item">
+          <span class="info-label">Role</span>
+          <span class="info-value" id="dropRole"></span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+
+  <main>
+    <div class="welcome-section" style="margin-bottom: 2.5rem;">
+      <h1 id="welcomeText">Welcome back, User</h1>
+      <p style="color: var(--text-secondary);">Here is a summary of your trade finance activities.</p>
+    </div>
+
+    <!-- Role-Based Modules Grid -->
+    <div class="module-grid" id="moduleGrid">
+
+      <!-- Corporate Modules -->
+      <a href="upload.html" class="module-card corporate-module" id="corporateUpload" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <h3>Document Management</h3>
+        <p>Upload invoices, purchase orders, and trade contracts for verification.</p>
+        <span class="module-badge">Active</span>
+      </a>
+
+      <div class="module-card corporate-module" id="corporateTrade" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <h3>Trade Transaction</h3>
+        <p>Initiate and manage your trade financing requests and progress tracking.</p>
+        <span class="module-badge">Coming Soon</span>
+      </div>
+
+      <!-- Auditor Modules -->
+      <a href="verify.html" class="module-card auditor-module" id="auditorVerify" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3>Verification Engine</h3>
+        <p>Verify document authenticity against the blockchain-anchored hashes.</p>
+        <span class="module-badge">Active</span>
+      </a>
+
+      <a href="ledger.html" class="module-card auditor-module" id="auditorLedger" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        </div>
+        <h3>Audit Ledger</h3>
+        <p>View the immutable history of actions, uploads, and status changes.</p>
+        <span class="module-badge">Active</span>
+      </a>
+
+      <!-- Admin Modules -->
+      <div class="module-card admin-module" id="adminGovernance" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <h3>System Governance</h3>
+        <p>Manage node permissions, data policies, and network security settings.</p>
+        <span class="module-badge">Restricted</span>
+      </div>
+
+      <a href="analytics.html" class="module-card admin-module" id="adminAnalytics" style="display: none;">
+        <div class="module-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+        <h3>Global Analytics</h3>
+        <p>Monitor transaction volume and network throughput across the platform.</p>
+        <span class="module-badge">Full Access</span>
+      </a>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h2>Recent Documents</h2>
+      <div id="statusCounter" class="status-pill">Pending Sync</div>
+    </div>
+
+    <div class="card">
+      <table id="documentsTable">
+        <thead>
+          <tr>
+            <th>Document Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Risk Score</th>
+            <th>SHA-256 Hash</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="documentsList">
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
+      <div id="emptyMessage" class="empty-state" style="display: none; padding: 3rem; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📂</div>
+        <h3>No documents found</h3>
+        <p style="color: var(--text-secondary);">Documents uploaded to the blockchain will appear here.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- State & Initialization ---
+    const API_BASE = (window.location.port === "8001")
+      ? ""
+      : (window.location.hostname && window.location.hostname !== 'null')
+        ? `http://${window.location.hostname}:8001`
+        : 'http://127.0.0.1:8001';
+
+    // 🚨 ENFORCE PORT 8001 🚨
+    if (window.location.port !== "8001" && window.location.protocol !== 'file:') {
+      const targetHost = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== 'null')
+        ? window.location.hostname
+        : '127.0.0.1';
+      alert("⚠️ WRONG PORT DETECTED!\n\nPlease use the Backend Server on Port 8001.\n\nRedirecting you now...");
+      window.location.href = `http://${targetHost}:8001/pages/dashboard.html`;
+      throw new Error("Redirecting to port 8001");
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Redirect if no user (Basic session handling as requested via requirement context)
+    if (!user) {
+      window.location.href = 'login.html';
+    }
+
+    // --- DOM Elements ---
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const documentsList = document.getElementById('documentsList');
+    const emptyMessage = document.getElementById('emptyMessage');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // --- Profile Dropdown Logic ---
+    function initProfile() {
+      if (!user) return;
+
+      userNameDisplay.textContent = user.name;
+      document.getElementById('dropName').textContent = user.name;
+      document.getElementById('dropEmail').textContent = user.email;
+      document.getElementById('dropOrg').textContent = user.organization || 'N/A';
+      document.getElementById('dropRole').textContent = (user.role || 'User').toUpperCase();
+
+      profileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('active');
+      });
+
+      document.addEventListener('click', () => {
+        profileDropdown.classList.remove('active');
+      });
+
+      profileDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+      });
+    }
+
+    // --- SHA-256 Generation ---
+    async function generateHash(text) {
+      const msgUint8 = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // --- Documents Logic ---
+    async function loadDocuments() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      let url = `${API_BASE}/documents/my-documents`;
+      if (user.role === 'admin' || user.role === 'auditor') {
+        url = `${API_BASE}/documents/all`;
+      }
+
+      try {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) {
+          console.warn("Session expired or invalid (401)");
+          alert("Session Validation Failed (401 - Unauthorized).\n\nThe backend rejected your session cookie.\n1. Please clear your browser cookies for this site.\n2. Ensure you are visiting via http://localhost:8001.");
+          localStorage.removeItem('user');
+          window.location.href = 'login.html';
+          return;
+        }
+        if (!res.ok) throw new Error('Failed to fetch documents');
+        const docs = await res.json();
+
+        if (docs.length === 0) {
+          documentsList.innerHTML = '';
+          emptyMessage.style.display = 'block';
+          return;
+        }
+
+        emptyMessage.style.display = 'none';
+        const fragment = document.createDocumentFragment();
+
+        docs.forEach(doc => {
+          const tr = document.createElement('tr');
+          const statusClass = `status-${doc.status.toLowerCase()}`;
+          const isPrivileged = (user.role === 'admin' || user.role === 'auditor') && doc.status === 'PENDING';
+
+          tr.innerHTML = `
+                <td>${escapeHTML(doc.document_name || doc.document_id)}</td>
+                <td>${escapeHTML(doc.document_type)}</td>
+                <td><span class="status-pill ${statusClass}">${escapeHTML(doc.status)}</span></td>
+                <td>${doc.risk_score !== undefined ? doc.risk_score : 'N/A'}</td>
+                <td class="hash-cell" title="${doc.sha256_hash || ''}">${(doc.sha256_hash || '').substring(0, 10)}...</td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="action-btn" onclick="viewDocument('${doc.document_id}')">View</button>
+                        <button class="action-btn" style="border-color: #3b82f6; color: #3b82f6;" onclick="verifyIntegrity('${doc.document_id}')">Verify</button>
+                        ${isPrivileged ? `
+                            <button class="action-btn" style="border-color: #10b981; color: #10b981;" onclick="handleAction('${doc.document_id}', 'APPROVE')">Approve</button>
+                            <button class="action-btn" style="border-color: #ef4444; color: #ef4444;" onclick="handleAction('${doc.document_id}', 'REJECT')">Reject</button>
+                        ` : ''}
+                    </div>
+                </td>
+            `;
+          fragment.appendChild(tr);
+        });
+
+        documentsList.innerHTML = '';
+        documentsList.appendChild(fragment);
+      } catch (err) {
+        console.error(err);
+        emptyMessage.textContent = "Error connecting to blockchain network.";
+        emptyMessage.style.display = 'block';
+      }
+    }
+
+    async function handleAction(docId, action) {
+      if (!confirm(`Are you sure you want to ${action.toLowerCase()} this document?`)) return;
+
+      const formData = new FormData();
+      formData.append('action_type', action);
+
+      try {
+        const res = await fetch(`${API_BASE}/documents/action/${docId}`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        });
+        if (res.ok) {
+          alert(`Document ${action.toLowerCase()}d successfully.`);
+          loadDocuments();
+        } else {
+          const err = await res.json();
+          alert(err.detail || "Action failed.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Connection error.");
+      }
+    }
+
+    async function verifyIntegrity(docId) {
+      try {
+        const res = await fetch(`${API_BASE}/documents/verify-integrity/${docId}`, { credentials: 'include' });
+        const data = await res.json();
+
+        if (data.status === "VALID") {
+          alert(`✅ INTEGRITY CONFIRMED\n\nDocument is authentic.\nStored Hash: ${data.stored_hash}\nCurrent Hash: ${data.current_hash}`);
+        } else {
+          alert(`❌ TAMPERING DETECTED\n\nFile on server does not match blockchain record!\nStored Hash: ${data.stored_hash}\nCurrent Hash: ${data.current_hash}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Verification failed.");
+      }
+    }
+
+    function viewDocument(docId) {
+      // Use the docId (which is the UUID from database) to view
+      // Note: The ID passed here might be the PK 'id' or 'document_id'. 
+      // The template uses 'doc.id' which is likely the PK. 
+      // But the endpoint expects 'document_id' (UUID).
+      // Let's check what 'doc.id' is in the template loop. 
+      // Actually, looking at routes/documents.py, the list returns 'document_id'.
+      // The template uses `doc.id` in onclick.
+      // Wait, in `my_documents` return, it returns `document_id`.
+      // So `doc.id` might be undefined if the JSON key is `document_id`.
+      // I will fix the template to use `doc.document_id` and this function to open it.
+
+      const url = `${API_BASE}/documents/view/${docId}`;
+      window.open(url, '_blank');
+    }
+
+    // Simple HTML escaping to avoid safe DOM issues
+    function escapeHTML(str) {
+      if (!str) return '';
+      const p = document.createElement('p');
+      p.textContent = str;
+      return p.innerHTML;
+    }
+
+    // --- Entry Point ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Role-based UI handling (Injecting what would be in roleGuard.js but locally for cleaner integration)
+      // Role-based UI handling
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        document.getElementById('welcomeText').textContent = `Welcome back, ${user.name}`;
+
+        // Show role-specific links
+        if (user.role === "corporate") {
+          document.getElementById('transactionsLink').style.display = 'inline';
+          document.getElementById('uploadLink').style.display = 'inline';
+          document.querySelectorAll('.corporate-module').forEach(el => el.style.display = 'flex');
+        } else if (user.role === "auditor" || user.role === "admin") {
+          document.getElementById('verifyLink').style.display = 'inline';
+          document.getElementById('ledgerLink').style.display = 'inline';
+          document.querySelectorAll('.auditor-module').forEach(el => el.style.display = 'flex');
+
+          if (user.role === "admin") {
+            document.getElementById('analyticsLink').style.display = 'inline';
+            document.querySelectorAll('.admin-module').forEach(el => el.style.display = 'flex');
+          }
+        }
+      }
+
+      initProfile();
+      loadDocuments();
+    });
+  </script>
+
+</body>
+
+</html>

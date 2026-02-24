@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transactions - Trade Finance Blockchain</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-placeholder"></div>
+    <div class="nav-center">
+      <div class="nav-links-container">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="transactions.html" class="nav-link active" id="transactionsLink"
+          style="display: none;">Transactions</a>
+        <a href="upload.html" class="nav-link" id="uploadLink" style="display: none;">Upload</a>
+        <a href="verify.html" class="nav-link" id="verifyLink" style="display: none;">Verify</a>
+        <a href="ledger.html" class="nav-link" id="ledgerLink" style="display: none;">Ledger</a>
+        <a href="analytics.html" class="nav-link" id="analyticsLink" style="display: none;">Analytics</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="profile-trigger" id="profileTrigger">
+        <span id="userNameDisplay">Loading...</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="dropdown-menu" id="profileDropdown">
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Trade Transactions</h1>
+      <button class="btn-primary" id="newTxnBtn" style="display: none;">+ New Transaction</button>
+    </div>
+
+    <div class="card">
+      <table id="txnTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Role</th>
+            <th>Counterparty</th>
+            <th>Items</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="txnList">
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
+      <div id="emptyMessage" class="empty-state" style="display: none; padding: 3rem; text-align: center;">
+        <h3>No transactions found</h3>
+      </div>
+    </div>
+  </main>
+
+  <!-- New Transaction Modal -->
+  <div class="modal" id="newTxnModal">
+    <div class="modal-content">
+      <h2 style="margin-bottom: 1.5rem;">Initiate Transaction</h2>
+      <form id="newTxnForm">
+        <div class="form-group">
+          <label>Counterparty Email (Buyer)</label>
+          <input type="email" id="txnEmail" required placeholder="buyer@example.com">
+        </div>
+        <div class="form-group">
+          <label>Items Description</label>
+          <input type="text" id="txnItems" required placeholder="Electronics batch #123">
+        </div>
+        <div class="form-group">
+          <label>Amount (USD)</label>
+          <input type="number" id="txnAmount" required min="1">
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-secondary" id="closeModalBtn">Cancel</button>
+          <button type="submit" class="btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = (window.location.port === "8001")
+      ? ""
+      : (window.location.hostname && window.location.hostname !== 'null')
+        ? `http://${window.location.hostname}:8001`
+        : 'http://127.0.0.1:8001';
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user) window.location.href = 'login.html';
+
+    // Role Handling
+    if (user.role === 'corporate') {
+      const txlink = document.getElementById('transactionsLink');
+      if (txlink) txlink.style.display = 'inline';
+      const ntxbtn = document.getElementById('newTxnBtn');
+      if (ntxbtn) ntxbtn.style.display = 'inline';
+      const uplink = document.getElementById('uploadLink');
+      if (uplink) uplink.style.display = 'inline';
+    } else if (user.role === 'admin' || user.role === 'auditor') {
+      const txlink = document.getElementById('transactionsLink');
+      if (txlink) txlink.style.display = 'inline';
+      if (user.role === 'admin') {
+        const alink = document.getElementById('analyticsLink');
+        if (alink) alink.style.display = 'inline';
+      }
+      const llink = document.getElementById('ledgerLink');
+      if (llink) llink.style.display = 'inline';
+      const vlink = document.getElementById('verifyLink');
+      if (vlink) vlink.style.display = 'inline';
+    }
+
+    // Modal Logic
+    const modal = document.getElementById('newTxnModal');
+    document.getElementById('newTxnBtn').onclick = () => modal.classList.add('active');
+    document.getElementById('closeModalBtn').onclick = () => modal.classList.remove('active');
+
+    document.getElementById('newTxnForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = {
+        counterparty_email: document.getElementById('txnEmail').value,
+        items: document.getElementById('txnItems').value,
+        amount: parseFloat(document.getElementById('txnAmount').value),
+        currency: "USD"
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/transactions/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          alert("Transaction Created!");
+          modal.classList.remove('active');
+          loadTransactions();
+        } else {
+          const err = await res.json();
+          alert(err.detail || "Error creating transaction");
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Connection Error");
+      }
+    };
+
+    // Load Transactions
+    async function loadTransactions() {
+      try {
+        const res = await fetch(`${API_BASE}/transactions/my-transactions`, { credentials: 'include' });
+        if (!res.ok) return; // handle error
+        const txns = await res.json();
+
+        const tbody = document.getElementById('txnList');
+        tbody.innerHTML = '';
+
+        if (txns.length === 0) {
+          document.getElementById('emptyMessage').style.display = 'block';
+          return;
+        }
+        document.getElementById('emptyMessage').style.display = 'none';
+
+        txns.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+                    <td>${t.id}</td>
+                    <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                    <td>${t.role}</td>
+                    <td>${t.counterparty}</td>
+                    <td>${t.items || 'N/A'}</td>
+                    <td>${t.amount} ${t.currency}</td>
+                    <td><span class="status-pill status-${t.status.toLowerCase()}">${t.status}</span></td>
+                `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Init
+    document.getElementById('userNameDisplay').textContent = user.name || 'User';
+    document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('user'); window.location.href = 'login.html'; };
+    loadTransactions();
+
+  </script>
+</body>
+
+</html>
