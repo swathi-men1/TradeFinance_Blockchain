@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2 style="color:#20c997; margin-bottom:25px;">📘 Ledger Explorer</h2>
+
+{% if ledger and ledger|length > 0 %}
+    <div class="ledger-box">
+        {% for entry in ledger %}
+            <div class="ledger-item">
+                <div class="ledger-main">
+                    <span class="action">{{ entry.action }}</span>
+                    <span class="actor">by {{ entry.actor }}</span>
+                </div>
+                <div class="timestamp">
+                    {{ entry.timestamp }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        🚫 No ledger records available
+    </div>
+{% endif %}
+
+<a href="/dashboard">⬅ Back to Dashboard</a>
+
+<style>
+    .ledger-box {
+        background: #111a2e;
+        border-radius: 16px;
+        padding: 20px;
+        max-width: 900px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .ledger-item {
+        padding: 15px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .ledger-item:last-child {
+        border-bottom: none;
+    }
+
+    .ledger-main {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+    }
+
+    .action {
+        color: #60a5fa;
+        font-weight: 600;
+    }
+
+    .actor {
+        color: #cbd5f5;
+        font-size: 14px;
+    }
+
+    .timestamp {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 6px;
+    }
+
+    .empty-state {
+        background: #111a2e;
+        padding: 25px;
+        border-radius: 14px;
+        text-align: center;
+        color: #9ca3af;
+        max-width: 600px;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 25px;
+    }
+</style>
+
+{% endblock %}

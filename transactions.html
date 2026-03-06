@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trade Transactions</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #0b1220, #060b16);
+            color: #e5e7eb;
+            padding: 30px;
+        }
+
+        h2 {
+            color: #20c997;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: #111a2e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #cbd5f5;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #2a3558;
+            background: #0b1220;
+            color: #e5e7eb;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        input[type="email"]:focus {
+            border-color: #20c997;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #20c997;
+            color: #02110c;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #17a589;
+            transform: translateY(-1px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #111a2e;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+        }
+
+        th {
+            background: #1a2440;
+            padding: 14px;
+            text-align: left;
+            color: #9ddfd3;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 14px;
+            border-top: 1px solid #222c4d;
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background: rgba(32,201,151,0.05);
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #20c997;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>🔁 Trade Transactions</h2>
+
+<form action="/transactions/create" method="post">
+    <label>Seller Email</label>
+    <input type="email" name="seller_email" required>
+    <button type="submit">Create Transaction</button>
+</form>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Buyer</th>
+        <th>Seller</th>
+        <th>Status</th>
+        <th>Created At</th>
+    </tr>
+
+    {% for tx in transactions %}
+    <tr>
+        <td>{{ tx.id }}</td>
+        <td>{{ tx.buyer_email }}</td>
+        <td>{{ tx.seller_email }}</td>
+        <td>{{ tx.status }}</td>
+        <td>{{ tx.created_at }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/dashboard">⬅ Back to Dashboard</a>
+
+</body>
+</html>
