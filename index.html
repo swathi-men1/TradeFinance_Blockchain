@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChainDocs</title>
+    <link rel="stylesheet" href="trade.css">
+</head>
+
+<body>
+
+<!-- 🔐 ROLE PROTECTION -->
+<script>
+const role = localStorage.getItem("role");
+if (role !== "bank") {
+    window.location.href = "login.html";
+}
+</script>
+
+<!-- ===== HEADER ===== -->
+<header class="top-header">
+    <h2>ChainDocs</h2>
+    <p>Trade Finance Blockchain Explorer</p>
+</header>
+
+<div class="body-section">
+
+    <!-- ===== SIDEBAR ===== -->
+    <nav class="side-nav">
+        <a id="nav-dashboard" href="#" onclick="loadPage('dashboard.html', event)">Dashboard</a>
+        <a id="nav-create" href="#" onclick="loadPage('create_trade.html', event)">Create Trade</a>
+        <a id="nav-trades" href="#" onclick="loadPage('view_trades.html', event)">View Trades</a>
+        <a id="nav-ledger" href="#" onclick="loadPage('ledger.html', event)">Ledger</a>
+        <a id="nav-blocks" href="#" onclick="loadPage('blocks.html', event)">Blockchain</a>
+
+        <!-- 🔐 LOGOUT (ALWAYS VISIBLE) -->
+        <a id="nav-logout" href="#" onclick="openLogoutModal()">Logout</a>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+        <iframe id="contentFrame" src="dashboard.html"></iframe>
+    </main>
+
+</div>
+
+<!-- ===== LOGOUT MODAL ===== -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Logout</h3>
+        <p>Do you really want to logout?</p>
+
+        <div class="modal-buttons">
+            <button class="btn-yes" onclick="logoutYes()">Yes</button>
+            <button class="btn-no" onclick="logoutNo()">No</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== JS LOGIC ===== -->
+<script>
+
+
+/* ---------- LOGOUT ---------- */
+function loadPage(page, event) {
+    event.preventDefault();
+
+    // load page in iframe
+    document.getElementById("contentFrame").src = page;
+
+    // remove active class from all sidebar links
+    document.querySelectorAll(".side-nav a").forEach(link => {
+        link.classList.remove("active");
+    });
+
+    // add active class to clicked link
+    event.target.classList.add("active");
+}
+function openLogoutModal() {
+    document.getElementById("logoutModal").style.display = "block";
+}
+// default active page (Dashboard)
+window.onload = () => {
+    document.getElementById("nav-dashboard").classList.add("active");
+};
+function logoutYes() {
+    localStorage.clear();
+    window.top.location.href = "login.html";
+}
+
+function logoutNo() {
+    document.getElementById("logoutModal").style.display = "none";
+}
+
+/* ---------- ROLE BASED SIDEBAR ---------- */
+const menus = [
+    "nav-dashboard",
+    "nav-create",
+    "nav-upload",
+    "nav-trades",
+    "nav-ledger",
+    "nav-blocks"
+];
+
+// hide all feature menus
+menus.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+});
+
+// show based on role
+if (role === "bank") {
+    show("nav-dashboard", "nav-create", "nav-upload", "nav-trades", "nav-blocks");
+}
+else if (role === "corporate") {
+    // corporate has separate risk.html page
+}
+else if (role === "auditor") {
+    show("nav-ledger");
+}
+else if (role === "admin") {
+    show("nav-dashboard");
+}
+
+// helper
+function show(...ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "block";
+    });
+}
+
+// 🔐 ALWAYS SHOW LOGOUT
+document.getElementById("nav-logout").style.display = "block";
+</script>
+
+</body>
+</html>
