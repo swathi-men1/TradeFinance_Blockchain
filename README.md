@@ -5,7 +5,7 @@
 **🌐 Live Demo:** [https://showcasego.netlify.app](https://showcasego.netlify.app)
 
 **🎥 Watch Demo Video:**
-<iframe width="560" height="315" src="https://www.youtube.com/embed/OvYt7StlAz4?si=wxHIzkUIVHHzHt2E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Trade Finance Blockchain Explorer Demo](https://img.youtube.com/vi/OvYt7StlAz4/hqdefault.jpg)](https://www.youtube.com/watch?v=OvYt7StlAz4)
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=React)](https://reactjs.org)
